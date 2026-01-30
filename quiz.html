@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Break the Cycle Quiz - WORKING VERSION</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent: #8b5cf6;
+      --accent-light: #a78bfa;
+      --bg-dark: #0a0a0f;
+      --bg-card: #1a1a24;
+      --bg-elevated: #23233a;
+      --text-primary: #ffffff;
+      --text-secondary: #a8a8b8;
+      --text-muted: #6b6b7b;
+      --border: #2a2a3a;
+      --border-light: #3a3a4a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 12px 40px rgba(99, 102, 241, 0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.6;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a24 50%, #0a0a0f 100%);
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 30px 40px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      max-height: 95vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    }
+
+    .header { 
+      text-align: center; 
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header p { 
+      color: var(--text-secondary); 
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .progress-container { 
+      margin-bottom: 25px;
+      padding: 15px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 10px;
+      width: 5%;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    }
+
+    .progress-text { 
+      text-align: center; 
+      color: var(--text-muted); 
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    #quizForm {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .step { 
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+    .step.active { 
+      display: flex; 
+      animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step h3 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      line-height: 1.5;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+    }
+
+    .options { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      margin-bottom: 20px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .options::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .options::-webkit-scrollbar-track {
+      background: var(--bg-elevated);
+      border-radius: 10px;
+    }
+
+    .options::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 10px;
+    }
+
+    .options::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    .option { position: relative; }
+    .option input[type="radio"] { position: absolute; opacity: 0; cursor: pointer; }
+    
+    .option label {
+      display: block;
+      padding: 16px 20px;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.98rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option label::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      transform: scaleY(0);
+      transition: transform 0.3s ease;
+    }
+
+    .option input[type="radio"]:checked + label::before {
+      transform: scaleY(1);
+    }
+
+    .option input[type="radio"]:checked + label {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+      border-color: var(--primary);
+      color: var(--text-primary);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .option label:hover { 
+      border-color: var(--primary-light); 
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: var(--text-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      flex-shrink: 0;
+    }
+
+    .btn:hover { 
+      transform: translateY(-3px); 
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn:active { transform: translateY(-1px); }
+
+    .results { 
+      display: none;
+      overflow-y: auto;
+      max-height: calc(95vh - 80px);
+      padding-right: 10px;
+    }
+    .results.active { display: block; animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    .results::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .results::-webkit-scrollbar-track {
+      background: var(--bg-elevated);
+      border-radius: 10px;
+    }
+
+    .results::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 10px;
+    }
+
+    .results::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+    
+    .results h2 { 
+      font-size: 4rem; 
+      margin-bottom: 15px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .results .archetype-name {
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .results .description {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+
+    .action-plan {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 25px;
+      margin-bottom: 25px;
+      text-align: left;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-plan h3 { 
+      color: var(--accent-light); 
+      margin-bottom: 18px; 
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .action-plan ul { list-style: none; padding: 0; }
+    
+    .action-plan li {
+      padding: 12px 0;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.96rem;
+      line-height: 1.5;
+      transition: all 0.3s ease;
+    }
+
+    .action-plan li:hover {
+      color: var(--text-primary);
+      transform: translateX(4px);
+    }
+
+    .action-plan li:last-child { border-bottom: none; }
+    
+    .action-plan li::before {
+      content: "→";
+      color: var(--primary-light);
+      margin-right: 12px;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .back-btn {
+      background: var(--bg-elevated);
+      border: 2px solid var(--primary);
+      color: var(--primary-light);
+      margin-top: 15px;
+      text-decoration: none;
+      display: inline-block;
+      width: auto;
+      padding: 14px 35px;
+      font-weight: 600;
+    }
+
+    .back-btn:hover { 
+      background: var(--primary); 
+      color: var(--text-primary);
+      border-color: var(--primary);
+    }
+
+    /* Speed Warning Styles */
+    #speedWarning .archetype-name {
+      color: #ff6b6b !important;
+      -webkit-text-fill-color: #ff6b6b !important;
+    }
+
+    #speedWarning .description {
+      font-size: 1.15rem;
+    }
+
+    #speedWarning h2 {
+      font-size: 5rem;
+      filter: grayscale(0.3);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .container { padding: 20px; max-height: 98vh; }
+      .header { margin-bottom: 15px; padding-bottom: 15px; }
+      .header h1 { font-size: 1.5rem; }
+      .header p { font-size: 0.9rem; }
+      .progress-container { padding: 12px; margin-bottom: 15px; }
+      .step h3 { font-size: 1.15rem; margin-bottom: 15px; }
+      .options { gap: 8px; margin-bottom: 15px; }
+      .option label { padding: 14px 16px; font-size: 0.92rem; }
+      .btn { padding: 13px; font-size: 0.95rem; }
+      .results h2 { font-size: 3rem; }
+      .results .archetype-name { font-size: 1.4rem; }
+      .results .description { font-size: 0.98rem; }
+      .action-plan { padding: 20px; }
+      .action-plan h3 { font-size: 1.1rem; }
+      .action-plan li { font-size: 0.9rem; padding: 10px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Discover Your Hustle Identity</h1>
+      <p>Answer 20 questions to unlock your true path</p>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-text">Question <span id="currentQuestion">1</span> of 20</p>
+    </div>
+
+    <form id="quizForm">
+      <div class="step active" data-step="1">
+        <h3>What motivates you most when it comes to making money?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q1" value="strategist" id="q1a"><label for="q1a">Long-term security & control</label></div>
+          <div class="option"><input type="radio" name="q1" value="woke" id="q1b"><label for="q1b">Fast wins & momentum</label></div>
+          <div class="option"><input type="radio" name="q1" value="ghost" id="q1c"><label for="q1c">Quiet success with no spotlight</label></div>
+          <div class="option"><input type="radio" name="q1" value="wild" id="q1d"><label for="q1d">Freedom to pivot anytime</label></div>
+          <div class="option"><input type="radio" name="q1" value="nomad" id="q1e"><label for="q1e">A life of experience and adventure</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(1)">Next</button>
+      </div>
+
+      <div class="step" data-step="2">
+        <h3>What sounds more fun to you on a random Tuesday?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q2" value="strategist" id="q2a"><label for="q2a">Planning & learning strategies</label></div>
+          <div class="option"><input type="radio" name="q2" value="woke" id="q2b"><label for="q2b">Launching something risky</label></div>
+          <div class="option"><input type="radio" name="q2" value="ghost" id="q2c"><label for="q2c">Building a system no one knows about</label></div>
+          <div class="option"><input type="radio" name="q2" value="wild" id="q2d"><label for="q2d">Jumping between 3 ideas at once</label></div>
+          <div class="option"><input type="radio" name="q2" value="nomad" id="q2e"><label for="q2e">Going somewhere totally new</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(2)">Next</button>
+      </div>
+
+      <div class="step" data-step="3">
+        <h3>How do you feel about being on camera?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q3" value="strategist" id="q3a"><label for="q3a">I'll do it if it builds trust</label></div>
+          <div class="option"><input type="radio" name="q3" value="woke" id="q3b"><label for="q3b">I love the spotlight</label></div>
+          <div class="option"><input type="radio" name="q3" value="ghost" id="q3c"><label for="q3c">Nah, I'd rather stay hidden</label></div>
+          <div class="option"><input type="radio" name="q3" value="wild" id="q3d"><label for="q3d">Sometimes yes, sometimes no</label></div>
+          <div class="option"><input type="radio" name="q3" value="nomad" id="q3e"><label for="q3e">I prefer documenting the journey</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(3)">Next</button>
+      </div>
+
+      <div class="step" data-step="4">
+        <h3>What kind of pace do you naturally work at?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q4" value="strategist" id="q4a"><label for="q4a">Focused & steady</label></div>
+          <div class="option"><input type="radio" name="q4" value="woke" id="q4b"><label for="q4b">Fast & explosive</label></div>
+          <div class="option"><input type="radio" name="q4" value="ghost" id="q4c"><label for="q4c">Efficient & quiet</label></div>
+          <div class="option"><input type="radio" name="q4" value="wild" id="q4d"><label for="q4d">Random bursts</label></div>
+          <div class="option"><input type="radio" name="q4" value="nomad" id="q4e"><label for="q4e">Depends on what I'm doing</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(4)">Next</button>
+      </div>
+
+      <div class="step" data-step="5">
+        <h3>If money wasn't an issue, what would you spend your time doing?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q5" value="strategist" id="q5a"><label for="q5a">Running my empire</label></div>
+          <div class="option"><input type="radio" name="q5" value="woke" id="q5b"><label for="q5b">Hosting, hyping, leading</label></div>
+          <div class="option"><input type="radio" name="q5" value="ghost" id="q5c"><label for="q5c">Building something big behind the scenes</label></div>
+          <div class="option"><input type="radio" name="q5" value="wild" id="q5d"><label for="q5d">Launching wild experiments</label></div>
+          <div class="option"><input type="radio" name="q5" value="nomad" id="q5e"><label for="q5e">Traveling and documenting it</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(5)">Next</button>
+      </div>
+
+      <div class="step" data-step="6">
+        <h3>What's your attention span like when working online?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q6" value="strategist" id="q6a"><label for="q6a">Long when I have structure</label></div>
+          <div class="option"><input type="radio" name="q6" value="woke" id="q6b"><label for="q6b">Short but intense</label></div>
+          <div class="option"><input type="radio" name="q6" value="ghost" id="q6c"><label for="q6c">Laser focused when it matters</label></div>
+          <div class="option"><input type="radio" name="q6" value="wild" id="q6d"><label for="q6d">ADHD mode</label></div>
+          <div class="option"><input type="radio" name="q6" value="nomad" id="q6e"><label for="q6e">Depends on the environment</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(6)">Next</button>
+      </div>
+
+      <div class="step" data-step="7">
+        <h3>Which of these quotes hits the hardest?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q7" value="strategist" id="q7a"><label for="q7a">"Play the long game."</label></div>
+          <div class="option"><input type="radio" name="q7" value="woke" id="q7b"><label for="q7b">"Make noise. Move fast."</label></div>
+          <div class="option"><input type="radio" name="q7" value="ghost" id="q7c"><label for="q7c">"Move in silence. Let results talk."</label></div>
+          <div class="option"><input type="radio" name="q7" value="wild" id="q7d"><label for="q7d">"Rules are made to be broken."</label></div>
+          <div class="option"><input type="radio" name="q7" value="nomad" id="q7e"><label for="q7e">"Life is about the journey."</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(7)">Next</button>
+      </div>
+
+      <div class="step" data-step="8">
+        <h3>When you face a major setback or failure, what's your first instinct?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q8" value="strategist" id="q8a"><label for="q8a">Analyze what went wrong and adjust the strategy</label></div>
+          <div class="option"><input type="radio" name="q8" value="woke" id="q8b"><label for="q8b">Get back up immediately and attack harder</label></div>
+          <div class="option"><input type="radio" name="q8" value="ghost" id="q8c"><label for="q8c">Process it privately and come back stronger</label></div>
+          <div class="option"><input type="radio" name="q8" value="wild" id="q8d"><label for="q8d">Pivot to something completely different</label></div>
+          <div class="option"><input type="radio" name="q8" value="nomad" id="q8e"><label for="q8e">Take a step back and reassess what I really want</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(8)">Next</button>
+      </div>
+
+      <div class="step" data-step="9">
+        <h3>What would your ideal daily routine look like?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q9" value="strategist" id="q9a"><label for="q9a">Structured schedule with clear blocks for deep work</label></div>
+          <div class="option"><input type="radio" name="q9" value="woke" id="q9b"><label for="q9b">High-energy sprints with results by end of day</label></div>
+          <div class="option"><input type="radio" name="q9" value="ghost" id="q9c"><label for="q9c">Uninterrupted focus time, minimal meetings</label></div>
+          <div class="option"><input type="radio" name="q9" value="wild" id="q9d"><label for="q9d">No routine - I work when inspiration hits</label></div>
+          <div class="option"><input type="radio" name="q9" value="nomad" id="q9e"><label for="q9e">Flexible schedule that adapts to where I am</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(9)">Next</button>
+      </div>
+
+      <div class="step" data-step="10">
+        <h3>When you look back at the biggest growth moments in your life, they usually came from...</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q10" value="strategist" id="q10a"><label for="q10a">Consistent effort over time and patience</label></div>
+          <div class="option"><input type="radio" name="q10" value="woke" id="q10b"><label for="q10b">Bold moves and taking massive action</label></div>
+          <div class="option"><input type="radio" name="q10" value="ghost" id="q10c"><label for="q10c">Quiet persistence when no one was watching</label></div>
+          <div class="option"><input type="radio" name="q10" value="wild" id="q10d"><label for="q10d">Taking risks others thought were crazy</label></div>
+          <div class="option"><input type="radio" name="q10" value="nomad" id="q10e"><label for="q10e">New experiences and getting out of my comfort zone</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(10)">Next</button>
+      </div>
+
+      <div class="step" data-step="11">
+        <h3>What's your relationship with money, honestly?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q11" value="strategist" id="q11a"><label for="q11a">It's a tool for building wealth and security</label></div>
+          <div class="option"><input type="radio" name="q11" value="woke" id="q11b"><label for="q11b">It's energy - I make it and spend it fast</label></div>
+          <div class="option"><input type="radio" name="q11" value="ghost" id="q11c"><label for="q11c">I quietly stack it and keep it to myself</label></div>
+          <div class="option"><input type="radio" name="q11" value="wild" id="q11d"><label for="q11d">It comes and goes - I'm comfortable with that</label></div>
+          <div class="option"><input type="radio" name="q11" value="nomad" id="q11e"><label for="q11e">It buys freedom and experiences, not things</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(11)">Next</button>
+      </div>
+
+      <div class="step" data-step="12">
+        <h3>What drains your energy the fastest?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q12" value="strategist" id="q12a"><label for="q12a">Disorganization and lack of clear direction</label></div>
+          <div class="option"><input type="radio" name="q12" value="woke" id="q12b"><label for="q12b">Slow progress and overthinking</label></div>
+          <div class="option"><input type="radio" name="q12" value="ghost" id="q12c"><label for="q12c">Unnecessary attention and social pressure</label></div>
+          <div class="option"><input type="radio" name="q12" value="wild" id="q12d"><label for="q12d">Being stuck in one place or routine</label></div>
+          <div class="option"><input type="radio" name="q12" value="nomad" id="q12e"><label for="q12e">Feeling trapped or location-dependent</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(12)">Next</button>
+      </div>
+
+      <div class="step" data-step="13">
+        <h3>If someone described you in one word, what would feel most accurate?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q13" value="strategist" id="q13a"><label for="q13a">Strategic</label></div>
+          <div class="option"><input type="radio" name="q13" value="woke" id="q13b"><label for="q13b">Driven</label></div>
+          <div class="option"><input type="radio" name="q13" value="ghost" id="q13c"><label for="q13c">Calculated</label></div>
+          <div class="option"><input type="radio" name="q13" value="wild" id="q13d"><label for="q13d">Unpredictable</label></div>
+          <div class="option"><input type="radio" name="q13" value="nomad" id="q13e"><label for="q13e">Free-spirited</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(13)">Next</button>
+      </div>
+
+      <div class="step" data-step="14">
+        <h3>What's your natural strength when it comes to problem-solving?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q14" value="strategist" id="q14a"><label for="q14a">I plan ahead and avoid problems before they happen</label></div>
+          <div class="option"><input type="radio" name="q14" value="woke" id="q14b"><label for="q14b">I act fast and figure it out on the fly</label></div>
+          <div class="option"><input type="radio" name="q14" value="ghost" id="q14c"><label for="q14c">I solve things efficiently without drama</label></div>
+          <div class="option"><input type="radio" name="q14" value="wild" id="q14d"><label for="q14d">I think outside the box and break rules</label></div>
+          <div class="option"><input type="radio" name="q14" value="nomad" id="q14e"><label for="q14e">I adapt and find creative solutions anywhere</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(14)">Next</button>
+      </div>
+
+      <div class="step" data-step="15">
+        <h3>When you imagine your life 5 years from now, what matters most?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q15" value="strategist" id="q15a"><label for="q15a">Financial security and a scalable business</label></div>
+          <div class="option"><input type="radio" name="q15" value="woke" id="q15b"><label for="q15b">Having built something impactful and visible</label></div>
+          <div class="option"><input type="radio" name="q15" value="ghost" id="q15c"><label for="q15c">Quiet wealth and total autonomy</label></div>
+          <div class="option"><input type="radio" name="q15" value="wild" id="q15d"><label for="q15d">Having lived boldly with zero regrets</label></div>
+          <div class="option"><input type="radio" name="q15" value="nomad" id="q15e"><label for="q15e">Freedom to work and live from anywhere</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(15)">Next</button>
+      </div>
+
+      <div class="step" data-step="16">
+        <h3>How do you handle stress and pressure?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q16" value="strategist" id="q16a"><label for="q16a">I create systems to manage it</label></div>
+          <div class="option"><input type="radio" name="q16" value="woke" id="q16b"><label for="q16b">I thrive under pressure - it fuels me</label></div>
+          <div class="option"><input type="radio" name="q16" value="ghost" id="q16c"><label for="q16c">I stay calm and handle it internally</label></div>
+          <div class="option"><input type="radio" name="q16" value="wild" id="q16d"><label for="q16d">I change direction if it's not working</label></div>
+          <div class="option"><input type="radio" name="q16" value="nomad" id="q16e"><label for="q16e">I disconnect and reset somewhere new</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(16)">Next</button>
+      </div>
+
+      <div class="step" data-step="17">
+        <h3>What gives you the most fulfillment?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q17" value="strategist" id="q17a"><label for="q17a">Building something sustainable that lasts</label></div>
+          <div class="option"><input type="radio" name="q17" value="woke" id="q17b"><label for="q17b">Making an impact and inspiring others</label></div>
+          <div class="option"><input type="radio" name="q17" value="ghost" id="q17c"><label for="q17c">Achieving goals without needing recognition</label></div>
+          <div class="option"><input type="radio" name="q17" value="wild" id="q17d"><label for="q17d">Living life on my own terms</label></div>
+          <div class="option"><input type="radio" name="q17" value="nomad" id="q17e"><label for="q17e">Experiencing life and collecting memories</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(17)">Next</button>
+      </div>
+
+      <div class="step" data-step="18">
+        <h3>What scares you most about starting something new?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q18" value="strategist" id="q18a"><label for="q18a">Not having a clear plan or roadmap</label></div>
+          <div class="option"><input type="radio" name="q18" value="woke" id="q18b"><label for="q18b">Wasting time overthinking instead of doing</label></div>
+          <div class="option"><input type="radio" name="q18" value="ghost" id="q18c"><label for="q18c">Too much visibility and attention</label></div>
+          <div class="option"><input type="radio" name="q18" value="wild" id="q18d"><label for="q18d">Getting bored and moving on too fast</label></div>
+          <div class="option"><input type="radio" name="q18" value="nomad" id="q18e"><label for="q18e">Getting tied down to one place or commitment</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(18)">Next</button>
+      </div>
+
+      <div class="step" data-step="19">
+        <h3>If you could only focus on one thing for the next year, what would it be?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q19" value="strategist" id="q19a"><label for="q19a">Building systems and passive income</label></div>
+          <div class="option"><input type="radio" name="q19" value="woke" id="q19b"><label for="q19b">Growing my brand and audience</label></div>
+          <div class="option"><input type="radio" name="q19" value="ghost" id="q19c"><label for="q19c">Quietly scaling income behind the scenes</label></div>
+          <div class="option"><input type="radio" name="q19" value="wild" id="q19d"><label for="q19d">Experimenting with multiple income streams</label></div>
+          <div class="option"><input type="radio" name="q19" value="nomad" id="q19e"><label for="q19e">Creating a fully remote lifestyle business</label></div>
+        </div>
+        <button type="button" class="btn" onclick="nextStep(19)">Next</button>
+      </div>
+
+      <div class="step" data-step="20">
+        <h3>What does success really mean to you, deep down?</h3>
+        <div class="options">
+          <div class="option"><input type="radio" name="q20" value="strategist" id="q20a"><label for="q20a">Control, security, and long-term wealth</label></div>
+          <div class="option"><input type="radio" name="q20" value="woke" id="q20b"><label for="q20b">Making moves, winning fast, and being seen</label></div>
+          <div class="option"><input type="radio" name="q20" value="ghost" id="q20c"><label for="q20c">Freedom, peace, and results without noise</label></div>
+          <div class="option"><input type="radio" name="q20" value="wild" id="q20d"><label for="q20d">Living boldly with no limits or rules</label></div>
+          <div class="option"><input type="radio" name="q20" value="nomad" id="q20e"><label for="q20e">Experiences, freedom, and living authentically</label></div>
+        </div>
+        <button type="submit" class="btn">See My Results</button>
+      </div>
+    </form>
+
+    <div class="results" id="results">
+      <h2 id="resultEmoji"></h2>
+      <div class="archetype-name" id="archetypeName"></div>
+      <p class="description" id="archetypeDescription"></p>
+      
+      <div class="action-plan">
+        <h3>Your 7-Day Action Plan</h3>
+        <ul id="actionPlanList"></ul>
+      </div>
+
+      <a href="index.html" class="btn back-btn">← Back to Home</a>
+      <button class="btn" onclick="retakeQuiz()" style="margin-top: 15px;">Retake Quiz</button>
+    </div>
+
+    <!-- Speed Warning Screen -->
+    <div class="results" id="speedWarning" style="display: none;">
+      <h2>⏱️</h2>
+      <div class="archetype-name" style="color: #ff6b6b;">Hold Up...</div>
+      <p class="description" style="font-size: 1.2rem; margin-bottom: 20px;">
+        You completed this quiz in <strong id="totalTime"></strong> seconds.
+      </p>
+      <p class="description">
+        That's <strong>way too fast</strong> to actually read and think about the questions. 
+        This quiz is designed to help you discover who you really are - but only if you take it seriously.
+      </p>
+      <p class="description" style="margin-top: 20px; color: var(--text-muted);">
+        Each question deserves at least 5-10 seconds of thought. You're not racing against anyone here.
+      </p>
+      <button class="btn" onclick="retakeQuiz()" style="margin-top: 30px;">Take It Seriously This Time</button>
+    </div>
+  </div>
+
+  <script>
+    // Enhanced archetype system with multiple action plan variations
+    const archetypes = {
+      strategist: {
+        emoji: "🧠", 
+        name: "The Strategist", 
+        description: "You're a long-game thinker who builds systems and scalable income. You value structure, planning, and sustainable growth over quick wins.",
+        plans: {
+          default: ["Day 1: Research 3 income models that scale (SaaS, digital products, consulting)", "Day 2: Map out your 90-day roadmap with clear milestones", "Day 3: Set up tracking systems (finances, metrics, goals)", "Day 4: Identify your core skill to monetize", "Day 5: Create a minimum viable offer (MVP)", "Day 6: Test your offer with 5 potential customers", "Day 7: Refine based on feedback and plan your launch strategy"],
+          resilient: ["Day 1: Audit what didn't work in the past and document lessons", "Day 2: Build a foolproof system to prevent those mistakes", "Day 3: Research low-risk, high-reward income models", "Day 4: Create a 3-tier backup plan for your main strategy", "Day 5: Set up automated tracking and early warning systems", "Day 6: Test one income stream with minimal investment", "Day 7: Adjust strategy based on data and prepare for scale"],
+          analytical: ["Day 1: Deep dive into market research and competitor analysis", "Day 2: Create detailed financial projections for 3 income models", "Day 3: Build systems for tracking every metric that matters", "Day 4: Map out decision trees for common scenarios", "Day 5: Set up A/B testing frameworks for your offers", "Day 6: Launch micro-tests with control groups", "Day 7: Analyze results and optimize your strategy"],
+          structured: ["Day 1: Design your ideal weekly schedule with time blocks", "Day 2: Identify your highest-leverage income activity", "Day 3: Create SOPs (Standard Operating Procedures) for repetitive tasks", "Day 4: Build accountability systems and progress trackers", "Day 5: Set up automated income streams that run on autopilot", "Day 6: Test your systems with a pilot customer", "Day 7: Refine your process and prepare for systematic scaling"]
+        }
+      },
+      woke: {
+        emoji: "⚡", 
+        name: "The Woke Achiever", 
+        description: "You thrive on speed, momentum, and creating results fast. You're built for action, not overthinking. You move with intention and energy.",
+        plans: {
+          default: ["Day 1: Pick ONE income idea and commit to it", "Day 2: Create an offer and set a 48-hour launch deadline", "Day 3: Build hype - post everywhere, tell everyone", "Day 4: Launch and make your first sale", "Day 5: Double down on what's working", "Day 6: Get testimonials and create social proof", "Day 7: Scale - run ads, collaborate, go viral"],
+          aggressive: ["Day 1: Choose your boldest income idea - no playing safe", "Day 2: Create an irresistible offer and announce a 24-hour flash launch", "Day 3: Go all-in on content - 10+ posts across all platforms", "Day 4: Launch hard, DM 50 people, make your first 3 sales", "Day 5: Reinvest profits immediately into paid ads", "Day 6: Capture video testimonials and social proof", "Day 7: Scale aggressively - double your ad spend and outreach"],
+          impactful: ["Day 1: Identify how your income idea serves others", "Day 2: Craft a mission-driven message and share your why", "Day 3: Build a movement - engage your audience authentically", "Day 4: Launch with purpose and document the journey", "Day 5: Highlight customer wins and transformations", "Day 6: Collaborate with others in your space for max impact", "Day 7: Scale your message through speaking, content, and visibility"],
+          momentum: ["Day 1: Take action on the first idea that excites you", "Day 2: Build and launch in the same day - no delays", "Day 3: Stack quick wins - make 3 small sales or wins", "Day 4: Use momentum to fuel your next move", "Day 5: Double down on what's getting traction", "Day 6: Ride the wave - increase effort by 2x", "Day 7: Set new ambitious targets and keep pushing"]
+        }
+      },
+      ghost: {
+        emoji: "👻", 
+        name: "The Ghost Builder", 
+        description: "You operate behind the scenes, stacking quiet wins. You don't need the spotlight - you're too busy building something real that compounds over time.",
+        plans: {
+          default: ["Day 1: Choose a low-visibility income stream (automation, backend work)", "Day 2: Build systems that work without you being visible", "Day 3: Set up passive income foundations (content, tools, products)", "Day 4: Test in stealth mode with a small audience", "Day 5: Optimize for efficiency and automation", "Day 6: Scale quietly through SEO, affiliates, or partnerships", "Day 7: Stack another income stream using the same principles"],
+          private: ["Day 1: Identify income streams that require zero personal branding", "Day 2: Build anonymous assets (websites, tools, content)", "Day 3: Set up passive income through affiliate marketing or digital products", "Day 4: Launch quietly to a small test group", "Day 5: Optimize conversions without showing your face", "Day 6: Scale through SEO, paid ads, or partnerships", "Day 7: Stack a second private income stream"],
+          efficient: ["Day 1: Audit your time and eliminate all inefficiencies", "Day 2: Build automated systems for repetitive income tasks", "Day 3: Create assets that generate income while you sleep", "Day 4: Set up silent funnels with email automation", "Day 5: Test your automated systems with minimal involvement", "Day 6: Optimize every step for maximum efficiency", "Day 7: Launch a second income stream using the same framework"],
+          calculated: ["Day 1: Analyze 5 low-risk income models with high ROI", "Day 2: Choose the one with best risk/reward ratio", "Day 3: Build out the minimum system needed to test", "Day 4: Launch in stealth to gather real data", "Day 5: Track metrics obsessively - optimize what works", "Day 6: Scale the winner while cutting what doesn't perform", "Day 7: Replicate the model with a new income stream"]
+        }
+      },
+      wild: {
+        emoji: "🎲", 
+        name: "The Wild Card", 
+        description: "You adapt fast, pivot hard, and create opportunity out of chaos. Your superpower is flexibility - you thrive in uncertainty and see possibilities others miss.",
+        plans: {
+          default: ["Day 1: List 5 income ideas that excite you right now", "Day 2: Test each one with minimal investment (24 hours each)", "Day 3: Double down on the one showing most traction", "Day 4: Experiment with 3 different angles/platforms", "Day 5: Combine ideas - create something unique", "Day 6: Capitalize on trends and opportunities as they appear", "Day 7: Set up systems to manage multiple income streams"],
+          experimental: ["Day 1: Brainstorm 10 wild income ideas - no limits", "Day 2: Test the 3 craziest ones simultaneously", "Day 3: Pivot to whatever shows signs of life", "Day 4: Try 5 different platforms/approaches in one day", "Day 5: Combine elements from multiple ideas into something new", "Day 6: Chase emerging trends and ride the wave", "Day 7: Keep 3 income experiments running and see what sticks"],
+          adaptive: ["Day 1: Identify 3 current trends you can capitalize on fast", "Day 2: Create quick offers around each trend", "Day 3: Launch all 3 and see what gets traction", "Day 4: Pivot hard toward the winner", "Day 5: Adapt your approach based on feedback in real-time", "Day 6: Scale what's working while testing new angles", "Day 7: Prepare to pivot again - stay ready for the next wave"],
+          spontaneous: ["Day 1: Follow your intuition - launch whatever feels right today", "Day 2: Take action on 3 random income ideas that excite you", "Day 3: See what naturally gains momentum", "Day 4: Go all-in on the most fun option", "Day 5: Experiment with unconventional approaches", "Day 6: Let creativity guide your next move", "Day 7: Stack multiple experiments and see what compounds"]
+        }
+      },
+      nomad: {
+        emoji: "🌍", 
+        name: "The Nomad", 
+        description: "You're built for freedom, travel, and monetizing the journey. Location independence isn't a dream - it's your lifestyle. You turn experiences into income.",
+        plans: {
+          default: ["Day 1: Identify skills you can offer remotely (writing, design, coaching)", "Day 2: Set up your digital workspace (laptop lifestyle essentials)", "Day 3: Build a location-independent offer or service", "Day 4: Document your journey - content is your asset", "Day 5: Test freelance platforms or create your own site", "Day 6: Land your first remote client or sale", "Day 7: Plan your next move - location and income aligned"],
+          freedom: ["Day 1: Define what true freedom looks like for you", "Day 2: Identify remote income skills you already have", "Day 3: Build a service or product that works from anywhere", "Day 4: Set up your mobile office (tools, tech, systems)", "Day 5: Test your offer with your network", "Day 6: Land your first location-independent income", "Day 7: Plan your next destination around your new income"],
+          experiential: ["Day 1: Audit your experiences - what stories can you monetize?", "Day 2: Create content around your unique journey", "Day 3: Build an offer that leverages your lifestyle (coaching, content, consulting)", "Day 4: Document everything - turn life into income", "Day 5: Monetize through sponsorships, products, or services", "Day 6: Test your offer with your audience", "Day 7: Plan your next experience and how to monetize it"],
+          flexible: ["Day 1: List 5 skills you can do from anywhere", "Day 2: Choose the one that excites you and pays well", "Day 3: Build a simple remote offer around it", "Day 4: Set up systems that work across time zones", "Day 5: Test your offer on freelance platforms", "Day 6: Land your first remote gig", "Day 7: Scale by adding clients or passive income streams"]
+        }
+      }
+    };
+
+    // Personalization engine - generates custom action plans
+    function generatePersonalizedPlan(primaryType, secondaryType, answers) {
+      const primary = archetypes[primaryType];
+      const secondary = archetypes[secondaryType];
+      
+      // Determine which variation to use based on specific answers
+      let primaryVariation = 'default';
+      let secondaryVariation = 'default';
+      
+      // Customize based on failure response (Q8)
+      if (answers.q8 === primaryType) {
+        if (primaryType === 'strategist') primaryVariation = 'resilient';
+        if (primaryType === 'woke') primaryVariation = 'aggressive';
+        if (primaryType === 'ghost') primaryVariation = 'calculated';
+        if (primaryType === 'wild') primaryVariation = 'adaptive';
+      }
+      
+      // Customize based on daily routine (Q9)
+      if (answers.q9 === 'strategist') {
+        if (primaryType === 'strategist') primaryVariation = 'structured';
+      }
+      if (answers.q9 === 'woke') {
+        if (primaryType === 'woke') primaryVariation = 'momentum';
+      }
+      if (answers.q9 === 'ghost') {
+        if (primaryType === 'ghost') primaryVariation = 'efficient';
+      }
+      if (answers.q9 === 'wild') {
+        if (primaryType === 'wild') primaryVariation = 'spontaneous';
+      }
+      
+      // Customize based on money relationship (Q11)
+      if (answers.q11 === 'woke' && primaryType === 'woke') {
+        primaryVariation = 'aggressive';
+      }
+      if (answers.q11 === 'ghost' && primaryType === 'ghost') {
+        primaryVariation = 'private';
+      }
+      if (answers.q11 === 'nomad' && primaryType === 'nomad') {
+        primaryVariation = 'experiential';
+      }
+      
+      // Customize based on 5-year vision (Q15)
+      if (answers.q15 === primaryType) {
+        if (primaryType === 'strategist') primaryVariation = 'analytical';
+        if (primaryType === 'woke') primaryVariation = 'impactful';
+        if (primaryType === 'ghost') primaryVariation = 'private';
+        if (primaryType === 'wild') primaryVariation = 'experimental';
+        if (primaryType === 'nomad') primaryVariation = 'freedom';
+      }
+      
+      // Customize based on focus for next year (Q19)
+      if (answers.q19 === primaryType) {
+        if (primaryType === 'strategist') primaryVariation = 'structured';
+        if (primaryType === 'nomad') primaryVariation = 'flexible';
+      }
+      
+      // Get the base plan
+      let basePlan = primary.plans[primaryVariation] || primary.plans.default;
+      
+      // Blend with secondary archetype if scores are close
+      if (secondaryType && secondaryType !== primaryType) {
+        // Determine secondary variation
+        if (answers.q11 === secondaryType) {
+          if (secondaryType === 'woke') secondaryVariation = 'aggressive';
+          if (secondaryType === 'ghost') secondaryVariation = 'private';
+          if (secondaryType === 'nomad') secondaryVariation = 'experiential';
+        }
+        
+        const secondaryPlan = secondary.plans[secondaryVariation] || secondary.plans.default;
+        
+        // Blend plans - take days 1-4 from primary, days 5-7 from secondary
+        basePlan = [
+          basePlan[0],
+          basePlan[1],
+          basePlan[2],
+          basePlan[3],
+          secondaryPlan[4],
+          secondaryPlan[5],
+          secondaryPlan[6]
+        ];
+      }
+      
+      // Add personalized tweaks based on specific answers
+      basePlan = basePlan.map((day, index) => {
+        let modifiedDay = day;
+        
+        // Personalize based on stress handling (Q16)
+        if (index === 5 && answers.q16 === 'nomad') {
+          modifiedDay = day.replace(/Scale|Test|Refine/, 'Take a break and reassess from a fresh perspective, then $&');
+        }
+        if (index === 4 && answers.q16 === 'strategist') {
+          modifiedDay = day + " (build stress management systems)";
+        }
+        
+        // Personalize based on fears (Q18)
+        if (index === 0 && answers.q18 === 'strategist') {
+          modifiedDay = day + " with detailed documentation";
+        }
+        if (index === 1 && answers.q18 === 'woke') {
+          modifiedDay = day.replace(/Plan|Map|Research/, 'Skip overthinking - $&');
+        }
+        
+        // Personalize based on success definition (Q20)
+        if (index === 6 && answers.q20 === 'nomad') {
+          modifiedDay = day + " while planning your next adventure";
+        }
+        if (index === 6 && answers.q20 === 'ghost') {
+          modifiedDay = day + " without telling anyone";
+        }
+        
+        return modifiedDay;
+      });
+      
+      return basePlan;
+    }
+
+    let currentStep = 1;
+    let quizStartTime = Date.now();
+    let questionTimes = [];
+    let currentQuestionStartTime = Date.now();
+    
+    function updateProgress() { document.getElementById('progressFill').style.width = (currentStep/20*100)+'%'; document.getElementById('currentQuestion').textContent = currentStep; }
+    
+    function nextStep(n) { 
+      if(!document.querySelector(`input[name="q${n}"]:checked`)){
+        alert('Please select an answer');
+        return;
+      }
+      
+      // Track time spent on this question
+      const timeSpent = (Date.now() - currentQuestionStartTime) / 1000;
+      questionTimes.push(timeSpent);
+      
+      document.querySelector(`[data-step="${n}"]`).classList.remove('active'); 
+      currentStep++; 
+      document.querySelector(`[data-step="${currentStep}"]`).classList.add('active'); 
+      updateProgress(); 
+      window.scrollTo({top:0,behavior:'smooth'});
+      
+      // Reset timer for next question
+      currentQuestionStartTime = Date.now();
+    }
+    
+    function retakeQuiz() { 
+      document.getElementById('quizForm').reset(); 
+      document.getElementById('results').classList.remove('active'); 
+      document.getElementById('speedWarning').style.display='none';
+      document.getElementById('quizForm').style.display='block'; 
+      document.getElementById('progressContainer').style.display='block'; 
+      document.querySelectorAll('.step').forEach(s=>s.classList.remove('active')); 
+      document.querySelector('[data-step="1"]').classList.add('active'); 
+      currentStep=1; 
+      updateProgress(); 
+      window.scrollTo({top:0,behavior:'smooth'});
+      
+      // Reset timers
+      quizStartTime = Date.now();
+      questionTimes = [];
+      currentQuestionStartTime = Date.now();
+    }
+    
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if(!document.querySelector('input[name="q20"]:checked')){alert('Please select an answer');return;}
+      
+      // Track final question time
+      const finalTimeSpent = (Date.now() - currentQuestionStartTime) / 1000;
+      questionTimes.push(finalTimeSpent);
+      
+      // Calculate total time and average time per question
+      const totalTimeSeconds = (Date.now() - quizStartTime) / 1000;
+      const avgTimePerQuestion = questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length;
+      
+      // Minimum thresholds
+      const MIN_TOTAL_TIME = 60; // 60 seconds minimum (3 seconds per question)
+      const MIN_AVG_TIME = 2.5; // 2.5 seconds average per question
+      
+      // Check if they rushed through
+      if (totalTimeSeconds < MIN_TOTAL_TIME || avgTimePerQuestion < MIN_AVG_TIME) {
+        // Show speed warning instead of results
+        document.getElementById('quizForm').style.display='none';
+        document.getElementById('progressContainer').style.display='none';
+        document.getElementById('totalTime').textContent = Math.round(totalTimeSeconds);
+        document.getElementById('speedWarning').style.display='block';
+        window.scrollTo({top:0,behavior:'smooth'});
+        return;
+      }
+      
+      // Collect all answers
+      const fd = new FormData(this);
+      const answers = {};
+      const counts = {strategist:0, woke:0, ghost:0, wild:0, nomad:0};
+      
+      for(let [k,v] of fd.entries()) {
+        answers[k] = v;
+        if(counts.hasOwnProperty(v)) counts[v]++;
+      }
+      
+      // Find primary and secondary archetypes
+      let sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+      let primaryType = sorted[0][0];
+      let secondaryType = sorted[1][0];
+      
+      // Generate personalized action plan
+      const personalizedPlan = generatePersonalizedPlan(primaryType, secondaryType, answers);
+      
+      const archetype = archetypes[primaryType];
+      
+      // Update results display
+      document.getElementById('quizForm').style.display='none';
+      document.getElementById('progressContainer').style.display='none';
+      document.getElementById('resultEmoji').textContent=archetype.emoji;
+      document.getElementById('archetypeName').textContent=archetype.name;
+      
+      // Enhanced description with secondary archetype mention
+      let description = archetype.description;
+      if (secondaryType && secondaryType !== primaryType && counts[secondaryType] >= counts[primaryType] - 2) {
+        description += ` You also have strong ${archetypes[secondaryType].name} tendencies, which gives you a unique edge.`;
+      }
+      document.getElementById('archetypeDescription').textContent=description;
+      
+      // Display personalized action plan
+      const list=document.getElementById('actionPlanList');
+      list.innerHTML='';
+      personalizedPlan.forEach(item=>{
+        const li=document.createElement('li');
+        li.textContent=item;
+        list.appendChild(li);
+      });
+      
+      document.getElementById('results').classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+    
+    updateProgress();
+  </script>
+</body>
+</html>
