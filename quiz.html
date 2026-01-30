@@ -709,10 +709,10 @@
     </div>
 
     <!-- Speed Warning Screen -->
-    <div class="results" id="speedWarning" style="display: none;">
+    <div id="speedWarning" style="display: none;">
       <h2>⏱️</h2>
-      <div class="archetype-name" style="color: #ff6b6b;">Hold Up...</div>
-      <p class="description" style="font-size: 1.2rem; margin-bottom: 20px;">
+      <div class="archetype-name">Hold Up...</div>
+      <p class="description" style="margin-bottom: 20px;">
         You completed this quiz in <strong id="totalTime"></strong> seconds.
       </p>
       <p class="description">
@@ -722,7 +722,7 @@
       <p class="description" style="margin-top: 20px; color: var(--text-muted);">
         Each question deserves at least 5-10 seconds of thought. You're not racing against anyone here.
       </p>
-      <button class="btn" onclick="retakeQuiz()" style="margin-top: 30px;">Take It Seriously This Time</button>
+      <button class="btn" onclick="retakeQuiz()" style="margin-top: 30px; max-width: 400px;">Take It Seriously This Time</button>
     </div>
   </div>
 
@@ -933,7 +933,9 @@
     function retakeQuiz() { 
       document.getElementById('quizForm').reset(); 
       document.getElementById('results').classList.remove('active'); 
-      document.getElementById('speedWarning').style.display='none';
+      const warningEl = document.getElementById('speedWarning');
+      warningEl.style.display='none';
+      warningEl.classList.remove('active');
       document.getElementById('quizForm').style.display='block'; 
       document.getElementById('progressContainer').style.display='block'; 
       document.querySelectorAll('.step').forEach(s=>s.classList.remove('active')); 
@@ -970,7 +972,9 @@
         document.getElementById('quizForm').style.display='none';
         document.getElementById('progressContainer').style.display='none';
         document.getElementById('totalTime').textContent = Math.round(totalTimeSeconds);
-        document.getElementById('speedWarning').style.display='block';
+        const warningEl = document.getElementById('speedWarning');
+        warningEl.style.display='flex';
+        warningEl.classList.add('active');
         window.scrollTo({top:0,behavior:'smooth'});
         return;
       }
