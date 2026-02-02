@@ -700,10 +700,6 @@ footer p {
     padding: var(--spacing-lg) var(--spacing-sm);
   }
   
-  header::after {
-    background-size: 85%;
-  }
-  
   .logo {
     width: 90px;
     height: 90px;
