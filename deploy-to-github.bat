@@ -1,23 +1,27 @@
 @echo off
-echo Initializing Git repository...
-git init
-
-echo Adding all files...
-git add .
-
-echo Committing files...
-git commit -m "Initial commit - Break the Cycle quiz site"
-
-echo Adding remote repository...
-git remote add origin https://github.com/Fxlando/break-the-cycle-.git
-
-echo Setting main branch...
-git branch -M main
-
-echo Pushing to GitHub...
-git push -u origin main
-
+echo ================================
+echo  Deploying to GitHub Pages
+echo ================================
 echo.
-echo Done! Your code is now on GitHub.
-echo Now go to app.netlify.com to deploy!
+
+git add .
+echo Files staged for commit...
+
+set /p commit_msg="Enter commit message (or press Enter for default): "
+if "%commit_msg%"=="" set commit_msg=Update site
+
+git commit -m "%commit_msg%"
+echo Committed changes...
+
+git push origin main
+echo.
+echo ================================
+echo  Deployment Complete!
+echo ================================
+echo.
+echo Your site will be live at:
+echo https://fxlando.github.io/breakthecycle
+echo.
+echo (Updates take 1-2 minutes to appear)
+echo.
 pause
