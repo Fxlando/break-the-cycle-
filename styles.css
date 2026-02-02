@@ -743,4 +743,10 @@ footer p {
   .hero-tagline .mobile-comma {
     display: inline;
   }
+  
+  .section-fade-divider {
+    height: 40px;
+    margin: var(--spacing-sm) 0;
+    background: linear-gradient(to bottom, var(--bg-dark) 0%, rgba(99, 102, 241, 0.02) 50%, var(--bg-dark) 100%);
+  }
 }
