@@ -264,6 +264,10 @@ header .content {
   animation: gradientFlow 30s ease-in-out infinite;
 }
 
+.hero-tagline .mobile-comma {
+  display: none;
+}
+
 @keyframes gradientShiftHorizontal {
   0%, 100% {
     background-position: 0% 50%;
@@ -696,6 +700,10 @@ footer p {
     padding: var(--spacing-lg) var(--spacing-sm);
   }
   
+  header::after {
+    background-size: 85%;
+  }
+  
   .logo {
     width: 90px;
     height: 90px;
@@ -721,5 +729,9 @@ footer p {
   
   .hero-tagline .dot-separator {
     display: none;
+  }
+  
+  .hero-tagline .mobile-comma {
+    display: inline;
   }
 }
