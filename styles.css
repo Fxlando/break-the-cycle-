@@ -718,4 +718,8 @@ footer p {
     padding: 0 10px;
     top: 8px;
   }
+  
+  .hero-tagline .dot-separator {
+    display: none;
+  }
 }
