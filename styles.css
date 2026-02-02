@@ -701,6 +701,7 @@ footer p {
   }
   
   header::after {
+    background-size: 95%;
     background-position: center 40%;
   }
   
