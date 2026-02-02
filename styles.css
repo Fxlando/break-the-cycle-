@@ -710,4 +710,12 @@ footer p {
     padding: 1rem;
     font-size: 1.05rem;
   }
+  
+  .hero-tagline {
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    line-height: 1.4;
+    padding: 0 10px;
+    top: 8px;
+  }
 }
