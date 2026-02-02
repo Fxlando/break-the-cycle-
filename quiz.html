@@ -377,18 +377,37 @@
     }
 
     /* Speed Warning Styles */
+    #speedWarning {
+      display: none;
+      text-align: center;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    #speedWarning.active {
+      display: flex !important;
+    }
+    
     #speedWarning .archetype-name {
       color: #ff6b6b !important;
       -webkit-text-fill-color: #ff6b6b !important;
+      background: none !important;
     }
 
     #speedWarning .description {
       font-size: 1.15rem;
+      max-width: 600px;
+      text-align: center;
     }
 
     #speedWarning h2 {
       font-size: 5rem;
       filter: grayscale(0.3);
+      margin-bottom: 20px;
     }
 
     @media (max-width: 600px) {
