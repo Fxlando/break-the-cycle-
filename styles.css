@@ -400,6 +400,18 @@ section::after {
   z-index: 1;
 }
 
+section::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(99, 102, 241, 0.05) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* Remove fade from last section */
 section:last-of-type::after,
 footer::after {
