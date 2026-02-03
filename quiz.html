@@ -507,8 +507,8 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>Discover Your Hustle Identity</h1>
-      <p>Answer 20 questions to unlock your true path</p>
+      <h1>Discover Your Destiny</h1>
+      <p>Answer 20 questions and find out what really suits you</p>
     </div>
 
     <div class="progress-container" id="progressContainer">
@@ -1091,6 +1091,33 @@
       window.scrollTo({top:0,behavior:'smooth'});
     });
     
+    // Shuffle function to randomize array order
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+    
+    // Randomize all quiz options on page load
+    function randomizeQuizOptions() {
+      document.querySelectorAll('.step').forEach(step => {
+        const optionsContainer = step.querySelector('.options');
+        if (!optionsContainer) return;
+        
+        const options = Array.from(optionsContainer.querySelectorAll('.option'));
+        const shuffled = shuffleArray(options);
+        
+        // Clear and re-append in random order
+        optionsContainer.innerHTML = '';
+        shuffled.forEach(option => optionsContainer.appendChild(option));
+      });
+    }
+    
+    // Run randomization when page loads
+    randomizeQuizOptions();
     updateProgress();
   </script>
 </body>
