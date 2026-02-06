@@ -543,7 +543,7 @@
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <p class="progress-text">Question <span id="currentQuestion">1</span> of 10</p>
+      <p class="progress-text">Question <span id="currentQuestion">1</span> of 25</p>
     </div>
 
     <form id="quizForm">
@@ -901,14 +901,14 @@
     document.getElementById('quizForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      if (!document.querySelector('input[name="q10"]:checked')) {
+      if (!document.querySelector('input[name="q25"]:checked')) {
         alert('Please select an answer');
         return;
       }
 
       // Collect answers
       const answers = {};
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 25; i++) {
         const selected = document.querySelector(`input[name="q${i}"]:checked`);
         if (selected) {
           answers[`q${i}`] = selected.value;
