@@ -373,6 +373,137 @@
       font-size: 1.2rem;
     }
 
+    /* New result sections */
+    .who-section, .what-section, .how-section, .avoid-section,
+    .career-section, .habits-section, .mindset-section,
+    .traits-section, .fun-section, .income-section, .environment-section {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .who-section h3, .what-section h3, .how-section h3, .avoid-section h3,
+    .career-section h3, .habits-section h3, .mindset-section h3,
+    .traits-section h3, .fun-section h3, .income-section h3, .environment-section h3 {
+      color: var(--accent-light);
+      margin-bottom: 15px;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    
+    .who-section p, .what-section p, .how-section p, .avoid-section p,
+    .career-section p, .habits-section p, .mindset-section p, .environment-section p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    
+    .traits-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .trait-tag {
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .strengths-weaknesses {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .strength-box, .weakness-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    
+    .strength-box h3 {
+      color: #4ade80;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+    
+    .weakness-box h3 {
+      color: #fb923c;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+    
+    .strength-box ul, .weakness-box ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .strength-box li, .weakness-box li {
+      padding: 8px 0;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    
+    .strength-box li::before {
+      content: "✓";
+      color: #4ade80;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .weakness-box li::before {
+      content: "!";
+      color: #fb923c;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .fun-section ul, .income-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .fun-section li, .income-section li {
+      padding: 10px 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .fun-section li:last-child, .income-section li:last-child {
+      border-bottom: none;
+    }
+    
+    .fun-section li::before {
+      content: "▸";
+      color: var(--accent-light);
+      margin-right: 10px;
+    }
+    
+    .income-section li::before {
+      content: "$";
+      color: #10b981;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .environment-section p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
     .back-btn {
       background: var(--bg-elevated);
       border: 2px solid var(--primary);
@@ -469,6 +600,36 @@
       .action-plan h3 { font-size: 1.1rem; margin-bottom: 12px; }
       .action-plan li { font-size: 0.88rem; padding: 8px 0; line-height: 1.4; }
       .back-btn { padding: 12px 25px; font-size: 0.9rem; }
+      
+      /* New sections mobile */
+      .strengths-weaknesses {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .traits-list {
+        gap: 8px;
+      }
+      
+      .trait-tag {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+      }
+      
+      .traits-section, .fun-section, .income-section, .environment-section,
+      .strength-box, .weakness-box {
+        padding: 15px;
+      }
+      
+      .traits-section h3, .fun-section h3, .income-section h3, 
+      .environment-section h3, .strength-box h3, .weakness-box h3 {
+        font-size: 1rem;
+      }
+      
+      .fun-section li, .income-section li, 
+      .strength-box li, .weakness-box li {
+        font-size: 0.88rem;
+      }
       
       /* Speed warning mobile fix */
       #speedWarning {
@@ -775,8 +936,74 @@
       <div class="archetype-name" id="archetypeName"></div>
       <p class="description" id="archetypeDescription"></p>
       
+      <div class="who-section">
+        <h3>👤 Who You Are</h3>
+        <p id="whoYouAre"></p>
+      </div>
+      
+      <div class="what-section">
+        <h3>✅ What To Do</h3>
+        <p id="whatToDo"></p>
+      </div>
+      
+      <div class="how-section">
+        <h3>🌅 How To Live</h3>
+        <p id="howToLive"></p>
+      </div>
+      
+      <div class="avoid-section">
+        <h3>🚫 What To Avoid</h3>
+        <p id="whatToAvoid"></p>
+      </div>
+      
+      <div class="career-section">
+        <h3>💼 Career Paths For You</h3>
+        <p id="careerPaths"></p>
+      </div>
+      
+      <div class="habits-section">
+        <h3>⏰ Daily Habits</h3>
+        <p id="dailyHabits"></p>
+      </div>
+      
+      <div class="mindset-section">
+        <h3>🧠 Your Mindset</h3>
+        <p id="mindset"></p>
+      </div>
+      
+      <div class="traits-section">
+        <h3>✨ Your Core Traits</h3>
+        <div class="traits-list" id="traitsList"></div>
+      </div>
+      
+      <div class="strengths-weaknesses">
+        <div class="strength-box">
+          <h3>💪 Strengths</h3>
+          <ul id="strengthsList"></ul>
+        </div>
+        <div class="weakness-box">
+          <h3>⚠️ Watch Out For</h3>
+          <ul id="weaknessesList"></ul>
+        </div>
+      </div>
+      
+      <div class="fun-section">
+        <h3>🎮 Activities You'll Love</h3>
+        <ul id="funActivitiesList"></ul>
+      </div>
+      
+      <div class="income-section">
+        <h3>💰 Best Income Streams For You</h3>
+        <ul id="incomeStreamsList"></ul>
+      </div>
+      
+      <div class="environment-section">
+        <h3>🏡 Your Ideal Environment</h3>
+        <p id="idealEnvironment"></p>
+      </div>
+      
       <div class="action-plan">
-        <h3>Your 7-Day Action Plan</h3>
+        <h3>📋 Your 7-Day Action Plan</h3>
         <ul id="actionPlanList"></ul>
       </div>
 
@@ -803,12 +1030,25 @@
   </div>
 
   <script>
-    // Enhanced archetype system with multiple action plan variations
+    // Enhanced archetype system with comprehensive guidance
     const archetypes = {
       strategist: {
         emoji: "🧠", 
         name: "The Strategist", 
-        description: "You're a long-game thinker who builds systems and scalable income. You value structure, planning, and sustainable growth over quick wins.",
+        description: "You're a long-game thinker who builds systems and scalable income. You value structure, planning, and sustainable growth over quick wins. You're the person who sees 5 moves ahead while everyone else is focused on the next step.",
+        whoYouAre: "You're not chasing quick money - you're building empires. Your brain works in systems, frameworks, and long-term compounding. While others are celebrating their first $100, you're mapping out how to turn it into $100k systematically. You think in terms of ROI, leverage, and scalability.",
+        whatToDo: "Build systems, not just income. Create SOPs for everything. Track metrics obsessively. Focus on one scalable model and perfect it before adding more. Automate relentlessly. Study successful business models and reverse-engineer them. Invest in learning frameworks that compound - finance, psychology, systems thinking.",
+        howToLive: "Wake up with a plan. Time-block your days. Deep work in the morning. Review metrics weekly. Journal your progress. Read daily - books on strategy, business, psychology. Build routines that eliminate decision fatigue. Optimize your environment for focus. Meal prep. Automate bills. Minimize chaos.",
+        whatToAvoid: "Shiny object syndrome. Don't chase trends. Don't start 10 things at once. Avoid impulsive decisions. Don't skip the research phase. Never launch without testing. Stop trying to do everything yourself - delegate or automate. Avoid toxic people who don't understand long-term thinking.",
+        careerPaths: "SaaS founder, Business consultant, Investment analyst, Operations manager, Product strategist, Growth hacker, Financial planner, Systems architect, Data analyst, E-commerce optimizer",
+        dailyHabits: "Morning planning session (15 min), Deep work blocks (2-3 hours), Metric tracking (10 min), Learning time (30 min), Evening reflection (10 min), Exercise for mental clarity, Healthy meals for sustained energy",
+        mindset: "Think in decades, not days. Compound interest applies to everything - money, skills, relationships, health. Systems beat motivation every time. The boring work wins. Patience is your superpower. Progress over perfection. Test everything. Data beats opinions.",
+        traits: ["Analytical", "Patient", "Systematic", "Detail-oriented", "Risk-averse", "Disciplined"],
+        strengths: ["Long-term planning", "Systems thinking", "Data-driven decisions", "Building sustainable foundations", "Strategic foresight"],
+        weaknesses: ["Can overthink", "May move slowly", "Analysis paralysis", "Struggles with rapid pivots"],
+        funActivities: ["Chess or strategy games", "Reading business/psychology books", "Building complex projects", "Learning new frameworks", "Optimizing routines"],
+        incomeStreams: ["SaaS products", "Consulting", "Digital courses", "Investment portfolios", "Subscription businesses"],
+        idealEnvironment: "Structured workspace with clear goals, minimal distractions, and time for deep work",
         plans: {
           default: ["Day 1: Research 3 income models that scale (SaaS, digital products, consulting)", "Day 2: Map out your 90-day roadmap with clear milestones", "Day 3: Set up tracking systems (finances, metrics, goals)", "Day 4: Identify your core skill to monetize", "Day 5: Create a minimum viable offer (MVP)", "Day 6: Test your offer with 5 potential customers", "Day 7: Refine based on feedback and plan your launch strategy"],
           resilient: ["Day 1: Audit what didn't work in the past and document lessons", "Day 2: Build a foolproof system to prevent those mistakes", "Day 3: Research low-risk, high-reward income models", "Day 4: Create a 3-tier backup plan for your main strategy", "Day 5: Set up automated tracking and early warning systems", "Day 6: Test one income stream with minimal investment", "Day 7: Adjust strategy based on data and prepare for scale"],
@@ -819,7 +1059,20 @@
       woke: {
         emoji: "⚡", 
         name: "The Woke Achiever", 
-        description: "You thrive on speed, momentum, and creating results fast. You're built for action, not overthinking. You move with intention and energy.",
+        description: "You thrive on speed, momentum, and creating results fast. You're built for action, not overthinking. You move with intention and energy. While others are planning, you're already executing and making waves.",
+        whoYouAre: "You're a force of nature. You don't wait for perfect conditions - you create momentum and ride it. You're the person who launches before they're ready and figures it out along the way. Your energy is contagious. You inspire people just by moving fast and showing results. You'd rather fail forward than stay still.",
+        whatToDo: "Launch fast, iterate faster. Post content daily. Build in public. Network aggressively. Take bold risks. Create urgency in everything you do. Set tight deadlines. Make noise. Be visible. Collaborate with other high-energy people. Run ads. Go viral. Don't wait for permission - just go.",
+        howToLive: "Wake up early. High-intensity morning routine. Attack your biggest goal first thing. Stay in motion all day. Work in sprints. Post your wins. Celebrate progress. Surround yourself with other achievers. Attend events. Make connections. Sleep hard, wake up ready to dominate again.",
+        whatToAvoid: "Overthinking. Long planning phases. Perfectionism. Sitting still too long. Low-energy people who drain you. Playing it safe. Hiding your progress. Waiting for 'the right time.' Analysis paralysis. Burnout (know when to rest). Ignoring data completely.",
+        careerPaths: "Content creator, Personal brand coach, Sales closer, Influencer, Event organizer, Growth marketer, Performance coach, Entrepreneur, Public speaker, Community builder",
+        dailyHabits: "Morning motivation (podcast/affirmations), Intense workout session, Content creation burst, Networking/DMing, Launch/promote something, Evening win review, Plan tomorrow's attack",
+        mindset: "Speed beats perfection. Momentum is everything. Action creates clarity. Failure is feedback. Show up every day. Energy is contagious - be the spark. Build in public. Make noise. Your vibe attracts your tribe. Rest is part of the strategy.",
+        traits: ["Energetic", "Bold", "Action-oriented", "Confident", "Fast-paced", "Resilient"],
+        strengths: ["Quick execution", "High momentum", "Natural leadership", "Turning ideas into reality fast", "Inspiring others"],
+        weaknesses: ["Can burn out", "May skip important details", "Impatient with slow progress", "Risk of pivoting too fast"],
+        funActivities: ["High-intensity workouts", "Competitive sports", "Attending events/networking", "Public speaking", "Creating viral content"],
+        incomeStreams: ["Personal brand/coaching", "Drop-shipping", "Affiliate marketing", "Content creation", "High-ticket sales"],
+        idealEnvironment: "Fast-paced, high-energy spaces with constant movement and opportunities to connect",
         plans: {
           default: ["Day 1: Pick ONE income idea and commit to it", "Day 2: Create an offer and set a 48-hour launch deadline", "Day 3: Build hype - post everywhere, tell everyone", "Day 4: Launch and make your first sale", "Day 5: Double down on what's working", "Day 6: Get testimonials and create social proof", "Day 7: Scale - run ads, collaborate, go viral"],
           aggressive: ["Day 1: Choose your boldest income idea - no playing safe", "Day 2: Create an irresistible offer and announce a 24-hour flash launch", "Day 3: Go all-in on content - 10+ posts across all platforms", "Day 4: Launch hard, DM 50 people, make your first 3 sales", "Day 5: Reinvest profits immediately into paid ads", "Day 6: Capture video testimonials and social proof", "Day 7: Scale aggressively - double your ad spend and outreach"],
@@ -831,6 +1084,12 @@
         emoji: "👻", 
         name: "The Ghost Builder", 
         description: "You operate behind the scenes, stacking quiet wins. You don't need the spotlight - you're too busy building something real that compounds over time.",
+        traits: ["Private", "Efficient", "Focused", "Self-sufficient", "Introspective", "Persistent"],
+        strengths: ["Working independently", "Building without distraction", "Compound growth mindset", "Efficient execution", "Staying under the radar"],
+        weaknesses: ["May miss networking opportunities", "Can be too isolated", "Struggles with self-promotion", "Limited social proof"],
+        funActivities: ["Solo hobbies (coding, writing, music)", "Research deep dives", "Building projects alone", "Meditation/reflection", "Exploring new skills privately"],
+        incomeStreams: ["Anonymous digital products", "SEO/content sites", "Backend development", "Automation services", "Private consulting"],
+        idealEnvironment: "Quiet, private space with full control and minimal social expectations",
         plans: {
           default: ["Day 1: Choose a low-visibility income stream (automation, backend work)", "Day 2: Build systems that work without you being visible", "Day 3: Set up passive income foundations (content, tools, products)", "Day 4: Test in stealth mode with a small audience", "Day 5: Optimize for efficiency and automation", "Day 6: Scale quietly through SEO, affiliates, or partnerships", "Day 7: Stack another income stream using the same principles"],
           private: ["Day 1: Identify income streams that require zero personal branding", "Day 2: Build anonymous assets (websites, tools, content)", "Day 3: Set up passive income through affiliate marketing or digital products", "Day 4: Launch quietly to a small test group", "Day 5: Optimize conversions without showing your face", "Day 6: Scale through SEO, paid ads, or partnerships", "Day 7: Stack a second private income stream"],
@@ -842,6 +1101,12 @@
         emoji: "🎲", 
         name: "The Wild Card", 
         description: "You adapt fast, pivot hard, and create opportunity out of chaos. Your superpower is flexibility - you thrive in uncertainty and see possibilities others miss.",
+        traits: ["Adaptable", "Creative", "Spontaneous", "Curious", "Risk-taking", "Unconventional"],
+        strengths: ["Quick pivots", "Spotting opportunities", "Handling change", "Creative problem-solving", "Multi-tasking"],
+        weaknesses: ["Lack of consistency", "May abandon projects", "Struggles with routine", "Can be scattered"],
+        funActivities: ["Trying new experiences", "Experimenting with hobbies", "Improv/creative arts", "Adventure sports", "Random challenges"],
+        incomeStreams: ["Multiple side hustles", "Trend-based businesses", "Freelancing", "Flipping (products/domains)", "Experimental ventures"],
+        idealEnvironment: "Dynamic, ever-changing spaces with variety and zero monotony",
         plans: {
           default: ["Day 1: List 5 income ideas that excite you right now", "Day 2: Test each one with minimal investment (24 hours each)", "Day 3: Double down on the one showing most traction", "Day 4: Experiment with 3 different angles/platforms", "Day 5: Combine ideas - create something unique", "Day 6: Capitalize on trends and opportunities as they appear", "Day 7: Set up systems to manage multiple income streams"],
           experimental: ["Day 1: Brainstorm 10 wild income ideas - no limits", "Day 2: Test the 3 craziest ones simultaneously", "Day 3: Pivot to whatever shows signs of life", "Day 4: Try 5 different platforms/approaches in one day", "Day 5: Combine elements from multiple ideas into something new", "Day 6: Chase emerging trends and ride the wave", "Day 7: Keep 3 income experiments running and see what sticks"],
@@ -852,12 +1117,141 @@
       nomad: {
         emoji: "🌍", 
         name: "The Nomad", 
-        description: "You're built for freedom, travel, and monetizing the journey. Location independence isn't a dream - it's your lifestyle. You turn experiences into income.",
+        description: "You're built for freedom, travel, and monetizing the journey. Location independence isn't a dream - it's your lifestyle. You turn experiences into income. The world is your office and every destination is an opportunity.",
+        whoYouAre: "You refuse to be tied down. Your soul craves new experiences, different cultures, and the freedom to work from anywhere. You're not running from responsibility - you're running toward a life of intentional experiences. You believe life is meant to be lived, not just worked through.",
+        whatToDo: "Build remote income streams. Learn high-value digital skills. Document your journey - your life IS your content. Create offers that sell globally. Network with other nomads. Use location arbitrage (earn in USD, spend in cheaper countries). Build passive income that travels with you.",
+        howToLive: "Pack light. Work from cafes, beaches, co-working spaces. Wake up in new cities. Meet locals. Learn basic phrases. Stay in hostels or Airbnbs. Budget for experiences over things. Move slow (1-3 months per place). Build routines that work anywhere. Stay healthy on the road.",
+        whatToAvoid: "Overcommitting to one location. Jobs that require office presence. Accumulating stuff you can't carry. Burning through savings without income. Ignoring visas/legality. Isolating yourself completely. Neglecting health. Comparison with traditional lifestyles.",
+        careerPaths: "Travel content creator, Remote developer, Digital nomad consultant, Online English teacher, Freelance writer/designer, E-commerce store owner, Virtual assistant, Travel photographer, Location-independent coach, Airbnb manager",
+        dailyHabits: "Morning work session (local cafe), Explore neighborhood, Content creation (photos/videos), Client work/freelancing, Evening networking/socializing, Plan next destination, Journaling experiences",
+        mindset: "Life is short - see it all. Income follows you, not vice versa. Every place teaches something. Community exists everywhere. Minimalism = freedom. WiFi > office. Experiences > possessions. The best education is travel.",
+        traits: ["Freedom-seeking", "Adventurous", "Minimalist", "Culturally curious", "Independent", "Adaptable"],
+        strengths: ["Location independence", "Turning experiences into content", "Adapting to new environments", "Networking globally", "Living intentionally"],
+        weaknesses: ["May lack stability", "Can struggle with commitment", "Harder to scale", "Potential for isolation"],
+        funActivities: ["Traveling/exploring", "Photography/videography", "Meeting new people", "Learning languages", "Cultural experiences"],
+        incomeStreams: ["Content creation/vlogging", "Remote freelancing", "Travel consulting", "E-commerce", "Location-based services"],
+        idealEnvironment: "Anywhere with WiFi - cafes, co-working spaces, beaches, mountains",
         plans: {
           default: ["Day 1: Identify skills you can offer remotely (writing, design, coaching)", "Day 2: Set up your digital workspace (laptop lifestyle essentials)", "Day 3: Build a location-independent offer or service", "Day 4: Document your journey - content is your asset", "Day 5: Test freelance platforms or create your own site", "Day 6: Land your first remote client or sale", "Day 7: Plan your next move - location and income aligned"],
           freedom: ["Day 1: Define what true freedom looks like for you", "Day 2: Identify remote income skills you already have", "Day 3: Build a service or product that works from anywhere", "Day 4: Set up your mobile office (tools, tech, systems)", "Day 5: Test your offer with your network", "Day 6: Land your first location-independent income", "Day 7: Plan your next destination around your new income"],
           experiential: ["Day 1: Audit your experiences - what stories can you monetize?", "Day 2: Create content around your unique journey", "Day 3: Build an offer that leverages your lifestyle (coaching, content, consulting)", "Day 4: Document everything - turn life into income", "Day 5: Monetize through sponsorships, products, or services", "Day 6: Test your offer with your audience", "Day 7: Plan your next experience and how to monetize it"],
           flexible: ["Day 1: List 5 skills you can do from anywhere", "Day 2: Choose the one that excites you and pays well", "Day 3: Build a simple remote offer around it", "Day 4: Set up systems that work across time zones", "Day 5: Test your offer on freelance platforms", "Day 6: Land your first remote gig", "Day 7: Scale by adding clients or passive income streams"]
+        }
+      },
+      
+      creative: {
+        emoji: "🎨",
+        name: "The Creative",
+        description: "You see the world differently. Your superpower is turning ideas into art, design, content, or experiences. You create things that move people, tell stories, and bring beauty into the world.",
+        whoYouAre: "You're an artist at heart. Whether it's design, music, writing, video, or any creative medium - you express yourself through your work. You don't follow templates; you create new ones. Your work has soul. You'd rather make $50k doing what you love than $100k doing something that kills your spirit.",
+        whatToDo: "Create every single day. Build a portfolio that showcases your unique style. Post your work publicly. Find your niche (don't try to be everything). Collaborate with other creatives. Learn the business side (pricing, contracts, clients). Monetize your creativity without selling out. Build multiple income streams from your art.",
+        howToLive: "Wake up and create first thing. Curate inspiration (save references, build mood boards). Protect your creative energy (say no to draining people). Consume art (galleries, music, films, books). Have a creative sanctuary. Take walks for ideas. Rest when stuck. Celebrate finished work.",
+        whatToAvoid: "Creating only what sells (keep authenticity). Comparing yourself to others constantly. Waiting for inspiration (create on schedule). Working for free forever. Underpricing your work. Copying others' style. Perfectionism that prevents shipping. Burning out by never saying no.",
+        careerPaths: "Graphic designer, Content creator, Musician/producer, Photographer, Video editor, UX/UI designer, Copywriter, Illustrator, Brand designer, Creative director",
+        dailyHabits: "Morning creative session, Study great work in your field, Create and publish, Engage with creative community, Learn new techniques, Capture ideas throughout day, Evening wind-down with art",
+        mindset: "Your art matters. Authenticity beats perfection. Ship work, get feedback, improve. You can be creative AND profitable. Comparison kills creativity. Your unique perspective is valuable. Done is better than perfect. Create for yourself first.",
+        traits: ["Imaginative", "Expressive", "Original", "Passionate", "Visual thinker", "Sensitive"],
+        strengths: ["Unique perspective", "Storytelling ability", "Aesthetic sense", "Emotional intelligence", "Innovation"],
+        weaknesses: ["Can be moody", "May struggle with structure", "Imposter syndrome", "Inconsistent income fears"],
+        funActivities: ["Drawing/painting/designing", "Photography", "Writing/journaling", "Music creation", "Visiting museums/galleries"],
+        incomeStreams: ["Freelance design/art", "Stock photography/assets", "Patreon/memberships", "Digital products", "Commissioned work"],
+        idealEnvironment: "Inspiring creative space with good lighting, music, and minimal distractions",
+        plans: {
+          default: ["Day 1: Define your creative niche and unique style", "Day 2: Create 3 portfolio pieces that showcase your best work", "Day 3: Build a simple portfolio site or Instagram presence", "Day 4: Post your work and ask for feedback", "Day 5: Reach out to 10 potential clients/collaborators", "Day 6: Create a pricing structure for your services", "Day 7: Land your first paid creative project"],
+          authentic: ["Day 1: Create something purely for yourself - no client rules", "Day 2: Document your creative process - make a behind-the-scenes", "Day 3: Share your authentic work publicly", "Day 4: Connect with other creatives who inspire you", "Day 5: Start a daily creative challenge (30 days)", "Day 6: Monetize your authentic style - don't compromise", "Day 7: Build a following around your unique voice"],
+          business: ["Day 1: Research what clients in your niche actually pay", "Day 2: Create service packages with clear pricing", "Day 3: Build a professional portfolio with case studies", "Day 4: Write cold outreach templates for dream clients", "Day 5: Pitch 20 potential clients", "Day 6: Book discovery calls and close first client", "Day 7: Deliver exceptional work and ask for referrals"]
+        }
+      },
+      
+      connector: {
+        emoji: "🤝",
+        name: "The Connector",
+        description: "Your superpower is people. You build bridges, create networks, and see opportunities in relationships. You know that your network truly is your net worth.",
+        whoYouAre: "You're the person everyone knows. You genuinely love people and connecting them. You see value in relationships others overlook. You remember names, stories, and details. You're not networking - you're building a family. Your contact list is gold because you actually care about people.",
+        whatToDo: "Attend everything - events, meetups, conferences. Follow up with everyone you meet. Introduce people who should know each other. Build communities (Discord, group chats, local meetups). Master social media DMs. Host dinners/gatherings. Be the bridge between opportunities and people. Monetize your network ethically.",
+        howToLive: "Say yes to invitations. Text people randomly to check in. Remember birthdays. Be generous with introductions. Always be helpful first. Show up consistently. Listen more than you talk. Ask great questions. Give before you ask. Be the person people think of when they need help.",
+        whatToAvoid: "Being transactional (people feel it). Only reaching out when you need something. Burning bridges. Gossiping. Overpromising. Being fake/sales-y. Not following through. Spreading yourself too thin. Forgetting to nurture relationships. Using people.",
+        careerPaths: "Community manager, Event organizer, Recruiter, Business development, Influencer manager, PR specialist, Podcast host, Matchmaker/connector, Sales (relationship-based), Network coordinator",
+        dailyHabits: "Morning: Reach out to 3 people, Engage on social media authentically, Coffee/lunch meetings, Add value to communities, Evening: Follow up from today's connections, Plan next week's meetups/calls",
+        mindset: "People remember how you made them feel. Give value first, always. Everyone has a story worth hearing. Your network grows by helping others win. Relationships compound over time. Be genuine - fake doesn't scale. Small gestures matter. Connectors never eat alone.",
+        traits: ["Charismatic", "Empathetic", "Social", "Generous", "Curious about people", "Memorable"],
+        strengths: ["Building deep relationships", "Reading people", "Creating opportunities through connections", "Community building", "Social capital"],
+        weaknesses: ["Can be too trusting", "May neglect solo work", "FOMO on events", "Boundary issues"],
+        funActivities: ["Hosting parties/dinners", "Attending networking events", "Group activities", "Introducing friends", "Social media engagement"],
+        incomeStreams: ["Community management", "Event hosting", "Affiliate partnerships", "Consulting/brokering deals", "Membership communities"],
+        idealEnvironment: "Social spaces - co-working, cafes, events, anywhere people gather",
+        plans: {
+          default: ["Day 1: List 50 people in your network and what they need", "Day 2: Make 5 valuable introductions", "Day 3: Host a virtual or in-person gathering", "Day 4: Create content that starts conversations", "Day 5: Reach out to 10 dream connections with value-first approach", "Day 6: Join 3 communities where your people hang out", "Day 7: Plan your first paid event/community launch"],
+          community: ["Day 1: Identify your niche community (who do you serve?)", "Day 2: Create a free community (Discord/Telegram/WhatsApp)", "Day 3: Invite 20 people who'd get value", "Day 4: Host your first community call/event", "Day 5: Create weekly value (challenges, discussions, intros)", "Day 6: Grow to 100 members organically", "Day 7: Launch paid tier or monetize through sponsorships"]
+        }
+      },
+      
+      grinder: {
+        emoji: "⚙️",
+        name: "The Grinder",
+        description: "You outwork everyone. While they're sleeping, you're building. While they're complaining, you're executing. You believe hard work beats talent when talent doesn't work hard.",
+        whoYouAre: "You're built different. You don't need motivation - you have discipline. You show up every single day, even when you don't feel like it. You understand that consistency beats intensity. You're not afraid of the boring work, the late nights, the grind. You know success is earned, not given.",
+        whatToDo: "Work harder than everyone else in your space. Wake up earlier. Stack skills relentlessly. Master your craft through repetition. Document your work ethic (inspire others). Say no to distractions. Optimize every hour. Build multiple income streams through sheer volume of work. Outlearn, outwork, outlast.",
+        howToLive: "Early mornings (4-5am). Intense focus blocks (no phone). Track your hours worked. Meal prep for efficiency. Eliminate time-wasters. Evening review of daily progress. Sleep to recover, not to waste time. Weekends are for getting ahead. Sacrifice now for freedom later.",
+        whatToAvoid: "Burnout (even grinders need rest). Sacrificing health completely. Working hard on the wrong things. Not working smart alongside hard. Judging others who work differently. Ignoring relationships/family. Becoming bitter. Grinding without strategy.",
+        careerPaths: "Entrepreneur, Construction/trades, Sales (volume-based), Freelancer (multiple clients), Investor (active), Coach/consultant, Flipper (real estate/products), Agency owner, Multiple side hustles",
+        dailyHabits: "4-5am wake up, Workout/run, 3-4 hour deep work block, Skill learning (1 hour), Client work/hustle (4-6 hours), Evening: side hustle work, Track metrics/progress, Plan tomorrow, Sleep 6-7 hours",
+        mindset: "Outwork your competition. Consistency > motivation. Success is a math equation (more work = more results). You can sleep when you're rich. Pain is temporary, regret is forever. Nobody's coming to save you - save yourself. Work in silence, let success make noise.",
+        traits: ["Relentless", "Disciplined", "Resilient", "Focused", "High-capacity", "Self-motivated"],
+        strengths: ["Unmatched work ethic", "Consistency", "Pushing through difficulty", "Building momentum", "Getting shit done"],
+        weaknesses: ["Can burn out", "May neglect self-care", "Workaholism", "Can be too hard on self/others"],
+        funActivities: ["Working out intensely", "Skill development", "Side projects", "Reading productivity books", "Challenging themselves"],
+        incomeStreams: ["Multiple freelance gigs", "Hustle stacking", "High-effort businesses", "Flipping/reselling", "Service businesses"],
+        idealEnvironment: "Focused workspace with no distractions, gym nearby, everything optimized for productivity",
+        plans: {
+          default: ["Day 1: Audit how you spend every hour - eliminate waste", "Day 2: Wake up 2 hours earlier than normal - use it to build", "Day 3: Work 12+ focused hours on income-generating tasks", "Day 4: Launch something (offer, product, service) by end of day", "Day 5: Outreach to 50+ potential clients/customers", "Day 6: Keep grinding - double yesterday's output", "Day 7: Review your week - set even bigger goals for next week"],
+          relentless: ["Day 1: Commit to 90 days of non-negotiable daily work", "Day 2: Build your income offer and price it", "Day 3: Work 16 hours - no excuses", "Day 4: Post content about your grind - inspire others", "Day 5: Make your first $100 through pure hustle", "Day 6: Reinvest and scale - don't stop", "Day 7: Reflect but don't slow down - momentum is everything"]
+        }
+      },
+      
+      visionary: {
+        emoji: "🚀",
+        name: "The Visionary",
+        description: "You see what others can't. You think in possibilities, not limitations. You're not building a business - you're building the future. Big ideas energize you.",
+        whoYouAre: "You're the person with ten world-changing ideas before breakfast. You see patterns, connections, and opportunities that others miss. You dream big - not because you're unrealistic, but because you see potential everywhere. You're not satisfied with 'good enough' - you want revolutionary.",
+        whatToDo: "Think bigger. Document your ideas. Find people who can execute while you ideate. Study innovation (read biographies of visionaries). Build your idea-capture system. Pitch your vision everywhere. Find investors/believers. Delegate execution. Focus on strategy and big picture. Create moonshot goals.",
+        howToLive: "Keep idea journals everywhere. Take walks to think. Surround yourself with other big thinkers. Read obsessively (biographies, business, sci-fi). Attend conferences. Have deep conversations. Allow time for pure thinking. Visualize your vision daily. Don't get stuck in details.",
+        whatToAvoid: "Getting lost in dreams without execution. Idea-hopping without finishing. Not finding executors. Underestimating logistics. Being too abstract for investors. Ignoring market validation. Not grounding vision in reality. Surrounding yourself only with yes-men.",
+        careerPaths: "Startup founder, Product strategist, Innovation consultant, CEO/executive, Investor/VC, Futurist, Creative director, Entrepreneur, Think tank member, Industry disruptor",
+        dailyHabits: "Morning visioning session, Read about innovations/trends, Ideation time (capture ideas), Strategic meetings, Evening: big picture planning, Consume content that expands thinking",
+        mindset: "Think 10x, not 10%. What's impossible today is inevitable tomorrow. Your vision will seem crazy - that's how you know it's big enough. Execution matters but vision comes first. Surround yourself with believers and builders. Persistence turns vision into reality.",
+        traits: ["Imaginative", "Ambitious", "Strategic", "Optimistic", "Big-picture thinker", "Inspiring"],
+        strengths: ["Spotting opportunities", "Thinking ahead of trends", "Inspiring teams", "Strategic thinking", "Innovation"],
+        weaknesses: ["Can be impractical", "May struggle with details", "Overextends", "Needs strong executors"],
+        funActivities: ["Reading future-focused content", "Brainstorming sessions", "TED talks", "Sci-fi movies/books", "Deep strategic conversations"],
+        incomeStreams: ["Startup equity", "Consulting on strategy", "Speaking/thought leadership", "Investing", "Advisory board positions"],
+        idealEnvironment: "Inspiring spaces with whiteboards, great views, room to think and dream big",
+        plans: {
+          default: ["Day 1: Capture your top 10 big ideas - which one excites you most?", "Day 2: Research if anyone's doing it - find the gaps", "Day 3: Create a one-page vision document", "Day 4: Share your vision with 10 smart people - get feedback", "Day 5: Find 2-3 people who can help execute", "Day 6: Build MVP or proof of concept", "Day 7: Pitch your vision to potential investors/partners"],
+          moonshot: ["Day 1: Think 10x bigger - what would change everything?", "Day 2: Map out the impossible vision", "Day 3: Work backwards - what needs to be true?", "Day 4: Find your first believers", "Day 5: Create content around your vision", "Day 6: Start building even if people think you're crazy", "Day 7: Commit to the long game - big visions take time"]
+        }
+      },
+      
+      helper: {
+        emoji: "💚",
+        name: "The Helper",
+        description: "You're driven by impact. Making money is great, but helping people matters more. You want your work to genuinely improve lives. Purpose fuels you.",
+        whoYouAre: "You measure success by impact, not just income. You genuinely care about making the world better. You're not chasing wealth for luxury - you want it so you can help more people. Your ideal business solves real problems for real people. You want to wake up knowing your work matters.",
+        whatToDo: "Find problems people actually have and solve them. Build businesses around helping (coaching, consulting, healing, teaching). Create free value first. Build trust through genuine care. Price fairly but don't undervalue yourself. Scale your impact through systems, courses, communities. Measure success by testimonials, not just profit.",
+        howToLive: "Start each day by helping someone. Give generously. Practice gratitude. Connect with your why often. Build a mission-driven life. Volunteer or donate regularly. Surround yourself with other helpers. Celebrate client wins. Stay humble. Fill your own cup so you can pour into others.",
+        whatToAvoid: "Giving everything away for free (you need sustainability). Helping everyone and burning out. Letting people take advantage. Not charging your worth. Ignoring your own needs. Martyr complex. Helping wrong people. Not building systems to scale your impact.",
+        careerPaths: "Life coach, Therapist/counselor, Teacher/educator, Non-profit work, Health/wellness coach, Mentor, Social worker, Community organizer, Impact consultant, Mission-driven entrepreneur",
+        dailyHabits: "Morning gratitude practice, Help someone without expectation, Create value content, Client/student work, Evening reflection on impact made, Self-care (you can't pour from empty cup)",
+        mindset: "Help people win and you'll win. You can do well by doing good. Your wealth allows more impact. Give value first. Testimonials > money (but charge your worth). Purpose > profit (but profit enables purpose). You're worthy of abundance too.",
+        traits: ["Compassionate", "Empathetic", "Service-oriented", "Patient", "Genuine", "Purpose-driven"],
+        strengths: ["Deep care for others", "Building trust quickly", "Creating transformations", "Loyalty from clients", "Fulfillment from work"],
+        weaknesses: ["Can be taken advantage of", "May undercharge", "Burnout from over-giving", "Struggles saying no"],
+        funActivities: ["Volunteering", "Mentoring", "Community service", "Teaching/sharing knowledge", "Deep conversations"],
+        incomeStreams: ["Coaching/consulting", "Online courses", "Workshops/retreats", "Membership communities", "Speaking/training"],
+        idealEnvironment: "Warm, welcoming spaces where people feel safe and supported",
+        plans: {
+          default: ["Day 1: Identify one problem you're passionate about solving", "Day 2: Create free resource that helps people with this problem", "Day 3: Share it publicly - help people for free first", "Day 4: Collect testimonials and feedback", "Day 5: Create a paid offer around deeper transformation", "Day 6: Reach out to 20 people who need your help", "Day 7: Land your first impact-driven client"],
+          impact: ["Day 1: Define your mission - who do you help and how?", "Day 2: Give away your best advice/content for free", "Day 3: Build a small community around your mission", "Day 4: Share transformation stories", "Day 5: Create scalable way to help more people", "Day 6: Launch with purpose - focus on impact metrics", "Day 7: Celebrate every person you help - this is your wealth"]
         }
       }
     };
@@ -1087,6 +1481,64 @@
         description += ` You also have strong ${archetypes[secondaryType].name} tendencies, which gives you a unique edge.`;
       }
       document.getElementById('archetypeDescription').textContent=description;
+      
+      // Display new detailed sections
+      if (archetype.whoYouAre) document.getElementById('whoYouAre').textContent = archetype.whoYouAre;
+      if (archetype.whatToDo) document.getElementById('whatToDo').textContent = archetype.whatToDo;
+      if (archetype.howToLive) document.getElementById('howToLive').textContent = archetype.howToLive;
+      if (archetype.whatToAvoid) document.getElementById('whatToAvoid').textContent = archetype.whatToAvoid;
+      if (archetype.careerPaths) document.getElementById('careerPaths').textContent = archetype.careerPaths;
+      if (archetype.dailyHabits) document.getElementById('dailyHabits').textContent = archetype.dailyHabits;
+      if (archetype.mindset) document.getElementById('mindset').textContent = archetype.mindset;
+      
+      // Display traits
+      const traitsList = document.getElementById('traitsList');
+      traitsList.innerHTML = '';
+      archetype.traits.forEach(trait => {
+        const tag = document.createElement('span');
+        tag.className = 'trait-tag';
+        tag.textContent = trait;
+        traitsList.appendChild(tag);
+      });
+      
+      // Display strengths
+      const strengthsList = document.getElementById('strengthsList');
+      strengthsList.innerHTML = '';
+      archetype.strengths.forEach(strength => {
+        const li = document.createElement('li');
+        li.textContent = strength;
+        strengthsList.appendChild(li);
+      });
+      
+      // Display weaknesses
+      const weaknessesList = document.getElementById('weaknessesList');
+      weaknessesList.innerHTML = '';
+      archetype.weaknesses.forEach(weakness => {
+        const li = document.createElement('li');
+        li.textContent = weakness;
+        weaknessesList.appendChild(li);
+      });
+      
+      // Display fun activities
+      const funList = document.getElementById('funActivitiesList');
+      funList.innerHTML = '';
+      archetype.funActivities.forEach(activity => {
+        const li = document.createElement('li');
+        li.textContent = activity;
+        funList.appendChild(li);
+      });
+      
+      // Display income streams
+      const incomeList = document.getElementById('incomeStreamsList');
+      incomeList.innerHTML = '';
+      archetype.incomeStreams.forEach(stream => {
+        const li = document.createElement('li');
+        li.textContent = stream;
+        incomeList.appendChild(li);
+      });
+      
+      // Display ideal environment
+      document.getElementById('idealEnvironment').textContent = archetype.idealEnvironment;
       
       // Display personalized action plan
       const list=document.getElementById('actionPlanList');
