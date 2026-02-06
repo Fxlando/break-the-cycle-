@@ -1091,3 +1091,6 @@ const lifePaths = {
     }
   }
 };
+
+// Export to window for use in quiz
+window.lifePaths = lifePaths;
