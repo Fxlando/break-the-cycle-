@@ -1362,6 +1362,13 @@
     }
 
     function displayResults(careerAnswers, lifeAnswers) {
+      console.log('displayResults called');
+      console.log('quizMode:', quizMode);
+      console.log('careerAnswers:', careerAnswers);
+      console.log('lifeAnswers:', lifeAnswers);
+      console.log('window.careerPaths exists:', !!window.careerPaths);
+      console.log('window.lifePaths exists:', !!window.lifePaths);
+      
       document.getElementById('quizForm').style.display = 'none';
       document.getElementById('progressContainer').style.display = 'none';
 
@@ -1372,8 +1379,11 @@
 
       // Score career paths if applicable
       if (quizMode === 'career' || quizMode === 'both') {
+        console.log('Scoring career paths...');
         const careerScores = scoreCareerPaths(careerAnswers);
+        console.log('Career scores:', careerScores.length, 'paths scored');
         const top3Career = careerScores.slice(0, 3);
+        console.log('Top 3 career:', top3Career);
         
         if (quizMode === 'both') {
           careerResultsDiv.innerHTML = '<div class="section-divider"><h3>🎯 Your Career Matches</h3></div>';
@@ -1386,8 +1396,11 @@
 
       // Score life paths if applicable
       if (quizMode === 'life' || quizMode === 'both') {
+        console.log('Scoring life paths...');
         const lifeScores = scoreLifePaths(lifeAnswers);
+        console.log('Life scores:', lifeScores.length, 'paths scored');
         const top3Life = lifeScores.slice(0, 3);
+        console.log('Top 3 life:', top3Life);
         
         if (quizMode === 'both') {
           lifeResultsDiv.innerHTML = '<div class="section-divider"><h3>🌟 Your Life Fulfillment Paths</h3></div>';
@@ -1398,7 +1411,9 @@
         });
       }
 
+      console.log('About to show results...');
       document.getElementById('results').classList.add('active');
+      console.log('Results shown');
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
