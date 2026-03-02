@@ -501,10 +501,20 @@
     }
 
     @media (max-width: 600px) {
-      body { padding: 0; height: 100vh; }
-      .container { padding: 15px 20px; height: 100vh; max-height: 100vh; border-radius: 0; border: none; box-shadow: none; overflow: hidden; }
+      body { padding: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
+      .container { 
+        padding: 15px; 
+        height: 100vh; 
+        max-height: 100vh; 
+        border-radius: 0; 
+        border: none; 
+        box-shadow: none; 
+        overflow: hidden;
+        margin: 0 auto;
+        width: 100%;
+      }
       .container::before { height: 3px; }
-      .header { margin-bottom: 12px; padding-bottom: 12px; }
+      .header { margin-bottom: 12px; padding-bottom: 12px; text-align: center; }
       .header h1 { font-size: 1.5rem; margin-bottom: 5px; }
       .header p { font-size: 0.9rem; }
       .progress-container { padding: 10px; margin-bottom: 12px; }
@@ -515,37 +525,39 @@
       
       /* RESULTS MOBILE FIXES */
       .results { 
-        padding-right: 5px; 
+        padding: 0 10px;
         max-height: calc(100vh - 60px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
       }
-      .results h2 { font-size: 2.5rem !important; margin-bottom: 10px !important; }
-      .results-title { font-size: 1.3rem !important; margin-bottom: 10px !important; line-height: 1.3 !important; }
-      .results-subtitle { font-size: 0.9rem !important; margin-bottom: 20px !important; }
-      .results-actions { gap: 10px; }
+      .results h2 { font-size: 2.5rem !important; margin-bottom: 10px !important; text-align: center; }
+      .results-title { font-size: 1.3rem !important; margin-bottom: 10px !important; line-height: 1.3 !important; text-align: center; }
+      .results-subtitle { font-size: 0.9rem !important; margin-bottom: 20px !important; text-align: center; }
+      .results-actions { gap: 10px; align-items: center; }
       .results-actions .btn { width: 100%; max-width: 300px; }
       
       .career-path { 
         padding: 15px; 
-        margin-bottom: 20px;
+        margin: 0 auto 20px auto;
+        max-width: 100%;
         overflow: hidden;
       }
       .career-header { 
         flex-direction: column; 
-        align-items: flex-start; 
+        align-items: center;
+        text-align: center;
         gap: 10px;
       }
       .career-emoji { font-size: 2rem; }
-      .career-title { margin-left: 0 !important; width: 100%; }
-      .career-name { font-size: 1.2rem; }
-      .career-category { font-size: 0.85rem; }
+      .career-title { margin-left: 0 !important; width: 100%; text-align: center; }
+      .career-name { font-size: 1.2rem; text-align: center; }
+      .career-category { font-size: 0.85rem; text-align: center; }
       .match-score { 
         font-size: 0.85rem; 
         padding: 6px 12px;
         position: relative;
-        align-self: flex-start;
-        margin-top: 5px;
+        align-self: center;
+        margin: 5px auto 0 auto;
       }
       
       .career-stats { 
@@ -554,17 +566,18 @@
       }
       .stat-box {
         padding: 12px;
+        text-align: center;
       }
       .stat-label { font-size: 0.75rem; }
       .stat-value { font-size: 0.9rem; }
       
-      .career-description { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
-      .career-details { padding: 12px; margin-bottom: 12px; }
-      .career-details h4 { font-size: 1rem; margin-bottom: 8px; }
-      .career-details p { font-size: 0.85rem; line-height: 1.5; }
+      .career-description { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; text-align: center; }
+      .career-details { padding: 12px; margin-bottom: 12px; text-align: center; }
+      .career-details h4 { font-size: 1rem; margin-bottom: 8px; text-align: center; }
+      .career-details p { font-size: 0.85rem; line-height: 1.5; text-align: center; }
       
-      .section-divider { margin: 20px 0 15px; }
-      .section-divider h3 { font-size: 1.2rem; }
+      .section-divider { margin: 20px 0 15px; text-align: center; }
+      .section-divider h3 { font-size: 1.2rem; text-align: center; }
     }
     
     @media (max-width: 375px) {
@@ -597,7 +610,7 @@
         <h3>What brings you here today?</h3>
         <div class="options">
           <div class="option"><input type="radio" name="mode" value="career" id="mode_career"><label for="mode_career">🎯 Finding my career path - I need direction on what to do for work</label></div>
-          <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life">🌟 Finding myself - I have a job but feel lost, need hobbies & passions</label></div>
+          <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life">🌟 Finding myself - I feel a little out of order, need hobbies & passions</label></div>
           <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both">🚀 Both - Exploring career AND personal growth</label></div>
         </div>
         <button type="button" class="btn" onclick="startQuiz()">Let's Go!</button>
