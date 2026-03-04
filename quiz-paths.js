@@ -1,7 +1,7 @@
 // ADVANCED CAREER PATH RECOMMENDATION SYSTEM
 // Analyzes 20+ dimensions to recommend perfect life paths
 
-const lifePaths = {
+const careerPaths = {
   // CONTENT CREATION PATHS
   youtuber: {
     name: "YouTube Content Creator",
@@ -1506,4 +1506,4 @@ const lifePaths = {
 };
 
 // Export to window for use in quiz
-window.lifePaths = lifePaths;
+window.careerPaths = careerPaths;

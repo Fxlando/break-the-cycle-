@@ -8,13 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="quiz-paths.js"></script>
-  <script>
-    // Save career paths before life-paths.js overwrites it
-    window.careerPaths = window.lifePaths;
-  </script>
   <script src="life-paths.js"></script>
   <script>
-    // Now window.lifePaths contains life paths, window.careerPaths contains career paths
+    // Ensure both paths are available on window
+    window.careerPaths = careerPaths;
+    window.lifePaths = lifePaths;
   </script>
   <style>
     :root {
