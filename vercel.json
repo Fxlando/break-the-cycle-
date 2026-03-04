@@ -1,14 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/index.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "quiz.html", "use": "@vercel/static" },
-    { "src": "styles.css", "use": "@vercel/static" },
-    { "src": "quiz-paths.js", "use": "@vercel/static" },
-    { "src": "life-paths.js", "use": "@vercel/static" },
-    { "src": "BTC_*.png", "use": "@vercel/static" }
-  ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" }
   ]
