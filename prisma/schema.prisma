@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriberStatus {
+  PENDING
+  CONFIRMED
+}
+
+enum Mode {
+  CAREER
+  LIFE
+  BOTH
+}
+
+model User {
+  id          String          @id @default(cuid())
+  email       String          @unique
+  role        Role            @default(USER)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  sessions    Session[]
+  quizRuns    QuizRun[]
+  magicTokens MagicLinkToken[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model MagicLinkToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  email     String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Subscriber {
+  id          String            @id @default(cuid())
+  email       String            @unique
+  status      SubscriberStatus  @default(PENDING)
+  tokenHash   String            @unique
+  confirmedAt DateTime?
+  createdAt   DateTime          @default(now())
+}
+
+model QuizRun {
+  id             String   @id @default(cuid())
+  user           User?    @relation(fields: [userId], references: [id])
+  userId         String?
+  mode           Mode
+  answers        Json
+  results        Json
+  archetypeKeys  String[]
+  featureVariant String?
+  completedAt    DateTime @default(now())
+}
+
+model FeatureFlag {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  variant   String
+  enabled   Boolean  @default(true)
+  targeting Json?
+  updatedAt DateTime @updatedAt
+}
+
+model QuizQuestion {
+  id       String   @id @default(cuid())
+  slug     String   @unique
+  mode     Mode
+  order    Int
+  text     String
+  options  Json
+  metadata Json?
+  updatedAt DateTime @updatedAt
+}
+
+model Archetype {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  category  String
+  type      Mode
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+model EventLog {
+  id         String   @id @default(cuid())
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  name       String
+  properties Json?
+  createdAt  DateTime @default(now())
+}

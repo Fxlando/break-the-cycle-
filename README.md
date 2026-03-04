@@ -101,3 +101,31 @@ Located at top of `styles.css`:
   - In Stripe Dashboard, add your `FRONTEND_URL` to allowed redirect URLs.
 - **Deployment**
   - Host on any Node platform (Render/Fly/Railway/Vercel). Ensure HTTPS so cookies stay secure and set `NODE_ENV=production`.
+
+## API + Data Store (Prisma/Postgres)
+
+- Prisma schema in `prisma/schema.prisma` covers users, sessions, magic-link tokens, subscribers (double opt-in), quiz runs, feature flags, quiz questions, and archetypes.
+- Configure `DATABASE_URL` in `.env`, then run:
+  - `npm run prisma:generate`
+  - `npx prisma db push` (or `prisma migrate dev --name init` if you want migrations)
+- New endpoints:
+  - Auth: `POST /api/auth/magic-link` (send login email), `GET /api/auth/verify?token=...` (sets `session_token` cookie), `GET /api/auth/me`, `POST /api/auth/logout`.
+  - Email list: `POST /api/subscribe` (double opt-in), `GET /api/subscribe/confirm?token=...`.
+  - Quiz: `GET /api/quiz/meta` (cached), `POST /api/quiz/submit`, `GET /api/quiz/result/:id`, `GET /api/profile`.
+  - Feature flags: `GET /api/flags`.
+  - Admin (requires role=ADMIN): `POST /api/admin/questions` to upsert quiz questions.
+
+## Personalization, Analytics, Experiments
+
+- Feature flags live in the DB; the front-end can fetch `/api/flags` to pick variants (e.g., question order or copy tests). `/api/quiz/meta` is cacheable (`s-maxage=300, stale-while-revalidate=600`) for edge delivery of quiz metadata.
+- PostHog server-side client is wired; quiz submission tracks `quiz_completed`. Add `POSTHOG_API_KEY` (and optional `POSTHOG_HOST`) to enable.
+- `helmet` sets a CSP, `express-rate-limit` guards `/api`, and secrets stay in environment variables.
+
+## Email + Auth UX
+
+- `quiz.html` now shows a magic-link sign-in form; after the emailed link is used, the user is redirected back and results are saved under their profile.
+- `index.html` newsletter form now posts to `/api/subscribe` instead of Formspree (double opt-in link is emailed via Resend if configured).
+
+## CI
+
+- GitHub Actions workflow at `.github/workflows/ci.yml` installs deps, runs `prisma generate`, and runs the placeholder `npm run lint`.

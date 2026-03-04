@@ -124,9 +124,10 @@
       <p style="max-width: 600px; margin: 0 auto;">
         Get updates, drops, and motivation straight to your inbox. No spam, just value.
       </p>
-      <form action="https://formspree.io/f/xbjnqwye" method="POST" class="email-form">
+      <form id="subscribeForm" class="email-form">
         <input type="email" name="email" placeholder="Enter your email" required>
         <button type="submit">Subscribe</button>
+        <p id="subscribeMessage" style="color:#a8a8b8; margin-top:8px;"></p>
       </form>
       <a href="#" class="back-to-top">back to top</a>
     </div>
@@ -143,6 +144,35 @@
       <p>&copy; 2023 Break The Cycle. All rights reserved.</p>
     </div>
   </footer>
+
+  <script>
+    const subscribeForm = document.getElementById('subscribeForm');
+    const subscribeMessage = document.getElementById('subscribeMessage');
+
+    subscribeForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      subscribeMessage.textContent = '';
+      const email = e.target.email.value;
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'pending') {
+          subscribeMessage.textContent = 'Check your email to confirm.';
+        } else if (data.status === 'already_confirmed') {
+          subscribeMessage.textContent = 'You are already subscribed.';
+        } else {
+          subscribeMessage.textContent = data.error || 'Could not subscribe right now.';
+        }
+      } catch (err) {
+        subscribeMessage.textContent = 'Network issue, try again.';
+        console.error('subscribe error', err);
+      }
+    });
+  </script>
 
 </body>
 </html>

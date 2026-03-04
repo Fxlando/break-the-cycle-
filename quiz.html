@@ -163,6 +163,38 @@
       overflow-wrap: break-word;
     }
 
+    .auth-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .auth-bar form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .auth-bar input[type="email"] {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background: #0f0f17;
+      color: var(--text-primary);
+    }
+
+    .auth-status {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
     .container::before {
       content: '';
       position: absolute;
@@ -692,6 +724,15 @@
     <div class="header">
       <h1 id="headerTitle">What Brings You Here?</h1>
       <p id="headerSubtitle">Choose your path to get started</p>
+    </div>
+
+    <div class="auth-bar">
+      <div class="auth-status" id="authStatus">Sign in with email to save your results.</div>
+      <form id="magicLinkForm">
+        <input type="email" name="email" placeholder="Email for magic link" required>
+        <button type="submit" class="btn">Send login link</button>
+      </form>
+      <div class="auth-status" id="authMessage"></div>
     </div>
 
     <div class="progress-container" id="progressContainer" style="display: none;">
@@ -1340,6 +1381,10 @@
     const paywallError = document.getElementById('paywallError');
     const paywallUnlock = document.getElementById('paywallUnlock');
     const paywallRefresh = document.getElementById('paywallRefresh');
+    let currentUser = null;
+    const authStatusEl = document.getElementById('authStatus');
+    const authMessageEl = document.getElementById('authMessage');
+    const magicLinkForm = document.getElementById('magicLinkForm');
 
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
@@ -1454,6 +1499,60 @@
     });
 
     document.addEventListener('DOMContentLoaded', initPaywall);
+    document.addEventListener('DOMContentLoaded', fetchMe);
+
+    async function fetchMe() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+          currentUser = await res.json();
+          authStatusEl.textContent = `Signed in as ${currentUser.email}. Results will save to your profile.`;
+        } else {
+          currentUser = null;
+          authStatusEl.textContent = 'Sign in with email to save your results.';
+        }
+      } catch (err) {
+        currentUser = null;
+        console.error('auth me error', err);
+      }
+    }
+
+    magicLinkForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      authMessageEl.textContent = '';
+      const email = e.target.email.value;
+      try {
+        const res = await fetch('/api/auth/magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email })
+        });
+        if (res.ok) authMessageEl.textContent = 'Login link sent. Check your email.';
+        else authMessageEl.textContent = 'Could not send link. Try again.';
+      } catch (err) {
+        authMessageEl.textContent = 'Network issue. Try again.';
+        console.error('magic link error', err);
+      }
+    });
+
+    async function persistQuizRun(payload) {
+      if (!currentUser) return; // Skip silently; user can still view results
+      try {
+        const res = await fetch('/api/quiz/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.warn('Quiz save failed', data);
+        }
+      } catch (err) {
+        console.error('persist error', err);
+      }
+    }
 
     async function startQuiz() {
       if (!(await ensurePaid())) return;
@@ -1604,13 +1703,15 @@
       const lifeResultsDiv = document.getElementById('lifeResults');
       careerResultsDiv.innerHTML = '';
       lifeResultsDiv.innerHTML = '';
+      let top3Career = [];
+      let top3Life = [];
 
       // Score career paths if applicable
       if (quizMode === 'career' || quizMode === 'both') {
         console.log('Scoring career paths...');
         const careerScores = scoreCareerPaths(careerAnswers);
         console.log('Career scores:', careerScores.length, 'paths scored');
-        const top3Career = careerScores.slice(0, 3);
+        top3Career = careerScores.slice(0, 3);
         console.log('Top 3 career:', top3Career);
         
         if (quizMode === 'both') {
@@ -1627,7 +1728,7 @@
         console.log('Scoring life paths...');
         const lifeScores = scoreLifePaths(lifeAnswers);
         console.log('Life scores:', lifeScores.length, 'paths scored');
-        const top3Life = lifeScores.slice(0, 3);
+        top3Life = lifeScores.slice(0, 3);
         console.log('Top 3 life:', top3Life);
         
         if (quizMode === 'both') {
@@ -1643,6 +1744,14 @@
       document.getElementById('results').classList.add('active');
       console.log('Results shown');
       window.scrollTo({top: 0, behavior: 'smooth'});
+
+      const archetypeKeys = [...top3Career, ...top3Life].map(r => r.key);
+      persistQuizRun({
+        mode: quizMode,
+        answers: { career: careerAnswers, life: lifeAnswers },
+        results: { career: top3Career, life: top3Life },
+        archetypeKeys
+      });
     }
 
     function scoreCareerPaths(answers) {
