@@ -10,8 +10,7 @@
     "prisma:format": "prisma format",
     "lint": "node -e \"console.log('No lint configured yet')\"",
     "ci": "npm run prisma:generate && npm run lint",
-    "postinstall": "prisma generate",
-    "build": "npm run prisma:generate && npx prisma db push --skip-generate --accept-data-loss 2>/dev/null || true"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
