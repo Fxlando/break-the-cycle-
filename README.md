@@ -83,3 +83,21 @@ Located at top of `styles.css`:
 ---
 
 **Built for Gen Z. Made to break cycles. 🚀**
+
+## Paywall & Backend (added)
+
+- **Stack**: Node.js + Express + Stripe Checkout + cookie-based access flag.
+- **Flow**: Users must purchase before starting the quiz. Stripe Checkout redirects back to `quiz.html?session_id=...`; backend verifies the session and sets a `quiz_paid` cookie (30 days). Front-end blocks the quiz until payment is confirmed.
+- **Endpoints**:
+  - `POST /api/create-checkout-session` → returns `{ url }` for Stripe Checkout.
+  - `POST /api/verify-session` with `session_id` → verifies Stripe payment, sets cookie.
+  - `GET /api/payment/status` → `{ paid: boolean }` based on cookie.
+- **Setup**
+  1) `npm install`
+  2) Copy `.env.example` → `.env` and set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `FRONTEND_URL` (e.g., `http://localhost:3000`).
+  3) Run `npm start` then open `http://localhost:3000/quiz.html`.
+- **Stripe tips**
+  - Create a Product/Price in Stripe; use its Price ID.
+  - In Stripe Dashboard, add your `FRONTEND_URL` to allowed redirect URLs.
+- **Deployment**
+  - Host on any Node platform (Render/Fly/Railway/Vercel). Ensure HTTPS so cookies stay secure and set `NODE_ENV=production`.

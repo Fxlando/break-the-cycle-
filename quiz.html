@@ -62,6 +62,90 @@
       max-width: 100vw;
     }
 
+    body.paywall-locked {
+      overflow: hidden;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .paywall-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+    }
+
+    .paywall-card {
+      width: min(520px, 100%);
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      text-align: center;
+      display: grid;
+      gap: 16px;
+    }
+
+    .paywall-card h2 {
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .paywall-card p {
+      color: var(--text-secondary);
+    }
+
+    .paywall-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px dashed var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      cursor: pointer;
+    }
+
+    .paywall-note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .paywall-error {
+      color: #ff9ba1;
+      font-weight: 600;
+      min-height: 18px;
+    }
+
     .container {
       max-width: 800px;
       width: 100%;
@@ -591,6 +675,19 @@
   </style>
 </head>
 <body>
+  <div id="paywallOverlay" class="paywall-overlay hidden">
+    <div class="paywall-card">
+      <h2>Unlock the quiz</h2>
+      <p>One-time purchase to access all 25 questions and your custom 7-day plan.</p>
+      <div class="paywall-actions">
+        <button id="paywallUnlock" class="btn-primary">Unlock & start</button>
+        <button id="paywallRefresh" class="btn-ghost">I already paid</button>
+        <div id="paywallError" class="paywall-error"></div>
+        <p class="paywall-note">Secure checkout by Stripe. You'll be sent back here after payment.</p>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <div class="header">
       <h1 id="headerTitle">What Brings You Here?</h1>
@@ -1237,12 +1334,130 @@
   </div>
 
   <script>
+    // Paywall state
+    let hasPaid = false;
+    const paywallOverlay = document.getElementById('paywallOverlay');
+    const paywallError = document.getElementById('paywallError');
+    const paywallUnlock = document.getElementById('paywallUnlock');
+    const paywallRefresh = document.getElementById('paywallRefresh');
+
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
 
-    function startQuiz() {
+    async function getPaymentStatus() {
+      try {
+        const res = await fetch('/api/payment/status', { credentials: 'include' });
+        const data = await res.json();
+        return Boolean(data?.paid);
+      } catch (err) {
+        console.error('payment status error', err);
+        return false;
+      }
+    }
+
+    async function verifySession(sessionId) {
+      try {
+        const res = await fetch('/api/verify-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ session_id: sessionId })
+        });
+        const data = await res.json();
+        return Boolean(data?.paid);
+      } catch (err) {
+        console.error('verify session error', err);
+        return false;
+      }
+    }
+
+    function showPaywall(message) {
+      if (message) paywallError.textContent = message;
+      document.body.classList.add('paywall-locked');
+      paywallOverlay.classList.remove('hidden');
+    }
+
+    function hidePaywall() {
+      paywallError.textContent = '';
+      document.body.classList.remove('paywall-locked');
+      paywallOverlay.classList.add('hidden');
+    }
+
+    async function ensurePaid() {
+      if (hasPaid) return true;
+      hasPaid = await getPaymentStatus();
+      if (!hasPaid) showPaywall();
+      return hasPaid;
+    }
+
+    async function initPaywall() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      if (sessionId) {
+        const verified = await verifySession(sessionId);
+        if (verified) {
+          hasPaid = true;
+          hidePaywall();
+          return;
+        }
+      }
+      hasPaid = await getPaymentStatus();
+      if (!hasPaid) {
+        showPaywall();
+      } else {
+        hidePaywall();
+      }
+    }
+
+    async function createCheckout() {
+      try {
+        paywallError.textContent = '';
+        paywallUnlock.textContent = 'Redirecting...';
+        paywallUnlock.disabled = true;
+        const res = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data?.url) {
+          window.location = data.url;
+        } else {
+          throw new Error(data?.error || 'No checkout URL returned.');
+        }
+      } catch (err) {
+        paywallError.textContent = 'Could not start checkout. Try again.';
+        console.error('checkout error', err);
+      } finally {
+        paywallUnlock.textContent = 'Unlock & start';
+        paywallUnlock.disabled = false;
+      }
+    }
+
+    paywallUnlock?.addEventListener('click', (e) => {
+      e.preventDefault();
+      createCheckout();
+    });
+
+    paywallRefresh?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      if (sessionId) {
+        await verifySession(sessionId);
+      }
+      hasPaid = await getPaymentStatus();
+      if (hasPaid) hidePaywall();
+      else showPaywall('Payment not found yet. Finish checkout or try again.');
+    });
+
+    document.addEventListener('DOMContentLoaded', initPaywall);
+
+    async function startQuiz() {
+      if (!(await ensurePaid())) return;
+
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
         alert('Please select what brings you here');
