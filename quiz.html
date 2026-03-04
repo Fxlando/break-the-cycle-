@@ -1446,13 +1446,17 @@
         if (verified) {
           hasPaid = true;
           hidePaywall();
+          // Show pending results if available
+          if (window.pendingResults) {
+            displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
+            delete window.pendingResults;
+          }
           return;
         }
       }
       hasPaid = await getPaymentStatus();
       if (!hasPaid) {
-        // Only show paywall if you're actually blocking functionality
-        // For now, allow users to see quiz even if unpaid
+        // Only show paywall if they're trying to see results
         hidePaywall();
       } else {
         hidePaywall();
@@ -1497,7 +1501,14 @@
         await verifySession(sessionId);
       }
       hasPaid = await getPaymentStatus();
-      if (hasPaid) hidePaywall();
+      if (hasPaid) {
+        hidePaywall();
+        // Show pending results if available
+        if (window.pendingResults) {
+          displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
+          delete window.pendingResults;
+        }
+      }
       else showPaywall('Payment not found yet. Finish checkout or try again.');
     });
 
@@ -1693,6 +1704,15 @@
 
     function displayResults(careerAnswers, lifeAnswers) {
       console.log('displayResults called');
+      
+      // Check if user has paid before showing results
+      if (!hasPaid) {
+        showPaywall('Unlock your results for just $9.99');
+        // Save answers for later display
+        window.pendingResults = { careerAnswers, lifeAnswers };
+        return;
+      }
+
       console.log('quizMode:', quizMode);
       console.log('careerAnswers:', careerAnswers);
       console.log('lifeAnswers:', lifeAnswers);
