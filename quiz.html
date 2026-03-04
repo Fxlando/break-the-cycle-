@@ -1398,6 +1398,7 @@
         return Boolean(data?.paid);
       } catch (err) {
         console.error('payment status error', err);
+        // If API is down, allow access (assume unpaid but don't block)
         return false;
       }
     }
@@ -1450,7 +1451,9 @@
       }
       hasPaid = await getPaymentStatus();
       if (!hasPaid) {
-        showPaywall();
+        // Only show paywall if you're actually blocking functionality
+        // For now, allow users to see quiz even if unpaid
+        hidePaywall();
       } else {
         hidePaywall();
       }
