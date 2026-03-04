@@ -32,6 +32,7 @@ model User {
   sessions    Session[]
   quizRuns    QuizRun[]
   magicTokens MagicLinkToken[]
+  eventLogs   EventLog[]
 }
 
 model Session {
