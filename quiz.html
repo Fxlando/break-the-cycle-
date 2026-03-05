@@ -153,12 +153,19 @@
       padding: 30px 40px;
       box-shadow: var(--shadow);
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
       max-height: 95vh;
       display: flex;
       flex-direction: column;
       word-wrap: break-word;
       overflow-wrap: break-word;
+    }
+
+    #quizForm {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
 
     .auth-bar {
@@ -1437,28 +1444,29 @@
     }
 
     async function initPaywall() {
-      const params = new URLSearchParams(window.location.search);
-      const sessionId = params.get('session_id');
-      if (sessionId) {
-        const verified = await verifySession(sessionId);
-        if (verified) {
-          hasPaid = true;
-          hidePaywall();
-          // Show pending results if available
-          if (window.pendingResults) {
-            displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
-            delete window.pendingResults;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session_id');
+        if (sessionId) {
+          const verified = await verifySession(sessionId);
+          if (verified) {
+            hasPaid = true;
+            hidePaywall();
+            // Show pending results if available
+            if (window.pendingResults) {
+              displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
+              delete window.pendingResults;
+            }
+            return;
           }
-          return;
         }
+        hasPaid = await getPaymentStatus();
+      } catch (err) {
+        console.error('initPaywall error', err);
+        hasPaid = false;
       }
-      hasPaid = await getPaymentStatus();
-      if (!hasPaid) {
-        // Only show paywall if they're trying to see results
-        hidePaywall();
-      } else {
-        hidePaywall();
-      }
+      // Always hide paywall on initial load - it will show when results are requested
+      hidePaywall();
     }
 
     async function createCheckout() {
@@ -1567,8 +1575,6 @@
     }
 
     async function startQuiz() {
-      if (!(await ensurePaid())) return;
-
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
         alert('Please select what brings you here');
