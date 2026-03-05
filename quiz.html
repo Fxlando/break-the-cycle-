@@ -1373,6 +1373,29 @@
   </div>
 
   <script>
+    // API base + helpers (set window.API_BASE_URL if front-end is served from a different origin)
+    const API_BASE = window.API_BASE_URL || '';
+    const api = (path) => `${API_BASE}${path}`;
+
+    async function readJson(res, label) {
+      const bodyText = (await res.text()) || '';
+      if (!bodyText) return { data: {}, text: '' };
+      try {
+        return { data: JSON.parse(bodyText), text: bodyText };
+      } catch (err) {
+        throw new Error(`Invalid JSON from ${label}: ${err.message} (body: ${bodyText.slice(0, 120)})`);
+      }
+    }
+
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, options);
+      const { data, text } = await readJson(res, url);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText || ''} from ${url}: ${text.slice(0, 120)}`);
+      }
+      return data;
+    }
+
     // Paywall state
     let hasPaid = false;
     const paywallOverlay = document.getElementById('paywallOverlay');
@@ -1391,8 +1414,7 @@
 
     async function getPaymentStatus() {
       try {
-        const res = await fetch('/api/payment/status', { credentials: 'include' });
-        const data = await res.json();
+        const data = await fetchJson(api('/api/payment/status'), { credentials: 'include' });
         return Boolean(data?.paid);
       } catch (err) {
         console.error('payment status error', err);
@@ -1403,13 +1425,12 @@
 
     async function verifySession(sessionId) {
       try {
-        const res = await fetch('/api/verify-session', {
+        const data = await fetchJson(api('/api/verify-session'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ session_id: sessionId })
         });
-        const data = await res.json();
         return Boolean(data?.paid);
       } catch (err) {
         console.error('verify session error', err);
@@ -1466,12 +1487,11 @@
         paywallError.textContent = '';
         paywallUnlock.textContent = 'Redirecting...';
         paywallUnlock.disabled = true;
-        const res = await fetch('/api/create-checkout-session', {
+        const data = await fetchJson(api('/api/create-checkout-session'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
         });
-        const data = await res.json();
         if (data?.url) {
           window.location = data.url;
         } else {
@@ -1515,9 +1535,10 @@
 
     async function fetchMe() {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        const res = await fetch(api('/api/auth/me'), { credentials: 'include' });
         if (res.ok) {
-          currentUser = await res.json();
+          const { data } = await readJson(res, '/api/auth/me');
+          currentUser = data;
           authStatusEl.textContent = `Signed in as ${currentUser.email}. Results will save to your profile.`;
         } else {
           currentUser = null;
@@ -1534,7 +1555,7 @@
       authMessageEl.textContent = '';
       const email = e.target.email.value;
       try {
-        const res = await fetch('/api/auth/magic-link', {
+        const res = await fetch(api('/api/auth/magic-link'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -1551,13 +1572,13 @@
     async function persistQuizRun(payload) {
       if (!currentUser) return; // Skip silently; user can still view results
       try {
-        const res = await fetch('/api/quiz/submit', {
+        const res = await fetch(api('/api/quiz/submit'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
+        const { data } = await readJson(res, '/api/quiz/submit');
         if (!res.ok) {
           console.warn('Quiz save failed', data);
         }

@@ -146,6 +146,20 @@
   </footer>
 
   <script>
+    // API base + helper (set window.API_BASE_URL if front-end is on a different origin than the backend)
+    const API_BASE = window.API_BASE_URL || '';
+    const api = (path) => `${API_BASE}${path}`;
+
+    async function readJson(res, label) {
+      const bodyText = (await res.text()) || '';
+      if (!bodyText) return { data: {}, text: '' };
+      try {
+        return { data: JSON.parse(bodyText), text: bodyText };
+      } catch (err) {
+        throw new Error(`Invalid JSON from ${label}: ${err.message} (body: ${bodyText.slice(0, 120)})`);
+      }
+    }
+
     const subscribeForm = document.getElementById('subscribeForm');
     const subscribeMessage = document.getElementById('subscribeMessage');
 
@@ -154,12 +168,12 @@
       subscribeMessage.textContent = '';
       const email = e.target.email.value;
       try {
-        const res = await fetch('/api/subscribe', {
+        const res = await fetch(api('/api/subscribe'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
-        const data = await res.json();
+        const { data } = await readJson(res, '/api/subscribe');
         if (res.ok && data.status === 'pending') {
           subscribeMessage.textContent = 'Check your email to confirm.';
         } else if (data.status === 'already_confirmed') {
