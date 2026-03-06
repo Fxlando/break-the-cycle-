@@ -710,7 +710,7 @@
       <h2>Unlock the quiz</h2>
       <p>One-time purchase to access all 25 questions and your custom 7-day plan.</p>
       <div class="paywall-actions">
-        <button id="paywallUnlock" class="btn-primary">Unlock & start</button>
+        <button type="button" id="paywallUnlock" class="btn-primary">Unlock & start</button>
         <button id="paywallRefresh" class="btn-ghost">I already paid</button>
         <div id="paywallError" class="paywall-error"></div>
         <p class="paywall-note">Secure checkout by Stripe. You'll be sent back here after payment.</p>
@@ -1491,18 +1491,31 @@
         paywallError.textContent = '';
         paywallUnlock.textContent = 'Redirecting...';
         paywallUnlock.disabled = true;
-        const data = await fetchJson(api('/api/create-checkout-session'), {
+        const url = api('/api/create-checkout-session');
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
         });
-        if (data?.url) {
-          window.location = data.url;
-        } else {
-          throw new Error(data?.error || 'No checkout URL returned.');
+        const text = await res.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (_) {
+          paywallError.textContent = res.ok ? 'Invalid response from server.' : `Server error (${res.status}). Check console.`;
+          return;
         }
+        if (!res.ok) {
+          paywallError.textContent = data.error || `Error ${res.status}: ${text.slice(0, 80)}`;
+          return;
+        }
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+        paywallError.textContent = data.error || 'No checkout URL returned.';
       } catch (err) {
-        paywallError.textContent = 'Could not start checkout. Try again.';
+        paywallError.textContent = err.message || 'Could not start checkout. Try again.';
         console.error('checkout error', err);
       } finally {
         paywallUnlock.textContent = 'Unlock & start';
