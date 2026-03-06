@@ -363,6 +363,12 @@ function buildApp() {
 
       const sessionId = req.body?.session_id;
       if (!sessionId) return res.status(400).json({ error: 'session_id is required.' });
+      if (sessionId.startsWith('cs_live_') && STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+        return res.status(400).json({ error: 'Stripe key mismatch: live session with test key.' });
+      }
+      if (sessionId.startsWith('cs_test_') && STRIPE_SECRET_KEY.startsWith('sk_live_')) {
+        return res.status(400).json({ error: 'Stripe key mismatch: test session with live key.' });
+      }
 
       const session = await STRIPE.checkout.sessions.retrieve(sessionId, { expand: ['customer'] });
       const paid = session?.payment_status === 'paid' || session?.status === 'complete' || session?.payment_status === 'no_payment_required';
@@ -377,8 +383,24 @@ function buildApp() {
 
       res.json({ paid, status: session?.payment_status || 'unknown', checkoutStatus: session?.status || 'unknown', accessCode });
     } catch (err) {
-      console.error('verify-session error', err);
-      res.status(500).json({ error: 'Unable to verify session.' });
+      const stripeType = err?.type || err?.raw?.type || null;
+      const stripeCode = err?.code || err?.raw?.code || null;
+      let safeMessage = 'Unable to verify session.';
+      let statusCode = err?.statusCode || err?.raw?.statusCode || 500;
+
+      if (stripeType === 'StripeAuthenticationError') {
+        safeMessage = 'Stripe authentication failed. Check STRIPE_SECRET_KEY.';
+        statusCode = 401;
+      } else if (stripeCode === 'resource_missing' || /No such checkout\\.session/i.test(err?.message || '')) {
+        safeMessage = 'Session not found for this Stripe key.';
+        statusCode = 404;
+      } else if (stripeType === 'StripeRateLimitError') {
+        safeMessage = 'Stripe rate limit hit. Please retry.';
+        statusCode = 429;
+      }
+
+      console.error('verify-session error', { message: err?.message, stripeType, stripeCode });
+      res.status(statusCode).json({ error: safeMessage });
     }
   });
 

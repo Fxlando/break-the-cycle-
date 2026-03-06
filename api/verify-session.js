@@ -78,6 +78,17 @@ module.exports = async (req, res) => {
   }
 
   try {
+    if (sessionId.startsWith('cs_live_') && STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ error: 'Stripe key mismatch: live session with test key.' }));
+      return;
+    }
+    if (sessionId.startsWith('cs_test_') && STRIPE_SECRET_KEY.startsWith('sk_live_')) {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ error: 'Stripe key mismatch: test session with live key.' }));
+      return;
+    }
+
     const stripe = stripeLib(STRIPE_SECRET_KEY);
     const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['customer', 'payment_intent'] });
     const paid = session?.payment_status === 'paid' ||
@@ -121,8 +132,28 @@ module.exports = async (req, res) => {
       accessCode
     }));
   } catch (err) {
-    console.error('verify-session (serverless) error', err);
-    res.statusCode = 500;
-    res.end(JSON.stringify({ error: 'Unable to verify session.' }));
+    const stripeType = err?.type || err?.raw?.type || null;
+    const stripeCode = err?.code || err?.raw?.code || null;
+    let safeMessage = 'Unable to verify session.';
+    let statusCode = err?.statusCode || err?.raw?.statusCode || 500;
+
+    if (stripeType === 'StripeAuthenticationError') {
+      safeMessage = 'Stripe authentication failed. Check STRIPE_SECRET_KEY.';
+      statusCode = 401;
+    } else if (stripeCode === 'resource_missing' || /No such checkout\\.session/i.test(err?.message || '')) {
+      safeMessage = 'Session not found for this Stripe key.';
+      statusCode = 404;
+    } else if (stripeType === 'StripeRateLimitError') {
+      safeMessage = 'Stripe rate limit hit. Please retry.';
+      statusCode = 429;
+    }
+
+    console.error('verify-session (serverless) error', {
+      message: err?.message,
+      stripeType,
+      stripeCode
+    });
+    res.statusCode = statusCode;
+    res.end(JSON.stringify({ error: safeMessage }));
   }
 };
