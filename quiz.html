@@ -1542,6 +1542,7 @@
     const ACCESS_CODE_RETRY_DELAYS_MS = [800, 1600, 2800];
     let accessCodeRetryTimer = null;
     let activeSessionId = null;
+    let didRestoreOnLoad = false;
 
     // Pending results persistence (for post-payment restore)
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
@@ -1814,13 +1815,22 @@
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
       activeSessionId = sessionId || null;
+      const pending = getPendingResults();
+      if (sessionId && pending && isValidMode(pending.mode)) {
+        hasPaid = true;
+        hidePaywall();
+        didRestoreOnLoad = true;
+        window.requestAnimationFrame(() => {
+          displayResults(pending.careerAnswers || {}, pending.lifeAnswers || {}, { restored: true });
+        });
+      }
       if (sessionId) {
         const verified = await verifySession(sessionId);
         if (verified?.paid) {
           hasPaid = true;
           hidePaywall();
           if (!verified?.accessCode) scheduleAccessCodeRetry(sessionId);
-          if (restorePendingResults()) return;
+          if (!didRestoreOnLoad && restorePendingResults()) return;
           return;
         }
       }
