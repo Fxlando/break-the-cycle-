@@ -1766,6 +1766,12 @@
         paywallUnlock.textContent = 'Redirecting...';
         paywallUnlock.disabled = true;
 
+        if (PAYMENT_LINK_URL) {
+          didRedirect = true;
+          window.location.href = PAYMENT_LINK_URL;
+          return;
+        }
+
         let checkoutUrl = '';
         try {
           const url = api('/api/create-checkout-session');
