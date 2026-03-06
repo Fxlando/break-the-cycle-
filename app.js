@@ -365,7 +365,7 @@ function buildApp() {
       if (!sessionId) return res.status(400).json({ error: 'session_id is required.' });
 
       const session = await STRIPE.checkout.sessions.retrieve(sessionId, { expand: ['customer'] });
-      const paid = session?.payment_status === 'paid';
+      const paid = session?.payment_status === 'paid' || session?.status === 'complete' || session?.payment_status === 'no_payment_required';
       let accessCode = null;
       if (paid) {
         setPaidCookie(res);
@@ -375,7 +375,7 @@ function buildApp() {
         }
       }
 
-      res.json({ paid, status: session?.payment_status || 'unknown', accessCode });
+      res.json({ paid, status: session?.payment_status || 'unknown', checkoutStatus: session?.status || 'unknown', accessCode });
     } catch (err) {
       console.error('verify-session error', err);
       res.status(500).json({ error: 'Unable to verify session.' });

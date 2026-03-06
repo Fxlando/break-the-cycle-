@@ -1537,6 +1537,11 @@
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
     let accessCodeStatusTimer = null;
+    let accessCodeRetries = 0;
+    const MAX_ACCESS_CODE_RETRIES = 3;
+    const ACCESS_CODE_RETRY_DELAYS_MS = [800, 1600, 2800];
+    let accessCodeRetryTimer = null;
+    let activeSessionId = null;
 
     // Pending results persistence (for post-payment restore)
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
@@ -1639,6 +1644,8 @@
         if (accessCodeBanner) accessCodeBanner.classList.add('hidden');
         return;
       }
+      clearAccessCodeRetry();
+      accessCodeRetries = 0;
       if (accessCodeValue && accessCodeBox) {
         accessCodeValue.textContent = cleaned;
         accessCodeBox.classList.remove('hidden');
@@ -1650,6 +1657,41 @@
       accessCodeStatusTargets.forEach((el) => {
         el.textContent = 'Save this ID to unlock your results anytime.';
       });
+    }
+
+    function clearAccessCodeRetry() {
+      if (!accessCodeRetryTimer) return;
+      clearTimeout(accessCodeRetryTimer);
+      accessCodeRetryTimer = null;
+    }
+
+    function showAccessCodePending() {
+      if (accessCodeBanner) accessCodeBanner.classList.remove('hidden');
+      if (accessCodeBox) accessCodeBox.classList.remove('hidden');
+      if (accessCodeBannerValue) accessCodeBannerValue.textContent = 'Generating...';
+      if (accessCodeValue) accessCodeValue.textContent = 'Generating...';
+      accessCodeStatusTargets.forEach((el) => {
+        el.textContent = 'Generating your Access ID...';
+      });
+    }
+
+    function scheduleAccessCodeRetry(sessionId) {
+      if (!sessionId) return;
+      if (accessCodeRetries >= MAX_ACCESS_CODE_RETRIES) {
+        accessCodeStatusTargets.forEach((el) => {
+          el.textContent = 'Still processing. Tap "I already paid" to refresh.';
+        });
+        return;
+      }
+      showAccessCodePending();
+      clearAccessCodeRetry();
+      const delay = ACCESS_CODE_RETRY_DELAYS_MS[Math.min(accessCodeRetries, ACCESS_CODE_RETRY_DELAYS_MS.length - 1)];
+      accessCodeRetries += 1;
+      accessCodeRetryTimer = setTimeout(async () => {
+        const verified = await verifySession(sessionId);
+        if (verified?.accessCode) return;
+        if (verified?.paid) scheduleAccessCodeRetry(sessionId);
+      }, delay);
     }
 
     function flashAccessCodeStatus(message) {
@@ -1735,11 +1777,12 @@
           credentials: 'include',
           body: JSON.stringify({ session_id: sessionId })
         });
-        if (data?.accessCode) {
-          storeAccessCode(data.accessCode);
-          showAccessCode(data.accessCode);
+        const accessCode = data?.accessCode || data?.access_code || null;
+        if (accessCode) {
+          storeAccessCode(accessCode);
+          showAccessCode(accessCode);
         }
-        return { paid: Boolean(data?.paid), accessCode: data?.accessCode || null };
+        return { paid: Boolean(data?.paid), accessCode };
       } catch (err) {
         console.error('verify session error', err);
         return { paid: false, accessCode: null };
@@ -1770,11 +1813,13 @@
       if (storedCode) showAccessCode(storedCode);
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
+      activeSessionId = sessionId || null;
       if (sessionId) {
         const verified = await verifySession(sessionId);
         if (verified?.paid) {
           hasPaid = true;
           hidePaywall();
+          if (!verified?.accessCode) scheduleAccessCodeRetry(sessionId);
           if (restorePendingResults()) return;
           return;
         }
@@ -1853,6 +1898,7 @@
       e.preventDefault();
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
+      activeSessionId = sessionId || activeSessionId;
       let verified = null;
       if (sessionId) {
         verified = await verifySession(sessionId);
@@ -1860,6 +1906,7 @@
       if (verified?.paid) {
         hasPaid = true;
         hidePaywall();
+        if (!verified?.accessCode) scheduleAccessCodeRetry(sessionId);
         restorePendingResults();
         return;
       }
@@ -2164,6 +2211,7 @@
 
       const storedAccessCode = loadAccessCode();
       if (storedAccessCode) showAccessCode(storedAccessCode);
+      else if (activeSessionId) scheduleAccessCodeRetry(activeSessionId);
 
       console.log('quizMode:', quizMode);
       console.log('careerAnswers:', careerAnswers);
