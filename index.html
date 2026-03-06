@@ -50,7 +50,7 @@
       <div class="step">
         <div class="step-number">2</div>
         <h3>Unlock Your Traits</h3>
-        <p>When you’re done you’ll receive a customized breakdown (your traits) based on your answers to help you understand yourself better and see where you may be feeling stuck, understand your strengths, or if your're just looking for something new to invest in.</p>
+        <p>When you’re done you’ll receive a customized breakdown (your traits) based on your answers to help you understand yourself better and see where you may be feeling stuck, understand your strengths, or if you're just looking for something new to invest in.</p>
       </div>
       <div class="step">
         <div class="step-number">3</div>
@@ -173,7 +173,14 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
-        const { data } = await readJson(res, '/api/subscribe');
+        const text = await res.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (_) {
+          subscribeMessage.textContent = res.ok ? 'Check your email to confirm.' : 'Could not subscribe right now.';
+          return;
+        }
         if (res.ok && data.status === 'pending') {
           subscribeMessage.textContent = 'Check your email to confirm.';
         } else if (data.status === 'already_confirmed') {

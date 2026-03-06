@@ -19,7 +19,10 @@ function buildApp() {
   const app = express();
 
   const PORT = process.env.PORT || 3000;
-  const FRONTEND_URL = process.env.FRONTEND_URL || `http://localhost:${PORT}`;
+  const FRONTEND_URL = process.env.FRONTEND_URL ||
+    (process.env.VERCEL && process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:${PORT}`);
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
   const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
   const STRIPE = STRIPE_SECRET_KEY ? stripeLib(STRIPE_SECRET_KEY) : null;

@@ -1583,7 +1583,11 @@
           credentials: 'include',
           body: JSON.stringify(payload)
         });
-        const { data } = await readJson(res, '/api/quiz/submit');
+        const text = await res.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (_) { /* ignore parse error */ }
         if (!res.ok) {
           console.warn('Quiz save failed', data);
         }
