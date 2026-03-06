@@ -297,7 +297,7 @@ function buildApp() {
       });
       await prisma.magicLinkToken.update({ where: { id: magic.id }, data: { usedAt: new Date() } });
       setSessionCookie(res, sessionToken);
-      res.redirect('/quiz.html');
+      res.redirect(302, `${FRONTEND_URL}/quiz.html`);
     } catch (err) {
       console.error('verify magic error', err);
       res.status(500).send('Unable to verify');
