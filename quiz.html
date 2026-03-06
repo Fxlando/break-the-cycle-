@@ -1597,8 +1597,7 @@
     }
 
     async function startQuiz() {
-      if (!(await ensurePaid())) return;
-
+      // Let users take the quiz; payment is required only to see results (checked in displayResults)
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
         alert('Please select what brings you here');
