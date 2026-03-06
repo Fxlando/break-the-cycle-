@@ -823,6 +823,15 @@
       <div class="auth-status" id="authMessage"></div>
     </div>
 
+    <div id="accessCodeBanner" class="access-code-box hidden">
+      <div class="access-code-label">Your Access ID</div>
+      <div class="access-code-row">
+        <span id="accessCodeBannerValue" class="access-code-value">••••••••••</span>
+        <button type="button" id="accessCodeBannerCopy" class="btn-ghost btn-small">Copy</button>
+      </div>
+      <div id="accessCodeBannerStatus" class="access-code-note">Save this ID to unlock your results anytime.</div>
+    </div>
+
     <div class="progress-container" id="progressContainer" style="display: none;">
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -1517,6 +1526,11 @@
     const accessCodeValue = document.getElementById('accessCodeValue');
     const accessCodeCopy = document.getElementById('accessCodeCopy');
     const accessCodeStatus = document.getElementById('accessCodeStatus');
+    const accessCodeBanner = document.getElementById('accessCodeBanner');
+    const accessCodeBannerValue = document.getElementById('accessCodeBannerValue');
+    const accessCodeBannerCopy = document.getElementById('accessCodeBannerCopy');
+    const accessCodeBannerStatus = document.getElementById('accessCodeBannerStatus');
+    const accessCodeStatusTargets = [accessCodeBannerStatus, accessCodeStatus].filter(Boolean);
 
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
@@ -1619,23 +1633,35 @@
     }
 
     function showAccessCode(code) {
-      if (!accessCodeBox || !accessCodeValue) return;
       const cleaned = normalizeAccessCode(code);
       if (!cleaned) {
-        accessCodeBox.classList.add('hidden');
+        if (accessCodeBox) accessCodeBox.classList.add('hidden');
+        if (accessCodeBanner) accessCodeBanner.classList.add('hidden');
         return;
       }
-      accessCodeValue.textContent = cleaned;
-      accessCodeBox.classList.remove('hidden');
-      if (accessCodeStatus) accessCodeStatus.textContent = 'Save this ID to unlock your results anytime.';
+      if (accessCodeValue && accessCodeBox) {
+        accessCodeValue.textContent = cleaned;
+        accessCodeBox.classList.remove('hidden');
+      }
+      if (accessCodeBannerValue && accessCodeBanner) {
+        accessCodeBannerValue.textContent = cleaned;
+        accessCodeBanner.classList.remove('hidden');
+      }
+      accessCodeStatusTargets.forEach((el) => {
+        el.textContent = 'Save this ID to unlock your results anytime.';
+      });
     }
 
     function flashAccessCodeStatus(message) {
-      if (!accessCodeStatus) return;
-      accessCodeStatus.textContent = message;
+      if (!accessCodeStatusTargets.length) return;
+      accessCodeStatusTargets.forEach((el) => {
+        el.textContent = message;
+      });
       if (accessCodeStatusTimer) clearTimeout(accessCodeStatusTimer);
       accessCodeStatusTimer = setTimeout(() => {
-        if (accessCodeStatus) accessCodeStatus.textContent = 'Save this ID to unlock your results anytime.';
+        accessCodeStatusTargets.forEach((el) => {
+          el.textContent = 'Save this ID to unlock your results anytime.';
+        });
       }, 2000);
     }
 
@@ -1740,6 +1766,8 @@
     }
 
     async function initPaywall() {
+      const storedCode = loadAccessCode();
+      if (storedCode) showAccessCode(storedCode);
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
       if (sessionId) {
@@ -1906,29 +1934,35 @@
       }
     });
 
-    accessCodeCopy?.addEventListener('click', async () => {
-      const code = loadAccessCode();
-      if (!code) return;
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(code);
-        } else {
-          const temp = document.createElement('textarea');
-          temp.value = code;
-          temp.setAttribute('readonly', '');
-          temp.style.position = 'absolute';
-          temp.style.left = '-9999px';
-          document.body.appendChild(temp);
-          temp.select();
-          document.execCommand('copy');
-          document.body.removeChild(temp);
+    function bindAccessCodeCopy(button) {
+      if (!button) return;
+      button.addEventListener('click', async () => {
+        const code = loadAccessCode();
+        if (!code) return;
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(code);
+          } else {
+            const temp = document.createElement('textarea');
+            temp.value = code;
+            temp.setAttribute('readonly', '');
+            temp.style.position = 'absolute';
+            temp.style.left = '-9999px';
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+          }
+          flashAccessCodeStatus('Copied to clipboard.');
+        } catch (err) {
+          console.error('copy access code failed', err);
+          flashAccessCodeStatus('Copy failed. Please select and copy.');
         }
-        flashAccessCodeStatus('Copied to clipboard.');
-      } catch (err) {
-        console.error('copy access code failed', err);
-        flashAccessCodeStatus('Copy failed. Please select and copy.');
-      }
-    });
+      });
+    }
+
+    bindAccessCodeCopy(accessCodeCopy);
+    bindAccessCodeCopy(accessCodeBannerCopy);
 
     document.addEventListener('DOMContentLoaded', initPaywall);
     document.addEventListener('DOMContentLoaded', fetchMe);

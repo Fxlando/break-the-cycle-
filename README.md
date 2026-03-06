@@ -89,6 +89,7 @@ Located at top of `styles.css`:
 - **Stack**: Node.js + Express + Stripe Checkout + cookie-based access flag.
 - **Flow**: Users must purchase before starting the quiz. Stripe Checkout redirects back to `quiz.html?session_id=...`; backend verifies the session and sets a `quiz_paid` cookie (30 days). Front-end blocks the quiz until payment is confirmed.
 - **Access ID**: After successful payment, users receive a numeric Access ID they can copy and use later to unlock results without re-purchasing.
+  - If the database is unavailable, the Access ID is stored in Stripe metadata and can still be used to unlock.
 - **Endpoints**:
   - `POST /api/create-checkout-session` → returns `{ url }` for Stripe Checkout.
   - `POST /api/verify-session` with `session_id` → verifies Stripe payment, sets cookie.

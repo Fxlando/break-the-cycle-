@@ -33,6 +33,7 @@ function buildApp() {
   const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
   const SESSION_LOOKUP_TIMEOUT_MS = parseInt(process.env.SESSION_LOOKUP_TIMEOUT_MS || '1200', 10);
   const DISABLE_SESSION_LOOKUP = process.env.DISABLE_SESSION_LOOKUP === '1';
+  const ACCESS_CODE_DB_TIMEOUT_MS = parseInt(process.env.ACCESS_CODE_DB_TIMEOUT_MS || '1200', 10);
 
   const cspDirectives = {
     defaultSrc: ["'self'"],
@@ -91,6 +92,20 @@ function buildApp() {
     return code;
   };
 
+  const runWithTimeout = async (promise, timeoutMs) => {
+    let timeout;
+    const guard = new Promise((resolve) => {
+      timeout = setTimeout(() => resolve({ timedOut: true }), timeoutMs);
+    });
+    const result = await Promise.race([
+      promise.then((value) => ({ value })),
+      guard
+    ]);
+    clearTimeout(timeout);
+    if (result?.timedOut) return null;
+    return result.value;
+  };
+
   const createOrGetAccessCode = async (paidSessionId) => {
     if (paidSessionId) {
       const existing = await prisma.accessCode.findUnique({ where: { paidSessionId } });
@@ -111,6 +126,118 @@ function buildApp() {
     }
 
     throw new Error('Unable to generate access code');
+  };
+
+  const getAccessCodeFromDb = async (paidSessionId) => {
+    try {
+      const result = await runWithTimeout(createOrGetAccessCode(paidSessionId), ACCESS_CODE_DB_TIMEOUT_MS);
+      return result?.code || null;
+    } catch (err) {
+      console.error('access code db error', err);
+      return null;
+    }
+  };
+
+  const getOrCreateStripeAccessCode = async (session) => {
+    if (!STRIPE || !session) return null;
+
+    const sessionMetadata = session?.metadata || {};
+    if (sessionMetadata?.access_code) return sessionMetadata.access_code;
+
+    const customerId = typeof session.customer === 'string'
+      ? session.customer
+      : session.customer?.id;
+
+    let customer = typeof session.customer === 'object' ? session.customer : null;
+    if (!customer && customerId) {
+      try {
+        customer = await STRIPE.customers.retrieve(customerId);
+      } catch (err) {
+        console.warn('stripe customer retrieve failed', err?.message || err);
+      }
+    }
+
+    if (customer?.metadata?.access_code) return customer.metadata.access_code;
+
+    let paymentIntent = null;
+    const paymentIntentId = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : session.payment_intent?.id;
+    if (paymentIntentId) {
+      try {
+        paymentIntent = await STRIPE.paymentIntents.retrieve(paymentIntentId);
+      } catch (err) {
+        console.warn('stripe payment intent retrieve failed', err?.message || err);
+      }
+    }
+
+    if (paymentIntent?.metadata?.access_code) return paymentIntent.metadata.access_code;
+
+    const code = generateAccessCode();
+    const updates = [];
+
+    if (customerId) {
+      updates.push(STRIPE.customers.update(customerId, {
+        metadata: { ...(customer?.metadata || {}), access_code: code }
+      }));
+    }
+
+    if (paymentIntentId) {
+      updates.push(STRIPE.paymentIntents.update(paymentIntentId, {
+        metadata: { ...(paymentIntent?.metadata || {}), access_code: code }
+      }));
+    }
+
+    if (!updates.length && session?.customer_details?.email) {
+      try {
+        await STRIPE.customers.create({
+          email: session.customer_details.email,
+          metadata: { access_code: code }
+        });
+      } catch (err) {
+        console.warn('stripe customer create failed', err?.message || err);
+      }
+    }
+
+    if (updates.length) {
+      await Promise.allSettled(updates);
+    }
+
+    try {
+      await STRIPE.checkout.sessions.update(session.id, {
+        metadata: { ...(sessionMetadata || {}), access_code: code }
+      });
+    } catch (_) { /* ignore */ }
+
+    return code;
+  };
+
+  const findAccessCodeInStripe = async (code) => {
+    if (!STRIPE || !code) return false;
+    const query = `metadata['access_code']:'${code}'`;
+
+    try {
+      const customers = await STRIPE.customers.search({ query, limit: 1 });
+      if (customers?.data?.length) return true;
+    } catch (err) {
+      console.warn('stripe customer search failed', err?.message || err);
+    }
+
+    try {
+      const intents = await STRIPE.paymentIntents.search({ query, limit: 1 });
+      if (intents?.data?.length) return true;
+    } catch (err) {
+      console.warn('stripe payment intent search failed', err?.message || err);
+    }
+
+    try {
+      const sessions = await STRIPE.checkout.sessions.search({ query, limit: 1 });
+      if (sessions?.data?.length) return true;
+    } catch (err) {
+      console.warn('stripe session search failed', err?.message || err);
+    }
+
+    return false;
   };
 
   const setSessionCookie = (res, token) => {
@@ -237,16 +364,14 @@ function buildApp() {
       const sessionId = req.body?.session_id;
       if (!sessionId) return res.status(400).json({ error: 'session_id is required.' });
 
-      const session = await STRIPE.checkout.sessions.retrieve(sessionId);
+      const session = await STRIPE.checkout.sessions.retrieve(sessionId, { expand: ['customer'] });
       const paid = session?.payment_status === 'paid';
       let accessCode = null;
       if (paid) {
         setPaidCookie(res);
-        try {
-          const access = await createOrGetAccessCode(sessionId);
-          accessCode = access?.code || null;
-        } catch (err) {
-          console.error('access code issue', err);
+        accessCode = await getAccessCodeFromDb(sessionId);
+        if (!accessCode) {
+          accessCode = await getOrCreateStripeAccessCode(session);
         }
       }
 
@@ -263,18 +388,34 @@ function buildApp() {
   app.post('/api/access-code/login', async (req, res) => {
     try {
       const { code } = accessCodeSchema.parse(req.body);
-      const access = await prisma.accessCode.findUnique({ where: { code } });
-      if (!access || access.revokedAt) {
-        return res.status(401).json({ error: 'Invalid access ID.' });
+      let access = null;
+      try {
+        access = await runWithTimeout(prisma.accessCode.findUnique({ where: { code } }), ACCESS_CODE_DB_TIMEOUT_MS);
+      } catch (err) {
+        console.warn('access code db lookup failed', err?.message || err);
       }
 
-      await prisma.accessCode.update({
-        where: { id: access.id },
-        data: { lastUsedAt: new Date(), useCount: { increment: 1 } }
-      });
+      if (access && !access.revokedAt) {
+        try {
+          await prisma.accessCode.update({
+            where: { id: access.id },
+            data: { lastUsedAt: new Date(), useCount: { increment: 1 } }
+          });
+        } catch (err) {
+          console.warn('access code db update failed', err?.message || err);
+        }
 
-      setPaidCookie(res);
-      res.json({ ok: true });
+        setPaidCookie(res);
+        return res.json({ ok: true, source: 'db' });
+      }
+
+      const stripeMatch = await findAccessCodeInStripe(code);
+      if (stripeMatch) {
+        setPaidCookie(res);
+        return res.json({ ok: true, source: 'stripe' });
+      }
+
+      return res.status(401).json({ error: 'Invalid access ID.' });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: 'Access ID must be 6-14 digits.' });
       console.error('access code login error', err);
