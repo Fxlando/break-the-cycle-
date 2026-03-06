@@ -704,7 +704,7 @@
     }
   </style>
 </head>
-<body>
+<body data-payment-link="https://buy.stripe.com/3cI9ASdBe0cb1DT7jUgQE00">
   <div id="paywallOverlay" class="paywall-overlay hidden">
     <div class="paywall-card">
       <h2>Unlock the quiz</h2>
@@ -1375,6 +1375,7 @@
   <script>
     // API base + helpers (set window.API_BASE_URL if front-end is served from a different origin)
     const API_BASE = window.API_BASE_URL || '';
+    const PAYMENT_LINK_URL = (window.PAYMENT_LINK_URL || document.body?.dataset?.paymentLink || '').trim();
     const api = (path) => `${API_BASE}${path}`;
 
     async function readJson(res, label) {
@@ -1415,6 +1416,113 @@
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
+
+    // Pending results persistence (for post-payment restore)
+    const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
+    const PENDING_RESULTS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+
+    function isPlainObject(value) {
+      return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    }
+
+    function isValidMode(value) {
+      return value === 'career' || value === 'life' || value === 'both';
+    }
+
+    function safeJsonParse(value) {
+      try {
+        return JSON.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function savePendingResults(careerAnswers, lifeAnswers) {
+      if (!isValidMode(quizMode)) return;
+      const payload = {
+        v: 1,
+        savedAt: Date.now(),
+        mode: quizMode,
+        careerAnswers: careerAnswers || {},
+        lifeAnswers: lifeAnswers || {}
+      };
+      try {
+        localStorage.setItem(PENDING_RESULTS_KEY, JSON.stringify(payload));
+      } catch (err) {
+        console.warn('Pending results not saved', err);
+      }
+    }
+
+    function loadPendingResults() {
+      try {
+        const raw = localStorage.getItem(PENDING_RESULTS_KEY);
+        if (!raw) return null;
+        const data = safeJsonParse(raw);
+        if (!data || data.v !== 1) {
+          localStorage.removeItem(PENDING_RESULTS_KEY);
+          return null;
+        }
+        if (!data.savedAt || Date.now() - data.savedAt > PENDING_RESULTS_TTL_MS) {
+          localStorage.removeItem(PENDING_RESULTS_KEY);
+          return null;
+        }
+        if (!isValidMode(data.mode)) {
+          localStorage.removeItem(PENDING_RESULTS_KEY);
+          return null;
+        }
+        if (!isPlainObject(data.careerAnswers) || !isPlainObject(data.lifeAnswers)) {
+          localStorage.removeItem(PENDING_RESULTS_KEY);
+          return null;
+        }
+        return data;
+      } catch (err) {
+        console.warn('Pending results load failed', err);
+        return null;
+      }
+    }
+
+    function clearPendingResults() {
+      try {
+        localStorage.removeItem(PENDING_RESULTS_KEY);
+      } catch (_) { /* ignore */ }
+    }
+
+    function getPendingResults() {
+      if (window.pendingResults && (window.pendingResults.careerAnswers || window.pendingResults.lifeAnswers)) {
+        const mode = isValidMode(window.pendingResults.mode) ? window.pendingResults.mode : quizMode;
+        return {
+          mode,
+          careerAnswers: window.pendingResults.careerAnswers || {},
+          lifeAnswers: window.pendingResults.lifeAnswers || {}
+        };
+      }
+      return loadPendingResults();
+    }
+
+    function setHeaderForMode(mode) {
+      if (mode === 'career') {
+        document.getElementById('headerTitle').textContent = 'Career Path Finder';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover your ideal career from 53 options';
+      } else if (mode === 'life') {
+        document.getElementById('headerTitle').textContent = 'Find Yourself';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies & passions from 53 life paths';
+      } else if (mode === 'both') {
+        document.getElementById('headerTitle').textContent = 'Complete Discovery';
+        document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to find your career + life paths';
+      }
+    }
+
+    function restorePendingResults() {
+      const pending = getPendingResults();
+      if (!pending || !isValidMode(pending.mode)) return false;
+      quizMode = pending.mode;
+      setHeaderForMode(quizMode);
+      hidePaywall();
+      window.requestAnimationFrame(() => {
+        displayResults(pending.careerAnswers || {}, pending.lifeAnswers || {}, { restored: true });
+      });
+      return true;
+    }
 
     async function getPaymentStatus() {
       try {
@@ -1469,57 +1577,66 @@
         if (verified) {
           hasPaid = true;
           hidePaywall();
-          // Show pending results if available
-          if (window.pendingResults) {
-            displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
-            delete window.pendingResults;
-          }
+          if (restorePendingResults()) return;
           return;
         }
       }
       hasPaid = await getPaymentStatus();
-      if (!hasPaid) {
-        // Only show paywall if they're trying to see results
-        hidePaywall();
-      } else {
-        hidePaywall();
+      if (hasPaid) {
+        if (restorePendingResults()) return;
       }
+      // Only show paywall if they're trying to see results
+      hidePaywall();
     }
 
     async function createCheckout() {
+      let didRedirect = false;
       try {
         paywallError.textContent = '';
         paywallUnlock.textContent = 'Redirecting...';
         paywallUnlock.disabled = true;
-        const url = api('/api/create-checkout-session');
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-        const text = await res.text();
-        let data = {};
+
+        let checkoutUrl = '';
         try {
-          data = text ? JSON.parse(text) : {};
-        } catch (_) {
-          paywallError.textContent = res.ok ? 'Invalid response from server.' : `Server error (${res.status}). Check console.`;
-          return;
+          const url = api('/api/create-checkout-session');
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+          });
+          const text = await res.text();
+          let data = {};
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch (_) {
+            throw new Error(res.ok ? 'Invalid response from server.' : `Server error (${res.status}). Check console.`);
+          }
+          if (!res.ok) {
+            throw new Error(data.error || `Error ${res.status}: ${text.slice(0, 80)}`);
+          }
+          checkoutUrl = data.url || '';
+          if (!checkoutUrl) {
+            throw new Error(data.error || 'No checkout URL returned.');
+          }
+        } catch (err) {
+          if (PAYMENT_LINK_URL) {
+            console.warn('Checkout unavailable, using payment link fallback.', err);
+            checkoutUrl = PAYMENT_LINK_URL;
+          } else {
+            throw err;
+          }
         }
-        if (!res.ok) {
-          paywallError.textContent = data.error || `Error ${res.status}: ${text.slice(0, 80)}`;
-          return;
-        }
-        if (data.url) {
-          window.location.href = data.url;
-          return;
-        }
-        paywallError.textContent = data.error || 'No checkout URL returned.';
+
+        didRedirect = true;
+        window.location.href = checkoutUrl;
       } catch (err) {
         paywallError.textContent = err.message || 'Could not start checkout. Try again.';
         console.error('checkout error', err);
       } finally {
-        paywallUnlock.textContent = 'Unlock & start';
-        paywallUnlock.disabled = false;
+        if (!didRedirect) {
+          paywallUnlock.textContent = 'Unlock & start';
+          paywallUnlock.disabled = false;
+        }
       }
     }
 
@@ -1538,11 +1655,7 @@
       hasPaid = await getPaymentStatus();
       if (hasPaid) {
         hidePaywall();
-        // Show pending results if available
-        if (window.pendingResults) {
-          displayResults(window.pendingResults.careerAnswers, window.pendingResults.lifeAnswers);
-          delete window.pendingResults;
-        }
+        restorePendingResults();
       }
       else showPaywall('Payment not found yet. Finish checkout or try again.');
     });
@@ -1620,16 +1733,7 @@
       quizMode = modeInput.value;
       
       // Update header
-      if (quizMode === 'career') {
-        document.getElementById('headerTitle').textContent = 'Career Path Finder';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover your ideal career from 53 options';
-      } else if (quizMode === 'life') {
-        document.getElementById('headerTitle').textContent = 'Find Yourself';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies & passions from 53 life paths';
-      } else {
-        document.getElementById('headerTitle').textContent = 'Complete Discovery';
-        document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to find your career + life paths';
-      }
+      setHeaderForMode(quizMode);
 
       // Hide mode selection
       document.querySelector('[data-step="0"]').classList.remove('active');
@@ -1742,14 +1846,15 @@
       displayResults(careerAnswers, lifeAnswers);
     }
 
-    function displayResults(careerAnswers, lifeAnswers) {
+    function displayResults(careerAnswers, lifeAnswers, options = {}) {
       console.log('displayResults called');
       
       // Check if user has paid before showing results
       if (!hasPaid) {
         showPaywall('Unlock your results for just $9.99');
         // Save answers for later display
-        window.pendingResults = { careerAnswers, lifeAnswers };
+        window.pendingResults = { careerAnswers, lifeAnswers, mode: quizMode };
+        savePendingResults(careerAnswers, lifeAnswers);
         return;
       }
 
@@ -1815,6 +1920,8 @@
         results: { career: top3Career, life: top3Life },
         archetypeKeys
       });
+
+      if (window.pendingResults) delete window.pendingResults;
     }
 
     function scoreCareerPaths(answers) {
@@ -2390,6 +2497,7 @@
     }
 
     function retakeQuiz() {
+      clearPendingResults();
       location.reload();
     }
   </script>

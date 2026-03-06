@@ -99,6 +99,7 @@ Located at top of `styles.css`:
 - **Stripe tips**
   - Create a Product/Price in Stripe; use its Price ID.
   - In Stripe Dashboard, add your `FRONTEND_URL` to allowed redirect URLs.
+  - Optional: set `STRIPE_PAYMENT_LINK` to use a Stripe Payment Link when Checkout Session creation isn't available (static hosting, missing keys, etc.).
 - **Deployment**
   - Host on any Node platform (Render/Fly/Railway/Vercel). Ensure HTTPS so cookies stay secure and set `NODE_ENV=production`.
 

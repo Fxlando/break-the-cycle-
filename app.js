@@ -25,6 +25,7 @@ function buildApp() {
       : `http://localhost:${PORT}`);
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
   const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
+  const STRIPE_PAYMENT_LINK = process.env.STRIPE_PAYMENT_LINK;
   const STRIPE = STRIPE_SECRET_KEY ? stripeLib(STRIPE_SECRET_KEY) : null;
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const posthog = process.env.POSTHOG_API_KEY ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com' }) : null;
@@ -145,8 +146,11 @@ function buildApp() {
 
   app.post('/api/create-checkout-session', async (req, res) => {
     try {
+      if ((!STRIPE || !STRIPE_PRICE_ID) && STRIPE_PAYMENT_LINK) {
+        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
+      }
       if (!STRIPE || !STRIPE_PRICE_ID) {
-        return res.status(500).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_ID.' });
+        return res.status(500).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_ID (or STRIPE_PAYMENT_LINK).' });
       }
 
       const successUrl = `${FRONTEND_URL}/quiz.html?session_id={CHECKOUT_SESSION_ID}`;
@@ -163,6 +167,9 @@ function buildApp() {
       res.json({ url: session.url });
     } catch (err) {
       console.error('create-checkout-session error', err);
+      if (STRIPE_PAYMENT_LINK) {
+        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
+      }
       res.status(500).json({ error: 'Unable to create checkout session.' });
     }
   });
