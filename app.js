@@ -47,6 +47,20 @@ function buildApp() {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
+
+  // On Vercel, rewrites send /api/foo/bar to /api?path=foo/bar; restore path so Express can route
+  if (process.env.VERCEL) {
+    app.use((req, _res, next) => {
+      const pathSeg = req.query.path;
+      if (pathSeg != null && typeof pathSeg === 'string') {
+        delete req.query.path;
+        const qs = Object.keys(req.query).length ? '?' + new URLSearchParams(req.query).toString() : '';
+        req.url = '/api/' + pathSeg + qs;
+      }
+      next();
+    });
+  }
+
   app.use('/api', rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 120,
