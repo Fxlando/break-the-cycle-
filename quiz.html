@@ -1686,7 +1686,13 @@
 
     async function getPaymentStatus() {
       try {
-        const data = await fetchJson(api('/api/payment/status'), { credentials: 'include' });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 1500);
+        const data = await fetchJson(api('/api/payment/status'), {
+          credentials: 'include',
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
         return Boolean(data?.paid);
       } catch (err) {
         console.error('payment status error', err);

@@ -31,6 +31,8 @@ function buildApp() {
   const posthog = process.env.POSTHOG_API_KEY ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com' }) : null;
   const SESSION_TTL_HOURS = parseInt(process.env.SESSION_TTL_HOURS || '720', 10);
   const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
+  const SESSION_LOOKUP_TIMEOUT_MS = parseInt(process.env.SESSION_LOOKUP_TIMEOUT_MS || '1200', 10);
+  const DISABLE_SESSION_LOOKUP = process.env.DISABLE_SESSION_LOOKUP === '1';
 
   const cspDirectives = {
     defaultSrc: ["'self'"],
@@ -153,16 +155,24 @@ function buildApp() {
 
   // Attach user if session cookie present
   app.use(async (req, _res, next) => {
-    if (shouldSkipSessionLookup(req)) return next();
+    if (DISABLE_SESSION_LOOKUP || shouldSkipSessionLookup(req)) return next();
     const token = req.cookies.session_token;
     if (!token) return next();
     try {
-      const session = await prisma.session.findUnique({ where: { token } });
-      if (session && session.expiresAt > new Date()) {
-        req.user = await prisma.user.findUnique({ where: { id: session.userId } });
-      } else if (session) {
-        await prisma.session.delete({ where: { id: session.id } });
-      }
+      const lookup = (async () => {
+        const session = await prisma.session.findUnique({ where: { token } });
+        if (!session) return null;
+        if (session.expiresAt <= new Date()) {
+          await prisma.session.delete({ where: { id: session.id } });
+          return null;
+        }
+        const user = await prisma.user.findUnique({ where: { id: session.userId } });
+        return user ? { user } : null;
+      })();
+
+      const timeout = new Promise((resolve) => setTimeout(() => resolve(null), SESSION_LOOKUP_TIMEOUT_MS));
+      const result = await Promise.race([lookup, timeout]);
+      if (result?.user) req.user = result.user;
     } catch (err) {
       console.error('session lookup error', err);
     }
