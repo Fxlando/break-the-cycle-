@@ -6,6 +6,10 @@
       "destination": "/api/payment/status"
     },
     {
+      "source": "/api/verify-session",
+      "destination": "/api/verify-session"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api?path=:path*"
     }

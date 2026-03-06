@@ -1531,6 +1531,7 @@
     const accessCodeBannerCopy = document.getElementById('accessCodeBannerCopy');
     const accessCodeBannerStatus = document.getElementById('accessCodeBannerStatus');
     const accessCodeStatusTargets = [accessCodeBannerStatus, accessCodeStatus].filter(Boolean);
+    const resultsEl = document.getElementById('results');
 
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
@@ -1543,6 +1544,7 @@
     let accessCodeRetryTimer = null;
     let activeSessionId = null;
     let didRestoreOnLoad = false;
+    let accessCodePending = false;
 
     // Pending results persistence (for post-payment restore)
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
@@ -1641,12 +1643,12 @@
     function showAccessCode(code) {
       const cleaned = normalizeAccessCode(code);
       if (!cleaned) {
-        if (accessCodeBox) accessCodeBox.classList.add('hidden');
-        if (accessCodeBanner) accessCodeBanner.classList.add('hidden');
+        setAccessCodeVisibility(false);
         return;
       }
       clearAccessCodeRetry();
       accessCodeRetries = 0;
+      accessCodePending = false;
       if (accessCodeValue && accessCodeBox) {
         accessCodeValue.textContent = cleaned;
         accessCodeBox.classList.remove('hidden');
@@ -1658,6 +1660,7 @@
       accessCodeStatusTargets.forEach((el) => {
         el.textContent = 'Save this ID to unlock your results anytime.';
       });
+      syncAccessCodeVisibility();
     }
 
     function clearAccessCodeRetry() {
@@ -1666,7 +1669,31 @@
       accessCodeRetryTimer = null;
     }
 
+    function isResultsActive() {
+      return Boolean(resultsEl && resultsEl.classList.contains('active'));
+    }
+
+    function setAccessCodeVisibility(show) {
+      if (!show) {
+        if (accessCodeBox) accessCodeBox.classList.add('hidden');
+        if (accessCodeBanner) accessCodeBanner.classList.add('hidden');
+        return;
+      }
+      const showBox = isResultsActive();
+      if (accessCodeBox) accessCodeBox.classList.toggle('hidden', !showBox);
+      if (accessCodeBanner) accessCodeBanner.classList.toggle('hidden', showBox);
+    }
+
+    function syncAccessCodeVisibility() {
+      if (loadAccessCode() || accessCodePending) {
+        setAccessCodeVisibility(true);
+      } else {
+        setAccessCodeVisibility(false);
+      }
+    }
+
     function showAccessCodePending() {
+      accessCodePending = true;
       if (accessCodeBanner) accessCodeBanner.classList.remove('hidden');
       if (accessCodeBox) accessCodeBox.classList.remove('hidden');
       if (accessCodeBannerValue) accessCodeBannerValue.textContent = 'Generating...';
@@ -1674,6 +1701,7 @@
       accessCodeStatusTargets.forEach((el) => {
         el.textContent = 'Generating your Access ID...';
       });
+      syncAccessCodeVisibility();
     }
 
     function scheduleAccessCodeRetry(sessionId) {
@@ -1691,7 +1719,7 @@
       accessCodeRetryTimer = setTimeout(async () => {
         const verified = await verifySession(sessionId);
         if (verified?.accessCode) return;
-        if (verified?.paid) scheduleAccessCodeRetry(sessionId);
+        scheduleAccessCodeRetry(sessionId);
       }, delay);
     }
 
@@ -1817,6 +1845,8 @@
       activeSessionId = sessionId || null;
       const pending = getPendingResults();
       if (sessionId && pending && isValidMode(pending.mode)) {
+        quizMode = pending.mode;
+        setHeaderForMode(quizMode);
         hasPaid = true;
         hidePaywall();
         didRestoreOnLoad = true;
@@ -2275,6 +2305,7 @@
 
       console.log('About to show results...');
       document.getElementById('results').classList.add('active');
+      syncAccessCodeVisibility();
       console.log('Results shown');
       window.scrollTo({top: 0, behavior: 'smooth'});
 
