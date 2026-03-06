@@ -144,6 +144,90 @@
       min-height: 18px;
     }
 
+    .paywall-message {
+      color: var(--text-secondary);
+      font-weight: 600;
+      min-height: 18px;
+    }
+
+    .paywall-message.error { color: #ff9ba1; }
+    .paywall-message.success { color: #9fe6b8; }
+
+    .paywall-divider {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .paywall-access {
+      display: grid;
+      gap: 10px;
+    }
+
+    .paywall-access input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background: #0f0f17;
+      color: var(--text-primary);
+      text-align: center;
+      letter-spacing: 0.2em;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .access-code-box {
+      margin: 0 auto 24px;
+      max-width: 520px;
+      background: var(--bg-elevated);
+      border: 1px dashed var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      display: grid;
+      gap: 10px;
+    }
+
+    .access-code-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+    }
+
+    .access-code-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .access-code-value {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: 0.25em;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .access-code-note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .btn-small {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      width: auto;
+    }
+
     .container {
       max-width: 800px;
       width: 100%;
@@ -713,6 +797,12 @@
         <button type="button" id="paywallUnlock" class="btn-primary">Unlock & start</button>
         <button id="paywallRefresh" class="btn-ghost">I already paid</button>
         <div id="paywallError" class="paywall-error"></div>
+        <div class="paywall-divider">Have an Access ID?</div>
+        <div class="paywall-access">
+          <input type="text" id="accessCodeInput" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder="Enter your Access ID">
+          <button type="button" id="accessCodeLogin" class="btn-ghost">Unlock with ID</button>
+          <div id="accessCodeMessage" class="paywall-message"></div>
+        </div>
         <p class="paywall-note">Secure checkout by Stripe. You'll be sent back here after payment.</p>
       </div>
     </div>
@@ -1361,6 +1451,15 @@
       <h2>🎯</h2>
       <h1 class="results-title">Your Perfect Matches</h1>
       <p class="results-subtitle" id="resultsSubtitle">Based on your answers, here are your top paths</p>
+
+      <div id="accessCodeBox" class="access-code-box hidden">
+        <div class="access-code-label">Your Access ID</div>
+        <div class="access-code-row">
+          <span id="accessCodeValue" class="access-code-value">••••••••••</span>
+          <button type="button" id="accessCodeCopy" class="btn-ghost btn-small">Copy</button>
+        </div>
+        <div id="accessCodeStatus" class="access-code-note">Save this ID to unlock your results anytime.</div>
+      </div>
       
       <div id="careerResults"></div>
       <div id="lifeResults"></div>
@@ -1411,15 +1510,24 @@
     const authStatusEl = document.getElementById('authStatus');
     const authMessageEl = document.getElementById('authMessage');
     const magicLinkForm = document.getElementById('magicLinkForm');
+    const accessCodeInput = document.getElementById('accessCodeInput');
+    const accessCodeLogin = document.getElementById('accessCodeLogin');
+    const accessCodeMessage = document.getElementById('accessCodeMessage');
+    const accessCodeBox = document.getElementById('accessCodeBox');
+    const accessCodeValue = document.getElementById('accessCodeValue');
+    const accessCodeCopy = document.getElementById('accessCodeCopy');
+    const accessCodeStatus = document.getElementById('accessCodeStatus');
 
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
+    let accessCodeStatusTimer = null;
 
     // Pending results persistence (for post-payment restore)
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
     const PENDING_RESULTS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+    const ACCESS_CODE_STORAGE_KEY = 'btc_access_code_v1';
 
     function isPlainObject(value) {
       return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -1487,6 +1595,58 @@
       } catch (_) { /* ignore */ }
     }
 
+    function normalizeAccessCode(code) {
+      return String(code || '').replace(/\D/g, '').trim();
+    }
+
+    function storeAccessCode(code) {
+      const cleaned = normalizeAccessCode(code);
+      if (!cleaned) return;
+      try {
+        localStorage.setItem(ACCESS_CODE_STORAGE_KEY, cleaned);
+      } catch (err) {
+        console.warn('Access code not saved', err);
+      }
+    }
+
+    function loadAccessCode() {
+      try {
+        const raw = localStorage.getItem(ACCESS_CODE_STORAGE_KEY);
+        return normalizeAccessCode(raw);
+      } catch (_) {
+        return '';
+      }
+    }
+
+    function showAccessCode(code) {
+      if (!accessCodeBox || !accessCodeValue) return;
+      const cleaned = normalizeAccessCode(code);
+      if (!cleaned) {
+        accessCodeBox.classList.add('hidden');
+        return;
+      }
+      accessCodeValue.textContent = cleaned;
+      accessCodeBox.classList.remove('hidden');
+      if (accessCodeStatus) accessCodeStatus.textContent = 'Save this ID to unlock your results anytime.';
+    }
+
+    function flashAccessCodeStatus(message) {
+      if (!accessCodeStatus) return;
+      accessCodeStatus.textContent = message;
+      if (accessCodeStatusTimer) clearTimeout(accessCodeStatusTimer);
+      accessCodeStatusTimer = setTimeout(() => {
+        if (accessCodeStatus) accessCodeStatus.textContent = 'Save this ID to unlock your results anytime.';
+      }, 2000);
+    }
+
+    function setAccessCodeMessage(message, tone = 'neutral') {
+      if (!accessCodeMessage) return;
+      accessCodeMessage.textContent = message || '';
+      accessCodeMessage.classList.remove('error', 'success');
+      if (tone === 'error') accessCodeMessage.classList.add('error');
+      if (tone === 'success') accessCodeMessage.classList.add('success');
+    }
+
     function getPendingResults() {
       if (window.pendingResults && (window.pendingResults.careerAnswers || window.pendingResults.lifeAnswers)) {
         const mode = isValidMode(window.pendingResults.mode) ? window.pendingResults.mode : quizMode;
@@ -1543,10 +1703,14 @@
           credentials: 'include',
           body: JSON.stringify({ session_id: sessionId })
         });
-        return Boolean(data?.paid);
+        if (data?.accessCode) {
+          storeAccessCode(data.accessCode);
+          showAccessCode(data.accessCode);
+        }
+        return { paid: Boolean(data?.paid), accessCode: data?.accessCode || null };
       } catch (err) {
         console.error('verify session error', err);
-        return false;
+        return { paid: false, accessCode: null };
       }
     }
 
@@ -1574,7 +1738,7 @@
       const sessionId = params.get('session_id');
       if (sessionId) {
         const verified = await verifySession(sessionId);
-        if (verified) {
+        if (verified?.paid) {
           hasPaid = true;
           hidePaywall();
           if (restorePendingResults()) return;
@@ -1649,8 +1813,15 @@
       e.preventDefault();
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
+      let verified = null;
       if (sessionId) {
-        await verifySession(sessionId);
+        verified = await verifySession(sessionId);
+      }
+      if (verified?.paid) {
+        hasPaid = true;
+        hidePaywall();
+        restorePendingResults();
+        return;
       }
       hasPaid = await getPaymentStatus();
       if (hasPaid) {
@@ -1658,6 +1829,93 @@
         restorePendingResults();
       }
       else showPaywall('Payment not found yet. Finish checkout or try again.');
+    });
+
+    async function loginWithAccessCode(rawCode) {
+      const cleaned = normalizeAccessCode(rawCode);
+      if (!cleaned) {
+        setAccessCodeMessage('Enter your Access ID to unlock.', 'error');
+        return;
+      }
+
+      setAccessCodeMessage('');
+      if (accessCodeLogin) {
+        accessCodeLogin.textContent = 'Checking...';
+        accessCodeLogin.disabled = true;
+      }
+
+      try {
+        const res = await fetch(api('/api/access-code/login'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ code: cleaned })
+        });
+        const text = await res.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (_) { /* ignore */ }
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Invalid Access ID.');
+        }
+
+        hasPaid = true;
+        storeAccessCode(cleaned);
+        showAccessCode(cleaned);
+        hidePaywall();
+        if (!restorePendingResults()) {
+          setAccessCodeMessage('Unlocked. Continue the quiz.', 'success');
+        }
+      } catch (err) {
+        setAccessCodeMessage(err.message || 'Unable to verify Access ID.', 'error');
+      } finally {
+        if (accessCodeLogin) {
+          accessCodeLogin.textContent = 'Unlock with ID';
+          accessCodeLogin.disabled = false;
+        }
+      }
+    }
+
+    accessCodeLogin?.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginWithAccessCode(accessCodeInput?.value);
+    });
+
+    accessCodeInput?.addEventListener('input', () => {
+      accessCodeInput.value = normalizeAccessCode(accessCodeInput.value).slice(0, 14);
+    });
+
+    accessCodeInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        loginWithAccessCode(accessCodeInput.value);
+      }
+    });
+
+    accessCodeCopy?.addEventListener('click', async () => {
+      const code = loadAccessCode();
+      if (!code) return;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(code);
+        } else {
+          const temp = document.createElement('textarea');
+          temp.value = code;
+          temp.setAttribute('readonly', '');
+          temp.style.position = 'absolute';
+          temp.style.left = '-9999px';
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+        }
+        flashAccessCodeStatus('Copied to clipboard.');
+      } catch (err) {
+        console.error('copy access code failed', err);
+        flashAccessCodeStatus('Copy failed. Please select and copy.');
+      }
     });
 
     document.addEventListener('DOMContentLoaded', initPaywall);
@@ -1858,6 +2116,9 @@
         return;
       }
 
+      const storedAccessCode = loadAccessCode();
+      if (storedAccessCode) showAccessCode(storedAccessCode);
+
       console.log('quizMode:', quizMode);
       console.log('careerAnswers:', careerAnswers);
       console.log('lifeAnswers:', lifeAnswers);
@@ -1922,6 +2183,7 @@
       });
 
       if (window.pendingResults) delete window.pendingResults;
+      clearPendingResults();
     }
 
     function scoreCareerPaths(answers) {

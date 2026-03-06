@@ -30,6 +30,7 @@ function buildApp() {
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const posthog = process.env.POSTHOG_API_KEY ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com' }) : null;
   const SESSION_TTL_HOURS = parseInt(process.env.SESSION_TTL_HOURS || '720', 10);
+  const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
 
   const cspDirectives = {
     defaultSrc: ["'self'"],
@@ -80,6 +81,35 @@ function buildApp() {
   const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
   const randomToken = () => crypto.randomBytes(32).toString('hex');
   const sessionExpiry = () => new Date(Date.now() + SESSION_TTL_HOURS * 60 * 60 * 1000);
+  const generateAccessCode = () => {
+    let code = '';
+    for (let i = 0; i < ACCESS_CODE_LENGTH; i += 1) {
+      code += crypto.randomInt(0, 10).toString();
+    }
+    return code;
+  };
+
+  const createOrGetAccessCode = async (paidSessionId) => {
+    if (paidSessionId) {
+      const existing = await prisma.accessCode.findUnique({ where: { paidSessionId } });
+      if (existing) return existing;
+    }
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const code = generateAccessCode();
+      try {
+        const created = await prisma.accessCode.create({
+          data: { code, paidSessionId: paidSessionId || null }
+        });
+        return created;
+      } catch (err) {
+        if (err?.code === 'P2002') continue; // Unique constraint, retry
+        throw err;
+      }
+    }
+
+    throw new Error('Unable to generate access code');
+  };
 
   const setSessionCookie = (res, token) => {
     res.cookie('session_token', token, {
@@ -108,8 +138,22 @@ function buildApp() {
     });
   };
 
+  const shouldSkipSessionLookup = (req) => {
+    const rawPath = req.path || '';
+    const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath;
+    if (!path) return true;
+    if (path === '/health') return true;
+    if (path === '/payment/status') return true;
+    if (path === '/create-checkout-session') return true;
+    if (path === '/verify-session') return true;
+    if (path === '/access-code/login') return true;
+    if (path.startsWith('/subscribe')) return true;
+    return false;
+  };
+
   // Attach user if session cookie present
   app.use(async (req, _res, next) => {
+    if (shouldSkipSessionLookup(req)) return next();
     const token = req.cookies.session_token;
     if (!token) return next();
     try {
@@ -185,17 +229,50 @@ function buildApp() {
 
       const session = await STRIPE.checkout.sessions.retrieve(sessionId);
       const paid = session?.payment_status === 'paid';
-      if (paid) setPaidCookie(res);
+      let accessCode = null;
+      if (paid) {
+        setPaidCookie(res);
+        try {
+          const access = await createOrGetAccessCode(sessionId);
+          accessCode = access?.code || null;
+        } catch (err) {
+          console.error('access code issue', err);
+        }
+      }
 
-      res.json({ paid, status: session?.payment_status || 'unknown' });
+      res.json({ paid, status: session?.payment_status || 'unknown', accessCode });
     } catch (err) {
       console.error('verify-session error', err);
       res.status(500).json({ error: 'Unable to verify session.' });
     }
   });
 
-  // Email subscribe with double opt-in
   const subscribeSchema = z.object({ email: z.string().email() });
+  const accessCodeSchema = z.object({ code: z.string().regex(/^\d{6,14}$/) });
+
+  app.post('/api/access-code/login', async (req, res) => {
+    try {
+      const { code } = accessCodeSchema.parse(req.body);
+      const access = await prisma.accessCode.findUnique({ where: { code } });
+      if (!access || access.revokedAt) {
+        return res.status(401).json({ error: 'Invalid access ID.' });
+      }
+
+      await prisma.accessCode.update({
+        where: { id: access.id },
+        data: { lastUsedAt: new Date(), useCount: { increment: 1 } }
+      });
+
+      setPaidCookie(res);
+      res.json({ ok: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ error: 'Access ID must be 6-14 digits.' });
+      console.error('access code login error', err);
+      res.status(500).json({ error: 'Unable to verify access ID.' });
+    }
+  });
+
+  // Email subscribe with double opt-in
   app.post('/api/subscribe', async (req, res) => {
     try {
       const { email } = subscribeSchema.parse(req.body);

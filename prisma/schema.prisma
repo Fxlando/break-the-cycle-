@@ -114,3 +114,13 @@ model EventLog {
   properties Json?
   createdAt  DateTime @default(now())
 }
+
+model AccessCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  paidSessionId String?  @unique
+  useCount      Int      @default(0)
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+}

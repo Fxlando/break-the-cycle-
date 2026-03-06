@@ -88,14 +88,17 @@ Located at top of `styles.css`:
 
 - **Stack**: Node.js + Express + Stripe Checkout + cookie-based access flag.
 - **Flow**: Users must purchase before starting the quiz. Stripe Checkout redirects back to `quiz.html?session_id=...`; backend verifies the session and sets a `quiz_paid` cookie (30 days). Front-end blocks the quiz until payment is confirmed.
+- **Access ID**: After successful payment, users receive a numeric Access ID they can copy and use later to unlock results without re-purchasing.
 - **Endpoints**:
   - `POST /api/create-checkout-session` → returns `{ url }` for Stripe Checkout.
   - `POST /api/verify-session` with `session_id` → verifies Stripe payment, sets cookie.
+  - `POST /api/access-code/login` → `{ code }` to unlock via Access ID (sets cookie).
   - `GET /api/payment/status` → `{ paid: boolean }` based on cookie.
 - **Setup**
   1) `npm install`
   2) Copy `.env.example` → `.env` and set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `FRONTEND_URL` (e.g., `http://localhost:3000`).
-  3) Run `npm start` then open `http://localhost:3000/quiz.html`.
+  3) Optional: set `ACCESS_CODE_LENGTH` (default 10 digits).
+  4) Run `npm start` then open `http://localhost:3000/quiz.html`.
 - **Stripe tips**
   - Create a Product/Price in Stripe; use its Price ID.
   - In Stripe Dashboard, add your `FRONTEND_URL` to allowed redirect URLs.
