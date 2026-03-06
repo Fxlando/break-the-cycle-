@@ -391,7 +391,10 @@ function buildApp() {
       if (stripeType === 'StripeAuthenticationError') {
         safeMessage = 'Stripe authentication failed. Check STRIPE_SECRET_KEY.';
         statusCode = 401;
-      } else if (stripeCode === 'resource_missing' || /No such checkout\\.session/i.test(err?.message || '')) {
+      } else if (stripeType === 'StripePermissionError') {
+        safeMessage = 'Stripe permission error. Use a full secret key or allow Checkout Sessions read/write.';
+        statusCode = 403;
+      } else if (stripeType === 'StripeInvalidRequestError' || stripeCode === 'resource_missing' || /No such checkout\\.session/i.test(err?.message || '')) {
         safeMessage = 'Session not found for this Stripe key.';
         statusCode = 404;
       } else if (stripeType === 'StripeRateLimitError') {
@@ -399,8 +402,8 @@ function buildApp() {
         statusCode = 429;
       }
 
-      console.error('verify-session error', { message: err?.message, stripeType, stripeCode });
-      res.status(statusCode).json({ error: safeMessage });
+      console.error('verify-session error', { message: err?.message, stripeType, stripeCode, statusCode });
+      res.status(statusCode).json({ error: safeMessage, debug: { stripeType, stripeCode, statusCode } });
     }
   });
 
