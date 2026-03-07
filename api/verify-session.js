@@ -100,9 +100,10 @@ module.exports = async (req, res) => {
     }
 
     stage = 'stripe_init';
-    const stripe = stripeLib(STRIPE_SECRET_KEY, STRIPE_ACCOUNT_ID ? { stripeAccount: STRIPE_ACCOUNT_ID } : undefined);
+    const stripe = stripeLib(STRIPE_SECRET_KEY);
+    const stripeOpts = STRIPE_ACCOUNT_ID ? { stripeAccount: STRIPE_ACCOUNT_ID } : undefined;
     stage = 'retrieve_session';
-    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['customer', 'payment_intent'] });
+    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['customer', 'payment_intent'] }, stripeOpts);
     const paid = session?.payment_status === 'paid' ||
       session?.status === 'complete' ||
       session?.payment_status === 'no_payment_required';
@@ -119,7 +120,7 @@ module.exports = async (req, res) => {
         : session.customer?.id;
       if (customerId) {
         stage = 'update_customer';
-        updates.push(stripe.customers.update(customerId, { metadata: { access_code: accessCode } }));
+        updates.push(stripe.customers.update(customerId, { metadata: { access_code: accessCode } }, stripeOpts));
       }
 
       const paymentIntentId = typeof session.payment_intent === 'string'
@@ -127,13 +128,16 @@ module.exports = async (req, res) => {
         : session.payment_intent?.id;
       if (paymentIntentId) {
         stage = 'update_payment_intent';
-        updates.push(stripe.paymentIntents.update(paymentIntentId, { metadata: { access_code: accessCode } }));
+        updates.push(stripe.paymentIntents.update(paymentIntentId, { metadata: { access_code: accessCode } }, stripeOpts));
       }
 
       stage = 'update_session';
-      updates.push(stripe.checkout.sessions.update(session.id, {
-        metadata: { ...(session?.metadata || {}), access_code: accessCode }
-      }));
+      try {
+        const sessionMeta = { ...(session?.metadata || {}), access_code: accessCode };
+        updates.push(stripe.checkout.sessions.update(session.id, { metadata: sessionMeta }, stripeOpts));
+      } catch (err) {
+        console.warn('checkout session metadata update failed', err?.message || err);
+      }
 
       stage = 'apply_updates';
       await Promise.allSettled(updates);
