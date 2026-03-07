@@ -814,24 +814,6 @@
       <p id="headerSubtitle">Choose your path to get started</p>
     </div>
 
-    <div class="auth-bar">
-      <div class="auth-status" id="authStatus">Sign in with email to save your results.</div>
-      <form id="magicLinkForm">
-        <input type="email" name="email" placeholder="Email for magic link" required>
-        <button type="submit" class="btn">Send login link</button>
-      </form>
-      <div class="auth-status" id="authMessage"></div>
-    </div>
-
-    <div id="accessCodeBanner" class="access-code-box hidden">
-      <div class="access-code-label">Your Access ID</div>
-      <div class="access-code-row">
-        <span id="accessCodeBannerValue" class="access-code-value">••••••••••</span>
-        <button type="button" id="accessCodeBannerCopy" class="btn-ghost btn-small">Copy</button>
-      </div>
-      <div id="accessCodeBannerStatus" class="access-code-note">Save this ID to unlock your results anytime.</div>
-    </div>
-
     <div class="progress-container" id="progressContainer" style="display: none;">
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -1516,9 +1498,6 @@
     const paywallUnlock = document.getElementById('paywallUnlock');
     const paywallRefresh = document.getElementById('paywallRefresh');
     let currentUser = null;
-    const authStatusEl = document.getElementById('authStatus');
-    const authMessageEl = document.getElementById('authMessage');
-    const magicLinkForm = document.getElementById('magicLinkForm');
     const accessCodeInput = document.getElementById('accessCodeInput');
     const accessCodeLogin = document.getElementById('accessCodeLogin');
     const accessCodeMessage = document.getElementById('accessCodeMessage');
@@ -1526,11 +1505,7 @@
     const accessCodeValue = document.getElementById('accessCodeValue');
     const accessCodeCopy = document.getElementById('accessCodeCopy');
     const accessCodeStatus = document.getElementById('accessCodeStatus');
-    const accessCodeBanner = document.getElementById('accessCodeBanner');
-    const accessCodeBannerValue = document.getElementById('accessCodeBannerValue');
-    const accessCodeBannerCopy = document.getElementById('accessCodeBannerCopy');
-    const accessCodeBannerStatus = document.getElementById('accessCodeBannerStatus');
-    const accessCodeStatusTargets = [accessCodeBannerStatus, accessCodeStatus].filter(Boolean);
+    const accessCodeStatusTargets = [accessCodeStatus].filter(Boolean);
     const resultsEl = document.getElementById('results');
 
     let quizMode = null; // 'career', 'life', or 'both'
@@ -1653,10 +1628,6 @@
         accessCodeValue.textContent = cleaned;
         accessCodeBox.classList.remove('hidden');
       }
-      if (accessCodeBannerValue && accessCodeBanner) {
-        accessCodeBannerValue.textContent = cleaned;
-        accessCodeBanner.classList.remove('hidden');
-      }
       accessCodeStatusTargets.forEach((el) => {
         el.textContent = 'Save this ID to unlock your results anytime.';
       });
@@ -1676,15 +1647,17 @@
     function setAccessCodeVisibility(show) {
       if (!show) {
         if (accessCodeBox) accessCodeBox.classList.add('hidden');
-        if (accessCodeBanner) accessCodeBanner.classList.add('hidden');
         return;
       }
       const showBox = isResultsActive();
       if (accessCodeBox) accessCodeBox.classList.toggle('hidden', !showBox);
-      if (accessCodeBanner) accessCodeBanner.classList.toggle('hidden', showBox);
     }
 
     function syncAccessCodeVisibility() {
+      if (!isResultsActive()) {
+        setAccessCodeVisibility(false);
+        return;
+      }
       if (loadAccessCode() || accessCodePending) {
         setAccessCodeVisibility(true);
       } else {
@@ -1694,13 +1667,13 @@
 
     function showAccessCodePending() {
       accessCodePending = true;
-      if (accessCodeBanner) accessCodeBanner.classList.remove('hidden');
-      if (accessCodeBox) accessCodeBox.classList.remove('hidden');
-      if (accessCodeBannerValue) accessCodeBannerValue.textContent = 'Generating...';
-      if (accessCodeValue) accessCodeValue.textContent = 'Generating...';
-      accessCodeStatusTargets.forEach((el) => {
-        el.textContent = 'Generating your Access ID...';
-      });
+      if (accessCodeBox && isResultsActive()) {
+        accessCodeBox.classList.remove('hidden');
+        if (accessCodeValue) accessCodeValue.textContent = 'Generating...';
+        accessCodeStatusTargets.forEach((el) => {
+          el.textContent = 'Generating your Access ID...';
+        });
+      }
       syncAccessCodeVisibility();
     }
 
@@ -2049,47 +2022,7 @@
     }
 
     bindAccessCodeCopy(accessCodeCopy);
-    bindAccessCodeCopy(accessCodeBannerCopy);
-
     document.addEventListener('DOMContentLoaded', initPaywall);
-    document.addEventListener('DOMContentLoaded', fetchMe);
-
-    async function fetchMe() {
-      try {
-        const res = await fetch(api('/api/auth/me'), { credentials: 'include' });
-        if (!res.ok) {
-          currentUser = null;
-          if (authStatusEl) authStatusEl.textContent = 'Sign in with email to save your results.';
-          return;
-        }
-        const { data } = await readJson(res, '/api/auth/me');
-        currentUser = data;
-        if (authStatusEl) authStatusEl.textContent = `Signed in as ${currentUser.email}. Results will save to your profile.`;
-      } catch (err) {
-        currentUser = null;
-        if (authStatusEl) authStatusEl.textContent = 'Sign in with email to save your results.';
-        console.error('auth me error', err);
-      }
-    }
-
-    magicLinkForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      authMessageEl.textContent = '';
-      const email = e.target.email.value;
-      try {
-        const res = await fetch(api('/api/auth/magic-link'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email })
-        });
-        if (res.ok) authMessageEl.textContent = 'Login link sent. Check your email.';
-        else authMessageEl.textContent = 'Could not send link. Try again.';
-      } catch (err) {
-        authMessageEl.textContent = 'Network issue. Try again.';
-        console.error('magic link error', err);
-      }
-    });
 
     async function persistQuizRun(payload) {
       if (!currentUser) return; // Skip silently; user can still view results
