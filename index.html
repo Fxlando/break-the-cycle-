@@ -41,10 +41,10 @@
       <div class="video-modal-close">
         <button type="button" id="closeVideoModal">Close</button>
       </div>
-      <video id="heroVideo" controls preload="metadata" poster="">
-        <source src="" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
+      <div class="iframe-wrap">
+        <iframe id="heroVideo" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
+          title="Watch video"></iframe>
+      </div>
     </div>
   </div>
 
@@ -212,6 +212,7 @@
     const videoModal = document.getElementById('videoModal');
     const closeVideoModal = document.getElementById('closeVideoModal');
     const heroVideo = document.getElementById('heroVideo');
+    const YT_URL = 'https://www.youtube.com/embed/PGmuztylEcc?autoplay=1&controls=0&modestbranding=1&rel=0&fs=0&iv_load_policy=3&playsinline=1';
 
     watchVideoBtn?.addEventListener('click', () => {
       if (!videoModal) return;
@@ -219,10 +220,7 @@
       videoModal.classList.remove('hidden');
       // small delay to allow CSS transition
       requestAnimationFrame(() => videoModal.classList.add('show'));
-      // TODO: set heroVideo.src to your hosted video URL
-      if (heroVideo && !heroVideo.src) {
-        heroVideo.src = '';
-      }
+      if (heroVideo) heroVideo.src = YT_URL;
     });
 
     function hideVideoModal() {
@@ -234,7 +232,7 @@
         videoModal.removeEventListener('animationend', finish);
       };
       videoModal.addEventListener('animationend', finish);
-      if (heroVideo) heroVideo.pause();
+      if (heroVideo) heroVideo.src = '';
     }
 
     closeVideoModal?.addEventListener('click', hideVideoModal);

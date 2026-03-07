@@ -448,6 +448,15 @@ h1 {
   background: #000;
 }
 
+.iframe-wrap {
+  position: relative;
+  width: 100%;
+  height: min(70vh, 500px);
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000;
+}
+
 .video-modal-close {
   display: flex;
   justify-content: flex-end;
