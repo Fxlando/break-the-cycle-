@@ -3,6 +3,13 @@ const stripeLib = require('stripe');
 
 const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
 
+function redactSecrets(value) {
+  if (!value) return '';
+  return String(value)
+    .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
+    .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
+}
+
 function generateAccessCode() {
   let code = '';
   for (let i = 0; i < ACCESS_CODE_LENGTH; i += 1) {
@@ -41,6 +48,7 @@ async function readJson(req) {
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('X-BTC-Handler', 'serverless-verify-session');
 
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
@@ -55,6 +63,7 @@ module.exports = async (req, res) => {
   }
 
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+  const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
   if (!STRIPE_SECRET_KEY) {
     res.statusCode = 500;
     res.end(JSON.stringify({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY.' }));
@@ -77,6 +86,7 @@ module.exports = async (req, res) => {
     return;
   }
 
+  let stage = 'init';
   try {
     if (sessionId.startsWith('cs_live_') && STRIPE_SECRET_KEY.startsWith('sk_test_')) {
       res.statusCode = 400;
@@ -89,7 +99,9 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const stripe = stripeLib(STRIPE_SECRET_KEY);
+    stage = 'stripe_init';
+    const stripe = stripeLib(STRIPE_SECRET_KEY, STRIPE_ACCOUNT_ID ? { stripeAccount: STRIPE_ACCOUNT_ID } : undefined);
+    stage = 'retrieve_session';
     const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['customer', 'payment_intent'] });
     const paid = session?.payment_status === 'paid' ||
       session?.status === 'complete' ||
@@ -98,6 +110,7 @@ module.exports = async (req, res) => {
     let accessCode = session?.metadata?.access_code || null;
 
     if (paid && !accessCode) {
+      stage = 'generate_code';
       accessCode = generateAccessCode();
       const updates = [];
 
@@ -105,6 +118,7 @@ module.exports = async (req, res) => {
         ? session.customer
         : session.customer?.id;
       if (customerId) {
+        stage = 'update_customer';
         updates.push(stripe.customers.update(customerId, { metadata: { access_code: accessCode } }));
       }
 
@@ -112,18 +126,23 @@ module.exports = async (req, res) => {
         ? session.payment_intent
         : session.payment_intent?.id;
       if (paymentIntentId) {
+        stage = 'update_payment_intent';
         updates.push(stripe.paymentIntents.update(paymentIntentId, { metadata: { access_code: accessCode } }));
       }
 
+      stage = 'update_session';
       updates.push(stripe.checkout.sessions.update(session.id, {
         metadata: { ...(session?.metadata || {}), access_code: accessCode }
       }));
 
+      stage = 'apply_updates';
       await Promise.allSettled(updates);
     }
 
+    stage = 'set_cookie';
     if (paid) setPaidCookie(res);
 
+    stage = 'respond';
     res.statusCode = 200;
     res.end(JSON.stringify({
       paid,
@@ -160,7 +179,18 @@ module.exports = async (req, res) => {
     res.statusCode = statusCode;
     res.end(JSON.stringify({
       error: safeMessage,
-      debug: { stripeType, stripeCode, statusCode }
+      debug: {
+        stripeType,
+        stripeCode,
+        statusCode,
+        stage,
+        name: err?.name || null,
+        message: redactSecrets(err?.message || ''),
+        node: process?.version || null,
+        keyPrefix: STRIPE_SECRET_KEY ? STRIPE_SECRET_KEY.slice(0, 7) : null,
+        stripeAccount: STRIPE_ACCOUNT_ID || null,
+        sessionPrefix: String(sessionId).slice(0, 8)
+      }
     }));
   }
 };

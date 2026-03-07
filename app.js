@@ -24,9 +24,12 @@ function buildApp() {
       ? `https://${process.env.VERCEL_URL}`
       : `http://localhost:${PORT}`);
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+  const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
   const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
   const STRIPE_PAYMENT_LINK = process.env.STRIPE_PAYMENT_LINK;
-  const STRIPE = STRIPE_SECRET_KEY ? stripeLib(STRIPE_SECRET_KEY) : null;
+  const STRIPE = STRIPE_SECRET_KEY
+    ? stripeLib(STRIPE_SECRET_KEY, STRIPE_ACCOUNT_ID ? { stripeAccount: STRIPE_ACCOUNT_ID } : undefined)
+    : null;
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const posthog = process.env.POSTHOG_API_KEY ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com' }) : null;
   const SESSION_TTL_HOURS = parseInt(process.env.SESSION_TTL_HOURS || '720', 10);
@@ -34,6 +37,9 @@ function buildApp() {
   const SESSION_LOOKUP_TIMEOUT_MS = parseInt(process.env.SESSION_LOOKUP_TIMEOUT_MS || '1200', 10);
   const DISABLE_SESSION_LOOKUP = process.env.DISABLE_SESSION_LOOKUP === '1';
   const ACCESS_CODE_DB_TIMEOUT_MS = parseInt(process.env.ACCESS_CODE_DB_TIMEOUT_MS || '1200', 10);
+  const redactSecrets = (value) => String(value || '')
+    .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
+    .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
 
   const cspDirectives = {
     defaultSrc: ["'self'"],
@@ -356,6 +362,8 @@ function buildApp() {
   });
 
   app.post('/api/verify-session', async (req, res) => {
+    res.setHeader('X-BTC-Handler', 'express-verify-session');
+    let stage = 'init';
     try {
       if (!STRIPE) {
         return res.status(500).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY.' });
@@ -370,17 +378,22 @@ function buildApp() {
         return res.status(400).json({ error: 'Stripe key mismatch: test session with live key.' });
       }
 
+      stage = 'retrieve_session';
       const session = await STRIPE.checkout.sessions.retrieve(sessionId, { expand: ['customer'] });
       const paid = session?.payment_status === 'paid' || session?.status === 'complete' || session?.payment_status === 'no_payment_required';
       let accessCode = null;
       if (paid) {
+        stage = 'set_cookie';
         setPaidCookie(res);
+        stage = 'db_access_code';
         accessCode = await getAccessCodeFromDb(sessionId);
         if (!accessCode) {
+          stage = 'stripe_access_code';
           accessCode = await getOrCreateStripeAccessCode(session);
         }
       }
 
+      stage = 'respond';
       res.json({ paid, status: session?.payment_status || 'unknown', checkoutStatus: session?.status || 'unknown', accessCode });
     } catch (err) {
       const stripeType = err?.type || err?.raw?.type || null;
@@ -402,8 +415,21 @@ function buildApp() {
         statusCode = 429;
       }
 
-      console.error('verify-session error', { message: err?.message, stripeType, stripeCode, statusCode });
-      res.status(statusCode).json({ error: safeMessage, debug: { stripeType, stripeCode, statusCode } });
+      console.error('verify-session error', { message: err?.message, stripeType, stripeCode, statusCode, stage });
+      res.status(statusCode).json({
+        error: safeMessage,
+        debug: {
+          stripeType,
+          stripeCode,
+          statusCode,
+          stage,
+          name: err?.name || null,
+          message: redactSecrets(err?.message || ''),
+          node: process?.version || null,
+          keyPrefix: STRIPE_SECRET_KEY ? STRIPE_SECRET_KEY.slice(0, 7) : null,
+          stripeAccount: STRIPE_ACCOUNT_ID || null
+        }
+      });
     }
   });
 
