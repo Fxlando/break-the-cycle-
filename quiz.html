@@ -792,7 +792,7 @@
   <div id="paywallOverlay" class="paywall-overlay hidden">
     <div class="paywall-card">
       <h2>Unlock the quiz</h2>
-      <p>One-time purchase to access all 25 questions and your custom 7-day plan.</p>
+      <p>One-time purchase access to your custom 7-day plan.</p>
       <div class="paywall-actions">
         <button type="button" id="paywallUnlock" class="btn-primary">Unlock & start</button>
         <button id="paywallRefresh" class="btn-ghost">I already paid</button>
@@ -1732,10 +1732,10 @@
     function setHeaderForMode(mode) {
       if (mode === 'career') {
         document.getElementById('headerTitle').textContent = 'Career Path Finder';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover your ideal career from 53 options';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover your ideal career';
       } else if (mode === 'life') {
         document.getElementById('headerTitle').textContent = 'Find Yourself';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies & passions from 53 life paths';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies & passions';
       } else if (mode === 'both') {
         document.getElementById('headerTitle').textContent = 'Complete Discovery';
         document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to find your career + life paths';
@@ -2175,7 +2175,7 @@
       
       // Check if user has paid before showing results
       if (!hasPaid) {
-        showPaywall('Unlock your results for just $9.99');
+        showPaywall('Unlock your results for just $2.99');
         // Save answers for later display
         window.pendingResults = { careerAnswers, lifeAnswers, mode: quizMode };
         savePendingResults(careerAnswers, lifeAnswers);
