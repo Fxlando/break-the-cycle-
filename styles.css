@@ -385,7 +385,7 @@ h1 {
 .btn-secondary {
   background: linear-gradient(135deg, rgba(45, 45, 55, 0.35), rgba(30, 30, 40, 0.45));
   border: 2px solid rgba(255, 255, 255, 0.08);
-  color: #b5b5bd;
+  color: #8a8a92;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   letter-spacing: 0.02em;
   padding: 1.1rem 3rem;
