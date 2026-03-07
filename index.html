@@ -215,6 +215,7 @@
 
     watchVideoBtn?.addEventListener('click', () => {
       if (!videoModal) return;
+      videoModal.classList.remove('closing');
       videoModal.classList.remove('hidden');
       // small delay to allow CSS transition
       requestAnimationFrame(() => videoModal.classList.add('show'));
