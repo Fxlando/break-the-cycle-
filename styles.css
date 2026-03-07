@@ -189,6 +189,8 @@ header .content {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  gap: 14px;
   min-height: 70vh;
 }
 
@@ -378,6 +380,95 @@ h1 {
 
 .btn:active {
   transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.video-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.video-modal.hidden { display: none; }
+.video-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.video-modal.closing {
+  pointer-events: none;
+}
+
+.video-modal-content {
+  background: #0f0f17;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px;
+  width: min(900px, 92vw);
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.6);
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.video-modal.show .video-modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.video-modal.closing .video-modal-content {
+  animation: suckOut 180ms cubic-bezier(0.4, 0, 0.3, 1) forwards;
+}
+
+.video-modal video, .video-modal iframe {
+  width: 100%;
+  height: min(70vh, 500px);
+  border: none;
+  border-radius: 10px;
+  background: #000;
+}
+
+.video-modal-close {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.video-modal-close button {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.video-modal-close button:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+@keyframes suckOut {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.6); opacity: 0; }
 }
 
 /* Sections */

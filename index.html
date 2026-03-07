@@ -31,9 +31,22 @@
     </div>
     <div class="content container">
       <a href="quiz.html" class="btn">Take the Quiz</a>
+      <button class="btn btn-secondary" id="watchVideoBtn" type="button">Watch Video</button>
     </div>
     <div class="wave-divider"></div>
   </header>
+
+  <div id="videoModal" class="video-modal hidden">
+    <div class="video-modal-content">
+      <div class="video-modal-close">
+        <button type="button" id="closeVideoModal">Close</button>
+      </div>
+      <video id="heroVideo" controls preload="metadata" poster="">
+        <source src="" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
 
   <!-- How It Works Section -->
   <section class="container fade-in">
@@ -192,6 +205,41 @@
         subscribeMessage.textContent = 'Network issue, try again.';
         console.error('subscribe error', err);
       }
+    });
+
+    // Video modal
+    const watchVideoBtn = document.getElementById('watchVideoBtn');
+    const videoModal = document.getElementById('videoModal');
+    const closeVideoModal = document.getElementById('closeVideoModal');
+    const heroVideo = document.getElementById('heroVideo');
+
+    watchVideoBtn?.addEventListener('click', () => {
+      if (!videoModal) return;
+      videoModal.classList.remove('hidden');
+      // small delay to allow CSS transition
+      requestAnimationFrame(() => videoModal.classList.add('show'));
+      // TODO: set heroVideo.src to your hosted video URL
+      if (heroVideo && !heroVideo.src) {
+        heroVideo.src = '';
+      }
+    });
+
+    function hideVideoModal() {
+      if (!videoModal) return;
+      videoModal.classList.add('closing');
+      const finish = () => {
+        videoModal.classList.remove('show', 'closing');
+        videoModal.classList.add('hidden');
+        videoModal.removeEventListener('animationend', finish);
+      };
+      videoModal.addEventListener('animationend', finish);
+      if (heroVideo) heroVideo.pause();
+    }
+
+    closeVideoModal?.addEventListener('click', hideVideoModal);
+
+    videoModal?.addEventListener('click', (e) => {
+      if (e.target === videoModal) hideVideoModal();
     });
   </script>
 
