@@ -6,7 +6,7 @@
   <title>Break the Cycle - Find Your Path</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="quiz-paths.js"></script>
   <script src="life-paths.js"></script>
   <script>
@@ -28,6 +28,7 @@
       --text-muted: #6b6b7b;
       --border: #2a2a3a;
       --border-light: #3a3a4a;
+      --site-title-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
@@ -93,6 +94,7 @@
     }
 
     .paywall-card h2 {
+      font-family: var(--site-title-font);
       font-size: 1.6rem;
       letter-spacing: -0.02em;
     }
@@ -295,7 +297,7 @@
     }
 
     .header h1 {
-      font-family: 'Space Grotesk', 'Inter Tight', sans-serif;
+      font-family: var(--site-title-font);
       font-size: 2rem;
       margin-bottom: 8px;
       background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 50%, var(--primary-light) 100%);
@@ -379,6 +381,7 @@
     }
 
     .step h3 {
+      font-family: var(--site-title-font);
       font-size: 1.3rem;
       margin-bottom: 20px;
       color: var(--text-primary);
@@ -489,11 +492,11 @@
       margin-bottom: 15px;
       filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
       text-align: center;
-      font-family: 'Space Grotesk', 'Inter Tight', sans-serif;
+      font-family: var(--site-title-font);
     }
     
     .results-title {
-      font-family: 'Space Grotesk', 'Inter Tight', sans-serif;
+      font-family: var(--site-title-font);
       text-align: center;
       margin-bottom: 15px;
       background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
@@ -529,6 +532,7 @@
     }
 
     .section-divider h3 {
+      font-family: var(--site-title-font);
       font-size: 1.5rem;
       color: var(--primary-light);
       margin-bottom: 10px;
@@ -593,6 +597,7 @@
     .career-title { flex: 1; }
 
     .career-name {
+      font-family: var(--site-title-font);
       font-size: 1.8rem;
       background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
       -webkit-background-clip: text;
@@ -664,6 +669,7 @@
     }
 
     .career-details h4 {
+      font-family: var(--site-title-font);
       color: var(--accent-light);
       font-size: 1.1rem;
       margin-bottom: 12px;
