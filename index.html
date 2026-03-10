@@ -199,6 +199,9 @@
         if (res.ok && data.status === 'pending') {
           e.target.reset();
           subscribeMessage.textContent = 'Check your inbox for a confirmation link.';
+        } else if (res.ok && data.status === 'sent_without_tracking') {
+          e.target.reset();
+          subscribeMessage.textContent = 'Check your inbox. Your email was sent.';
         } else if (data.status === 'already_confirmed') {
           subscribeMessage.textContent = 'You are already subscribed.';
         } else {

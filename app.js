@@ -9,7 +9,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { z } = require('zod');
-const { PrismaClient, Role, SubscriberStatus, Mode } = require('@prisma/client');
+const { PrismaClient, Prisma, Role, SubscriberStatus, Mode } = require('@prisma/client');
 const { Resend } = require('resend');
 const { PostHog } = require('posthog-node');
 
@@ -341,6 +341,25 @@ function buildApp() {
     return data;
   };
 
+  const isPrismaOperationalError = (err) =>
+    err instanceof Prisma.PrismaClientInitializationError ||
+    err instanceof Prisma.PrismaClientKnownRequestError ||
+    err instanceof Prisma.PrismaClientUnknownRequestError ||
+    err instanceof Prisma.PrismaClientRustPanicError;
+
+  const sendSubscriberWelcomeEmail = async (email) => sendTransactionalEmail({
+    to: email,
+    subject: 'You are in with Break The Cycle',
+    text: 'Thanks for subscribing to Break The Cycle. You are on the list and will get future updates by email.',
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+        <h1 style="margin-bottom:16px">You are in</h1>
+        <p style="margin-bottom:16px">Thanks for subscribing to Break The Cycle.</p>
+        <p>You are on the list and will get future updates by email.</p>
+      </div>
+    `
+  });
+
   const shouldSkipSessionLookup = (req) => {
     const rawPath = req.path || '';
     const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath;
@@ -550,58 +569,70 @@ function buildApp() {
       const token = randomToken();
       const tokenHash = hashToken(token);
 
-      const existing = await runWithTimeoutOrThrow(
-        prisma.subscriber.findUnique({ where: { email } }),
-        DB_OPERATION_TIMEOUT_MS,
-        {
-          message: 'Subscriber lookup timed out.',
-          code: 'db_timeout'
+      try {
+        const existing = await runWithTimeoutOrThrow(
+          prisma.subscriber.findUnique({ where: { email } }),
+          DB_OPERATION_TIMEOUT_MS,
+          {
+            message: 'Subscriber lookup timed out.',
+            code: 'db_timeout'
+          }
+        );
+        if (existing && existing.status === SubscriberStatus.CONFIRMED) {
+          return res.json({ status: 'already_confirmed' });
         }
-      );
-      if (existing && existing.status === SubscriberStatus.CONFIRMED) {
-        return res.json({ status: 'already_confirmed' });
+
+        const subscriber = existing
+          ? await runWithTimeoutOrThrow(
+              prisma.subscriber.update({
+                where: { email },
+                data: { tokenHash, status: SubscriberStatus.PENDING, confirmedAt: null }
+              }),
+              DB_OPERATION_TIMEOUT_MS,
+              {
+                message: 'Subscriber update timed out.',
+                code: 'db_timeout'
+              }
+            )
+          : await runWithTimeoutOrThrow(
+              prisma.subscriber.create({ data: { email, tokenHash } }),
+              DB_OPERATION_TIMEOUT_MS,
+              {
+                message: 'Subscriber creation timed out.',
+                code: 'db_timeout'
+              }
+            );
+
+        const confirmUrl = `${FRONTEND_URL}/api/subscribe/confirm?token=${token}`;
+        const emailResult = await sendTransactionalEmail({
+          to: email,
+          subject: 'Confirm your Break The Cycle subscription',
+          text: `Thanks for joining Break The Cycle. Confirm your email here: ${confirmUrl}`,
+          html: `
+            <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+              <h1 style="margin-bottom:16px">Confirm your email</h1>
+              <p style="margin-bottom:16px">Thanks for joining Break The Cycle.</p>
+              <p style="margin-bottom:16px">
+                Click here to confirm your subscription:
+                <a href="${confirmUrl}">${confirmUrl}</a>
+              </p>
+              <p>If you did not request this, you can ignore this email.</p>
+            </div>
+          `
+        });
+
+        return res.json({ status: 'pending', id: subscriber.id, emailId: emailResult?.id || null });
+      } catch (err) {
+        if (err?.code === 'db_timeout' || isPrismaOperationalError(err)) {
+          console.error('subscribe db fallback', {
+            code: err?.code || err?.name || 'db_error',
+            message: err?.message || 'Unknown database error'
+          });
+          const emailResult = await sendSubscriberWelcomeEmail(email);
+          return res.status(202).json({ status: 'sent_without_tracking', emailId: emailResult?.id || null });
+        }
+        throw err;
       }
-
-      const subscriber = existing
-        ? await runWithTimeoutOrThrow(
-            prisma.subscriber.update({
-              where: { email },
-              data: { tokenHash, status: SubscriberStatus.PENDING, confirmedAt: null }
-            }),
-            DB_OPERATION_TIMEOUT_MS,
-            {
-              message: 'Subscriber update timed out.',
-              code: 'db_timeout'
-            }
-          )
-        : await runWithTimeoutOrThrow(
-            prisma.subscriber.create({ data: { email, tokenHash } }),
-            DB_OPERATION_TIMEOUT_MS,
-            {
-              message: 'Subscriber creation timed out.',
-              code: 'db_timeout'
-            }
-          );
-
-      const confirmUrl = `${FRONTEND_URL}/api/subscribe/confirm?token=${token}`;
-      const emailResult = await sendTransactionalEmail({
-        to: email,
-        subject: 'Confirm your Break The Cycle subscription',
-        text: `Thanks for joining Break The Cycle. Confirm your email here: ${confirmUrl}`,
-        html: `
-          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
-            <h1 style="margin-bottom:16px">Confirm your email</h1>
-            <p style="margin-bottom:16px">Thanks for joining Break The Cycle.</p>
-            <p style="margin-bottom:16px">
-              Click here to confirm your subscription:
-              <a href="${confirmUrl}">${confirmUrl}</a>
-            </p>
-            <p>If you did not request this, you can ignore this email.</p>
-          </div>
-        `
-      });
-
-      res.json({ status: 'pending', id: subscriber.id, emailId: emailResult?.id || null });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid email' });
       if (err?.isEmailError) {
