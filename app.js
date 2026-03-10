@@ -341,6 +341,143 @@ function buildApp() {
     return data;
   };
 
+  const escapeHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const renderEmailTemplate = ({
+    preheader,
+    eyebrow,
+    title,
+    intro,
+    bodyHtml = '',
+    ctaLabel,
+    ctaUrl,
+    ctaNote,
+    footerNote = 'If you did not request this email, you can safely ignore it.',
+    supportLabel = 'Need help? Reply to this email and we will point you in the right direction.'
+  }) => {
+    const safePreheader = escapeHtml(preheader);
+    const safeEyebrow = escapeHtml(eyebrow);
+    const safeTitle = escapeHtml(title);
+    const safeIntro = escapeHtml(intro);
+    const safeFooterNote = escapeHtml(footerNote);
+    const safeSupportLabel = escapeHtml(supportLabel);
+    const safeSiteUrl = escapeHtml(FRONTEND_URL);
+    const safeCtaUrl = ctaUrl ? escapeHtml(ctaUrl) : '';
+    const safeCtaLabel = ctaLabel ? escapeHtml(ctaLabel) : '';
+    const safeCtaNote = ctaNote ? escapeHtml(ctaNote) : '';
+
+    return `
+      <div style="margin:0;padding:0;background-color:#f2ede4;">
+        <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+          ${safePreheader}
+        </div>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;background-color:#f2ede4;">
+          <tr>
+            <td align="center" style="padding:32px 16px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;border-collapse:collapse;">
+                <tr>
+                  <td style="padding-bottom:16px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;background-color:#111827;border-radius:28px 28px 0 0;">
+                      <tr>
+                        <td style="padding:18px 28px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                              <td align="left" style="font-family:Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:2px;text-transform:uppercase;color:#d1d5db;">
+                                ${safeEyebrow}
+                              </td>
+                              <td align="right" style="font-family:Arial,sans-serif;font-size:12px;line-height:1.4;color:#9ca3af;">
+                                ${escapeHtml(new URL(FRONTEND_URL).hostname)}
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:40px 32px 32px;">
+                          <div style="display:inline-block;padding:8px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:999px;font-family:Arial,sans-serif;font-size:12px;line-height:1.2;letter-spacing:1.6px;text-transform:uppercase;color:#f9fafb;">
+                            Private Access
+                          </div>
+                          <h1 style="margin:18px 0 14px;font-family:Arial,sans-serif;font-size:34px;line-height:1.15;font-weight:700;color:#ffffff;">
+                            ${safeTitle}
+                          </h1>
+                          <p style="margin:0;font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#d1d5db;">
+                            ${safeIntro}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color:#ffffff;border-radius:0 0 28px 28px;box-shadow:0 20px 50px rgba(17,24,39,0.08);">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="padding:32px;">
+                          <div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.75;color:#1f2937;">
+                            ${bodyHtml}
+                          </div>
+                          ${ctaUrl ? `
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;margin-bottom:18px;">
+                              <tr>
+                                <td align="center" style="border-radius:999px;background-color:#111827;">
+                                  <a href="${safeCtaUrl}" style="display:inline-block;padding:15px 28px;font-family:Arial,sans-serif;font-size:15px;line-height:1;font-weight:700;color:#ffffff;text-decoration:none;">
+                                    ${safeCtaLabel}
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                          ` : ''}
+                          ${ctaUrl ? `
+                            <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;color:#6b7280;">
+                              ${safeCtaNote || 'If the button does not work, use the secure link below.'}
+                            </p>
+                            <p style="margin:0 0 26px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;word-break:break-all;">
+                              <a href="${safeCtaUrl}" style="color:#111827;text-decoration:underline;">${safeCtaUrl}</a>
+                            </p>
+                          ` : ''}
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:8px;">
+                            <tr>
+                              <td style="padding:18px 20px;border:1px solid #e5e7eb;border-radius:18px;background-color:#f9fafb;">
+                                <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:1.2px;text-transform:uppercase;color:#6b7280;">
+                                  What Happens Next
+                                </p>
+                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#374151;">
+                                  ${safeFooterNote}
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 32px 32px;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #e5e7eb;border-collapse:collapse;">
+                            <tr>
+                              <td style="padding-top:20px;font-family:Arial,sans-serif;font-size:12px;line-height:1.8;color:#6b7280;">
+                                <div style="margin-bottom:6px;font-weight:700;color:#111827;">Break The Cycle</div>
+                                <div style="margin-bottom:6px;">${safeSupportLabel}</div>
+                                <div><a href="${safeSiteUrl}" style="color:#111827;text-decoration:underline;">${safeSiteUrl}</a></div>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+  };
+
   const isPrismaOperationalError = (err) =>
     err instanceof Prisma.PrismaClientInitializationError ||
     err instanceof Prisma.PrismaClientKnownRequestError ||
@@ -349,15 +486,30 @@ function buildApp() {
 
   const sendSubscriberWelcomeEmail = async (email) => sendTransactionalEmail({
     to: email,
-    subject: 'You are in with Break The Cycle',
-    text: 'Thanks for subscribing to Break The Cycle. You are on the list and will get future updates by email.',
-    html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
-        <h1 style="margin-bottom:16px">You are in</h1>
-        <p style="margin-bottom:16px">Thanks for subscribing to Break The Cycle.</p>
-        <p>You are on the list and will get future updates by email.</p>
-      </div>
-    `
+    subject: 'Welcome to Break The Cycle',
+    text: [
+      'Welcome to Break The Cycle.',
+      '',
+      'You are officially on the list.',
+      'Watch your inbox for future drops, updates, and new releases.',
+      '',
+      `Visit us anytime: ${FRONTEND_URL}`
+    ].join('\n'),
+    html: renderEmailTemplate({
+      preheader: 'You are officially in.',
+      eyebrow: 'Break The Cycle',
+      title: 'You are officially in.',
+      intro: 'You are now on the list for new drops, updates, and future releases.',
+      bodyHtml: `
+        <p style="margin:0 0 16px;">Thanks for subscribing to Break The Cycle.</p>
+        <p style="margin:0 0 16px;">We will send the sharpest updates only, with clear next steps and no filler.</p>
+        <p style="margin:0;">Stay close. More is coming.</p>
+      `,
+      ctaLabel: 'Visit Break The Cycle',
+      ctaUrl: FRONTEND_URL,
+      ctaNote: 'You can also open the site directly using the link below.',
+      footerNote: 'You are subscribed and will receive future emails when new drops or updates go live.'
+    })
   });
 
   const shouldSkipSessionLookup = (req) => {
@@ -607,18 +759,29 @@ function buildApp() {
         const emailResult = await sendTransactionalEmail({
           to: email,
           subject: 'Confirm your Break The Cycle subscription',
-          text: `Thanks for joining Break The Cycle. Confirm your email here: ${confirmUrl}`,
-          html: `
-            <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
-              <h1 style="margin-bottom:16px">Confirm your email</h1>
-              <p style="margin-bottom:16px">Thanks for joining Break The Cycle.</p>
-              <p style="margin-bottom:16px">
-                Click here to confirm your subscription:
-                <a href="${confirmUrl}">${confirmUrl}</a>
-              </p>
-              <p>If you did not request this, you can ignore this email.</p>
-            </div>
-          `
+          text: [
+            'Confirm your Break The Cycle subscription.',
+            '',
+            'Click the secure link below to confirm your email:',
+            confirmUrl,
+            '',
+            'If you did not request this, you can ignore this email.'
+          ].join('\n'),
+          html: renderEmailTemplate({
+            preheader: 'Confirm your email to activate your subscription.',
+            eyebrow: 'Break The Cycle',
+            title: 'Confirm your email.',
+            intro: 'One quick step and you are fully in.',
+            bodyHtml: `
+              <p style="margin:0 0 16px;">Thanks for joining Break The Cycle.</p>
+              <p style="margin:0 0 16px;">Use the button below to confirm your subscription and activate future updates, drops, and releases.</p>
+              <p style="margin:0;">This confirmation protects your inbox and makes sure we are sending to the right person.</p>
+            `,
+            ctaLabel: 'Confirm Subscription',
+            ctaUrl: confirmUrl,
+            ctaNote: 'If the button does not work, use the secure confirmation link below.',
+            footerNote: 'Once confirmed, you will start receiving future Break The Cycle updates in this inbox.'
+          })
         });
 
         return res.json({ status: 'pending', id: subscriber.id, emailId: emailResult?.id || null });
@@ -710,18 +873,30 @@ function buildApp() {
       const verifyUrl = `${FRONTEND_URL}/api/auth/verify?token=${token}`;
       const emailResult = await sendTransactionalEmail({
         to: email,
-        subject: 'Your Break The Cycle login link',
-        text: `Click to sign in: ${verifyUrl} (valid for 30 minutes)`,
-        html: `
-          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
-            <h1 style="margin-bottom:16px">Your login link</h1>
-            <p style="margin-bottom:16px">
-              Click to sign in:
-              <a href="${verifyUrl}">${verifyUrl}</a>
-            </p>
-            <p>This link is valid for 30 minutes.</p>
-          </div>
-        `
+        subject: 'Your Break The Cycle sign-in link',
+        text: [
+          'Your Break The Cycle sign-in link is ready.',
+          '',
+          'Open the secure link below to sign in. It is valid for 30 minutes:',
+          verifyUrl,
+          '',
+          'If you did not request this, you can ignore this email.'
+        ].join('\n'),
+        html: renderEmailTemplate({
+          preheader: 'Your secure sign-in link is ready.',
+          eyebrow: 'Secure Sign-In',
+          title: 'Your sign-in link is ready.',
+          intro: 'Use this secure link to access your Break The Cycle account.',
+          bodyHtml: `
+            <p style="margin:0 0 16px;">Click the button below to sign in.</p>
+            <p style="margin:0 0 16px;">For security, this link expires in 30 minutes and can only be used once.</p>
+            <p style="margin:0;">If this request was not made by you, no action is needed.</p>
+          `,
+          ctaLabel: 'Sign In Securely',
+          ctaUrl: verifyUrl,
+          ctaNote: 'If the button does not work, use the secure sign-in link below.',
+          footerNote: 'This sign-in link expires in 30 minutes for security reasons.'
+        })
       });
 
       res.json({ status: 'sent', emailId: emailResult?.id || null });
