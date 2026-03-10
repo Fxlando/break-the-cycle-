@@ -179,7 +179,9 @@
     subscribeForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       subscribeMessage.textContent = '';
-      const email = e.target.email.value;
+      const email = e.target.email.value.trim();
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
       try {
         const res = await fetch(api('/api/subscribe'), {
           method: 'POST',
@@ -195,15 +197,20 @@
           return;
         }
         if (res.ok && data.status === 'pending') {
-          subscribeMessage.textContent = 'Check your email to confirm.';
+          e.target.reset();
+          subscribeMessage.textContent = 'Check your inbox for a confirmation link.';
         } else if (data.status === 'already_confirmed') {
           subscribeMessage.textContent = 'You are already subscribed.';
         } else {
           subscribeMessage.textContent = data.error || 'Could not subscribe right now.';
         }
       } catch (err) {
-        subscribeMessage.textContent = 'Network issue, try again.';
+        subscribeMessage.textContent = window.location.protocol === 'file:'
+          ? 'Start the site with npm start, then open http://localhost:3000/index.html.'
+          : 'Could not reach the server. Make sure the backend is running.';
         console.error('subscribe error', err);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
       }
     });
 

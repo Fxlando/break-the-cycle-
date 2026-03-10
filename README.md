@@ -130,6 +130,8 @@ Located at top of `styles.css`:
 
 - `quiz.html` now shows a magic-link sign-in form; after the emailed link is used, the user is redirected back and results are saved under their profile.
 - `index.html` newsletter form now posts to `/api/subscribe` instead of Formspree (double opt-in link is emailed via Resend if configured).
+- Quick test setup: set `RESEND_API_KEY=re_xxxxxxxxx` with your real key and `EMAIL_FROM=onboarding@resend.dev`.
+- Production setup: replace `EMAIL_FROM` with a verified sender like `Break The Cycle <hello@yourdomain.com>`. The backend returns a real error when the provider rejects a send instead of reporting false success.
 
 ## CI
 

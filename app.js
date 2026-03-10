@@ -27,16 +27,26 @@ function buildApp() {
   const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
   const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
   const STRIPE_PAYMENT_LINK = process.env.STRIPE_PAYMENT_LINK;
+  const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
+  const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev';
+  const EMAIL_FROM = process.env.EMAIL_FROM || DEFAULT_EMAIL_FROM;
+  const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO;
+  const hasResendApiKey = !!RESEND_API_KEY && !/^re_x+$/i.test(RESEND_API_KEY);
   const STRIPE = STRIPE_SECRET_KEY
     ? stripeLib(STRIPE_SECRET_KEY, STRIPE_ACCOUNT_ID ? { stripeAccount: STRIPE_ACCOUNT_ID } : undefined)
     : null;
-  const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+  const resend = hasResendApiKey
+    ? new Resend(RESEND_API_KEY)
+    : null;
   const posthog = process.env.POSTHOG_API_KEY ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST || 'https://us.i.posthog.com' }) : null;
   const SESSION_TTL_HOURS = parseInt(process.env.SESSION_TTL_HOURS || '720', 10);
   const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
   const SESSION_LOOKUP_TIMEOUT_MS = parseInt(process.env.SESSION_LOOKUP_TIMEOUT_MS || '1200', 10);
   const DISABLE_SESSION_LOOKUP = process.env.DISABLE_SESSION_LOOKUP === '1';
   const ACCESS_CODE_DB_TIMEOUT_MS = parseInt(process.env.ACCESS_CODE_DB_TIMEOUT_MS || '1200', 10);
+  const API_REQUEST_TIMEOUT_MS = parseInt(process.env.API_REQUEST_TIMEOUT_MS || '12000', 10);
+  const DB_OPERATION_TIMEOUT_MS = parseInt(process.env.DB_OPERATION_TIMEOUT_MS || '8000', 10);
+  const EMAIL_SEND_TIMEOUT_MS = parseInt(process.env.EMAIL_SEND_TIMEOUT_MS || '10000', 10);
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
@@ -82,6 +92,19 @@ function buildApp() {
     legacyHeaders: false
   }));
 
+  app.use('/api', (req, res, next) => {
+    const timer = setTimeout(() => {
+      if (!res.headersSent) {
+        res.status(504).json({ error: 'Request timed out while waiting on a dependency.' });
+      }
+    }, API_REQUEST_TIMEOUT_MS);
+    if (typeof timer.unref === 'function') timer.unref();
+    const clear = () => clearTimeout(timer);
+    res.once('finish', clear);
+    res.once('close', clear);
+    next();
+  });
+
   // Serve static when running standalone; Vercel will serve statics separately
   if (!process.env.VERCEL) {
     app.use(express.static(path.join(__dirname)));
@@ -110,6 +133,15 @@ function buildApp() {
     clearTimeout(timeout);
     if (result?.timedOut) return null;
     return result.value;
+  };
+
+  const runWithTimeoutOrThrow = async (promise, timeoutMs, { message, code, statusCode = 504 }) => {
+    const result = await runWithTimeout(promise, timeoutMs);
+    if (result !== null) return result;
+    const timeoutError = new Error(message);
+    timeoutError.code = code;
+    timeoutError.statusCode = statusCode;
+    throw timeoutError;
   };
 
   const createOrGetAccessCode = async (paidSessionId) => {
@@ -271,6 +303,42 @@ function buildApp() {
       event: name,
       properties
     });
+  };
+
+  const sendTransactionalEmail = async ({ to, subject, html, text }) => {
+    if (!resend) {
+      const configError = new Error('Email delivery is not configured. Set RESEND_API_KEY.');
+      configError.code = 'email_not_configured';
+      configError.isEmailError = true;
+      configError.statusCode = 503;
+      throw configError;
+    }
+
+    const { data, error } = await runWithTimeoutOrThrow(
+      resend.emails.send({
+        from: EMAIL_FROM,
+        ...(EMAIL_REPLY_TO ? { reply_to: EMAIL_REPLY_TO } : {}),
+        to,
+        subject,
+        html,
+        text
+      }),
+      EMAIL_SEND_TIMEOUT_MS,
+      {
+        message: 'Email provider timed out while sending the message.',
+        code: 'email_timeout'
+      }
+    );
+
+    if (error) {
+      const sendError = new Error(error.message || 'Unable to send email right now.');
+      sendError.code = error.name || 'email_delivery_failed';
+      sendError.isEmailError = true;
+      sendError.statusCode = 502;
+      throw sendError;
+    }
+
+    return data;
   };
 
   const shouldSkipSessionLookup = (req) => {
@@ -477,37 +545,73 @@ function buildApp() {
   // Email subscribe with double opt-in
   app.post('/api/subscribe', async (req, res) => {
     try {
-      const { email } = subscribeSchema.parse(req.body);
+      const parsed = subscribeSchema.parse(req.body);
+      const email = parsed.email.trim().toLowerCase();
       const token = randomToken();
       const tokenHash = hashToken(token);
 
-      const existing = await prisma.subscriber.findUnique({ where: { email } });
+      const existing = await runWithTimeoutOrThrow(
+        prisma.subscriber.findUnique({ where: { email } }),
+        DB_OPERATION_TIMEOUT_MS,
+        {
+          message: 'Subscriber lookup timed out.',
+          code: 'db_timeout'
+        }
+      );
       if (existing && existing.status === SubscriberStatus.CONFIRMED) {
         return res.json({ status: 'already_confirmed' });
       }
 
       const subscriber = existing
-        ? await prisma.subscriber.update({
-            where: { email },
-            data: { tokenHash, status: SubscriberStatus.PENDING, confirmedAt: null }
-          })
-        : await prisma.subscriber.create({ data: { email, tokenHash } });
+        ? await runWithTimeoutOrThrow(
+            prisma.subscriber.update({
+              where: { email },
+              data: { tokenHash, status: SubscriberStatus.PENDING, confirmedAt: null }
+            }),
+            DB_OPERATION_TIMEOUT_MS,
+            {
+              message: 'Subscriber update timed out.',
+              code: 'db_timeout'
+            }
+          )
+        : await runWithTimeoutOrThrow(
+            prisma.subscriber.create({ data: { email, tokenHash } }),
+            DB_OPERATION_TIMEOUT_MS,
+            {
+              message: 'Subscriber creation timed out.',
+              code: 'db_timeout'
+            }
+          );
 
       const confirmUrl = `${FRONTEND_URL}/api/subscribe/confirm?token=${token}`;
-      if (resend) {
-        await resend.emails.send({
-          from: 'Break The Cycle <no-reply@breakthecycle.app>',
-          to: email,
-          subject: 'Confirm your email',
-          html: `<p>Thanks for joining! Confirm here: <a href="${confirmUrl}">${confirmUrl}</a></p>`
-        });
-      } else {
-        console.log('Confirm URL (no email provider configured):', confirmUrl);
-      }
+      const emailResult = await sendTransactionalEmail({
+        to: email,
+        subject: 'Confirm your Break The Cycle subscription',
+        text: `Thanks for joining Break The Cycle. Confirm your email here: ${confirmUrl}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+            <h1 style="margin-bottom:16px">Confirm your email</h1>
+            <p style="margin-bottom:16px">Thanks for joining Break The Cycle.</p>
+            <p style="margin-bottom:16px">
+              Click here to confirm your subscription:
+              <a href="${confirmUrl}">${confirmUrl}</a>
+            </p>
+            <p>If you did not request this, you can ignore this email.</p>
+          </div>
+        `
+      });
 
-      res.json({ status: 'pending', id: subscriber.id });
+      res.json({ status: 'pending', id: subscriber.id, emailId: emailResult?.id || null });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid email' });
+      if (err?.isEmailError) {
+        console.error('subscribe email error', { code: err.code, message: err.message });
+        return res.status(err.statusCode || 502).json({ error: err.message });
+      }
+      if (err?.code === 'db_timeout') {
+        console.error('subscribe db timeout', { message: err.message });
+        return res.status(err.statusCode || 504).json({ error: err.message });
+      }
       console.error('subscribe error', err);
       res.status(500).json({ error: 'Unable to subscribe' });
     }
@@ -536,33 +640,70 @@ function buildApp() {
   const authSchema = z.object({ email: z.string().email() });
   app.post('/api/auth/magic-link', async (req, res) => {
     try {
-      const { email } = authSchema.parse(req.body);
+      const parsed = authSchema.parse(req.body);
+      const email = parsed.email.trim().toLowerCase();
       const token = randomToken();
       const tokenHash = hashToken(token);
       const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
 
-      let user = await prisma.user.findUnique({ where: { email } });
-      if (!user) user = await prisma.user.create({ data: { email, role: Role.USER } });
-
-      await prisma.magicLinkToken.create({
-        data: { tokenHash, email, userId: user.id, expiresAt }
-      });
-
-      const verifyUrl = `${FRONTEND_URL}/api/auth/verify?token=${token}`;
-      if (resend) {
-        await resend.emails.send({
-          from: 'Break The Cycle <no-reply@breakthecycle.app>',
-          to: email,
-          subject: 'Your login link',
-          html: `<p>Click to sign in: <a href="${verifyUrl}">${verifyUrl}</a> (valid 30 minutes)</p>`
-        });
-      } else {
-        console.log('Magic link URL (no email provider configured):', verifyUrl);
+      let user = await runWithTimeoutOrThrow(
+        prisma.user.findUnique({ where: { email } }),
+        DB_OPERATION_TIMEOUT_MS,
+        {
+          message: 'User lookup timed out.',
+          code: 'db_timeout'
+        }
+      );
+      if (!user) {
+        user = await runWithTimeoutOrThrow(
+          prisma.user.create({ data: { email, role: Role.USER } }),
+          DB_OPERATION_TIMEOUT_MS,
+          {
+            message: 'User creation timed out.',
+            code: 'db_timeout'
+          }
+        );
       }
 
-      res.json({ status: 'sent' });
+      await runWithTimeoutOrThrow(
+        prisma.magicLinkToken.create({
+          data: { tokenHash, email, userId: user.id, expiresAt }
+        }),
+        DB_OPERATION_TIMEOUT_MS,
+        {
+          message: 'Magic link creation timed out.',
+          code: 'db_timeout'
+        }
+      );
+
+      const verifyUrl = `${FRONTEND_URL}/api/auth/verify?token=${token}`;
+      const emailResult = await sendTransactionalEmail({
+        to: email,
+        subject: 'Your Break The Cycle login link',
+        text: `Click to sign in: ${verifyUrl} (valid for 30 minutes)`,
+        html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+            <h1 style="margin-bottom:16px">Your login link</h1>
+            <p style="margin-bottom:16px">
+              Click to sign in:
+              <a href="${verifyUrl}">${verifyUrl}</a>
+            </p>
+            <p>This link is valid for 30 minutes.</p>
+          </div>
+        `
+      });
+
+      res.json({ status: 'sent', emailId: emailResult?.id || null });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid email' });
+      if (err?.isEmailError) {
+        console.error('magic-link email error', { code: err.code, message: err.message });
+        return res.status(err.statusCode || 502).json({ error: err.message });
+      }
+      if (err?.code === 'db_timeout') {
+        console.error('magic-link db timeout', { message: err.message });
+        return res.status(err.statusCode || 504).json({ error: err.message });
+      }
       console.error('magic-link error', err);
       res.status(500).json({ error: 'Unable to send magic link' });
     }
