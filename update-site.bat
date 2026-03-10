@@ -1,5 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
+set "GIT_TERMINAL_PROMPT=0"
+set "GCM_INTERACTIVE=never"
 cls
 
 echo ================================
@@ -10,78 +13,73 @@ echo.
 REM Check if git is available
 git --version >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Git is not installed or not in PATH
-    pause
+    echo ERROR: Git is not installed or not in PATH.
+    echo Closing in 10 seconds...
+    timeout /t 10 /nobreak >nul
     exit /b 1
 )
 
 REM Check git status before proceeding
 git status >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: This directory is not a valid git repository
-    pause
+    echo ERROR: This directory is not a valid git repository.
+    echo Closing in 10 seconds...
+    timeout /t 10 /nobreak >nul
     exit /b 1
 )
 
-REM Stage all changes
 echo Staging files...
 git add .
 
-REM Check if there are changes to commit
-git diff-index --quiet HEAD --
-if errorlevel 1 (
-    echo Files staged for commit...
-) else (
+REM If nothing is staged, there is nothing to deploy.
+git diff --cached --quiet
+if not errorlevel 1 (
     echo.
-    echo WARNING: No changes detected in working directory
-    echo.
-    set /p proceed="Continue anyway? (y/n): "
-    if /i not "!proceed!"=="y" (
-        echo Cancelled.
-        pause
-        exit /b 0
-    )
+    echo No changes detected. Nothing to update.
+    echo Closing in 5 seconds...
+    timeout /t 5 /nobreak >nul
+    exit /b 0
 )
 
-REM Get commit message
-echo.
-set /p commit_msg="Enter commit message (or press Enter for default): "
-if "!commit_msg!"=="" set commit_msg=Update site - %date% %time%
+for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format ''yyyy-MM-dd HH:mm:ss''"') do set "commit_stamp=%%I"
+set "commit_msg=Auto update - !commit_stamp!"
 
 echo.
 echo Committing changes with message: "!commit_msg!"
 git commit -m "!commit_msg!"
 
 if errorlevel 1 (
-    echo ERROR: Failed to commit changes
-    pause
+    echo.
+    echo ERROR: Failed to commit changes.
+    echo Closing in 10 seconds...
+    timeout /t 10 /nobreak >nul
     exit /b 1
 )
 
-echo Committed successfully...
 echo.
 echo Pushing to GitHub (origin/main)...
 git push origin main
 
 if errorlevel 1 (
     echo.
-    echo ERROR: Failed to push to GitHub
-    echo Please check your internet connection and GitHub credentials
-    pause
+    echo ERROR: Failed to push to GitHub.
+    echo Check your internet connection and GitHub sign-in.
+    echo Closing in 15 seconds...
+    timeout /t 15 /nobreak >nul
     exit /b 1
 )
 
 echo.
 echo ================================
-echo  Deployment in Progress!
+echo  Update Complete
 echo ================================
 echo.
-echo Your changes have been pushed successfully!
-echo Vercel will automatically deploy your changes...
+echo Your changes were pushed successfully.
+echo Vercel will deploy automatically.
 echo.
-echo Review your deployment:
+echo Review deployment:
 echo https://vercel.com/fxlando/break-the-cycle
 echo.
-echo Your site will be live in ~30-60 seconds
-echo.
-pause
+echo Closing in 5 seconds...
+timeout /t 5 /nobreak >nul
+exit /b 0
