@@ -1569,6 +1569,7 @@
     let accessCodePending = false;
     const HONESTY_POPUP_DELAY_MS = 5000;
     const HONESTY_POPUP_VISIBLE_MS = 20000;
+    const HONESTY_POPUP_REPEAT_DELAY_MS = 10000;
     let honestyPopupTimer = null;
     let honestyPopupHideTimer = null;
 
@@ -1798,16 +1799,19 @@
       honestyPopup.classList.add('show');
       honestyPopupHideTimer = setTimeout(() => {
         hideHonestyPopup();
+        if (shouldShowHonestyPopup()) {
+          scheduleHonestyPopup(HONESTY_POPUP_REPEAT_DELAY_MS);
+        }
       }, HONESTY_POPUP_VISIBLE_MS);
     }
 
-    function scheduleHonestyPopup() {
+    function scheduleHonestyPopup(delayMs = HONESTY_POPUP_DELAY_MS) {
       if (!honestyPopup) return;
       clearHonestyPopupTimers();
       hideHonestyPopup();
       honestyPopupTimer = setTimeout(() => {
         showHonestyPopup();
-      }, HONESTY_POPUP_DELAY_MS);
+      }, delayMs);
     }
 
     function getPendingResults() {
