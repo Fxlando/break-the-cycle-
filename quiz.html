@@ -1807,11 +1807,12 @@
 
     function scheduleHonestyPopup(delayMs = HONESTY_POPUP_DELAY_MS) {
       if (!honestyPopup) return;
+      const resolvedDelay = Number.isFinite(delayMs) ? delayMs : HONESTY_POPUP_DELAY_MS;
       clearHonestyPopupTimers();
       hideHonestyPopup();
       honestyPopupTimer = setTimeout(() => {
         showHonestyPopup();
-      }, delayMs);
+      }, resolvedDelay);
     }
 
     function getPendingResults() {
@@ -2120,7 +2121,7 @@
 
     bindAccessCodeCopy(accessCodeCopy);
     document.addEventListener('DOMContentLoaded', initPaywall);
-    window.addEventListener('load', scheduleHonestyPopup, { once: true });
+    window.addEventListener('load', () => scheduleHonestyPopup(), { once: true });
 
     async function persistQuizRun(payload) {
       if (!currentUser) return; // Skip silently; user can still view results
