@@ -474,20 +474,35 @@
 
     .btn:active { transform: translateY(-1px); }
 
-    .mode-honesty-note {
-      margin: -4px 0 14px;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
+    .honesty-popup {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      width: min(680px, calc(100vw - 32px));
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
       border: 1px solid var(--border-light);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-muted);
-      font-size: 0.86rem;
+      background: rgba(26, 26, 36, 0.96);
+      color: var(--text-secondary);
+      font-size: 0.88rem;
       line-height: 1.45;
       text-align: center;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(6px);
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      z-index: 110;
     }
 
-    .mode-honesty-note strong {
-      color: var(--text-secondary);
+    .honesty-popup.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .honesty-popup strong {
+      color: var(--text-primary);
       font-weight: 600;
     }
 
@@ -746,7 +761,7 @@
       .step h3 { font-size: 1.1rem; margin-bottom: 12px; line-height: 1.4; }
       .options { gap: 8px; margin-bottom: 12px; }
       .option label { padding: 12px 14px; font-size: 0.9rem; line-height: 1.3; min-height: 44px; display: flex; align-items: center; }
-      .mode-honesty-note { font-size: 0.8rem; padding: 9px 10px; margin: -2px 0 12px; }
+      .honesty-popup { font-size: 0.8rem; padding: 10px 11px; bottom: 14px; }
       .btn { padding: 14px; font-size: 0.95rem; min-height: 48px; }
       
       /* RESULTS MOBILE FIXES */
@@ -857,7 +872,6 @@
           <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life">🌟 Finding myself - I feel a little out of order, need hobbies & passions</label></div>
           <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both">🚀 Both - Exploring career & personal growth</label></div>
         </div>
-        <p class="mode-honesty-note"><strong>Quick reminder:</strong> answer every question with complete honesty. Honest answers are what make this useful and turn it into real action in your life.</p>
         <button type="button" class="btn" onclick="startQuiz()">Let's Go!</button>
       </div>
 
@@ -1488,6 +1502,10 @@
         <button class="btn" onclick="retakeQuiz()">Retake Quiz</button>
       </div>
     </div>
+
+    <div id="honestyPopup" class="honesty-popup" role="status" aria-live="polite">
+      <strong>Quick reminder:</strong> Answer every question with complete honesty. Honest answers are what make this useful and turn it into real action in your life.
+    </div>
   </div>
 
   <script>
@@ -1535,6 +1553,7 @@
     const accessCodeStatus = document.getElementById('accessCodeStatus');
     const accessCodeStatusTargets = [accessCodeStatus].filter(Boolean);
     const resultsEl = document.getElementById('results');
+    const honestyPopup = document.getElementById('honestyPopup');
 
     let quizMode = null; // 'career', 'life', or 'both'
     let currentStep = 0;
@@ -1548,6 +1567,10 @@
     let activeSessionId = null;
     let didRestoreOnLoad = false;
     let accessCodePending = false;
+    const HONESTY_POPUP_DELAY_MS = 5000;
+    const HONESTY_POPUP_VISIBLE_MS = 6500;
+    let honestyPopupTimer = null;
+    let honestyPopupHideTimer = null;
 
     // Pending results persistence (for post-payment restore)
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
@@ -1743,6 +1766,48 @@
       accessCodeMessage.classList.remove('error', 'success');
       if (tone === 'error') accessCodeMessage.classList.add('error');
       if (tone === 'success') accessCodeMessage.classList.add('success');
+    }
+
+    function clearHonestyPopupTimers() {
+      if (honestyPopupTimer) {
+        clearTimeout(honestyPopupTimer);
+        honestyPopupTimer = null;
+      }
+      if (honestyPopupHideTimer) {
+        clearTimeout(honestyPopupHideTimer);
+        honestyPopupHideTimer = null;
+      }
+    }
+
+    function hideHonestyPopup() {
+      if (!honestyPopup) return;
+      honestyPopup.classList.remove('show');
+    }
+
+    function shouldShowHonestyPopup() {
+      if (!honestyPopup || quizMode) return false;
+      const modeStep = document.querySelector('[data-step="0"]');
+      if (!modeStep || !modeStep.classList.contains('active')) return false;
+      if (isResultsActive()) return false;
+      if (paywallOverlay && !paywallOverlay.classList.contains('hidden')) return false;
+      return true;
+    }
+
+    function showHonestyPopup() {
+      if (!shouldShowHonestyPopup()) return;
+      honestyPopup.classList.add('show');
+      honestyPopupHideTimer = setTimeout(() => {
+        hideHonestyPopup();
+      }, HONESTY_POPUP_VISIBLE_MS);
+    }
+
+    function scheduleHonestyPopup() {
+      if (!honestyPopup) return;
+      clearHonestyPopupTimers();
+      hideHonestyPopup();
+      honestyPopupTimer = setTimeout(() => {
+        showHonestyPopup();
+      }, HONESTY_POPUP_DELAY_MS);
     }
 
     function getPendingResults() {
@@ -2051,6 +2116,7 @@
 
     bindAccessCodeCopy(accessCodeCopy);
     document.addEventListener('DOMContentLoaded', initPaywall);
+    window.addEventListener('load', scheduleHonestyPopup, { once: true });
 
     async function persistQuizRun(payload) {
       if (!currentUser) return; // Skip silently; user can still view results
@@ -2075,6 +2141,9 @@
     }
 
     async function startQuiz() {
+      clearHonestyPopupTimers();
+      hideHonestyPopup();
+
       // Let users take the quiz; payment is required only to see results (checked in displayResults)
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
@@ -2200,6 +2269,8 @@
 
     function displayResults(careerAnswers, lifeAnswers, options = {}) {
       console.log('displayResults called');
+      clearHonestyPopupTimers();
+      hideHonestyPopup();
       
       // Check if user has paid before showing results
       if (!hasPaid) {
