@@ -936,12 +936,16 @@
 
         <!-- Career Q5 -->
         <div class="step" data-step="5" data-track="career">
-          <h3>How do you feel about being on camera/social media?</h3>
+          <h3>Any hard no's for your future work? (Select all that apply)</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c5" value="camera_love" id="c5a"><label for="c5a">Love it - I'm comfortable creating content</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_okay" id="c5b"><label for="c5b">I could do it - not my first choice but okay</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_no" id="c5c"><label for="c5c">Prefer not - would rather stay behind the scenes</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_never" id="c5d"><label for="c5d">Absolutely not - I value privacy</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_beauty" id="c5a" onclick="toggleCareerHardNoOption(this.value)"><label for="c5a">Beauty/personal care services</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_healthcare" id="c5b" onclick="toggleCareerHardNoOption(this.value)"><label for="c5b">Healthcare/medical environments</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_sales" id="c5c" onclick="toggleCareerHardNoOption(this.value)"><label for="c5c">Sales-heavy/commission roles</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_desk" id="c5d" onclick="toggleCareerHardNoOption(this.value)"><label for="c5d">Desk/computer-heavy work</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_physical" id="c5e" onclick="toggleCareerHardNoOption(this.value)"><label for="c5e">High physical labor jobs</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_public" id="c5f" onclick="toggleCareerHardNoOption(this.value)"><label for="c5f">Public-facing customer service</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="avoid_camera" id="c5g" onclick="toggleCareerHardNoOption(this.value)"><label for="c5g">Content creation/on-camera work</label></div>
+            <div class="option"><input type="checkbox" name="c5_hard_no" value="open_all" id="c5h" onclick="toggleCareerHardNoOption(this.value)"><label for="c5h">I'm open to all</label></div>
           </div>
           <button type="button" class="btn" onclick="nextCareerStep(5)">Next</button>
         </div>
@@ -1566,6 +1570,7 @@
 
     let quizMode = null; // 'career', 'life', or 'both'
     let userAgeRange = null;
+    let careerHardNos = [];
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
@@ -1578,6 +1583,17 @@
     const LIFE_SIGNAL_PRIORITY = [1, 2, 3, 4, 5, 6, 15, 20, 19, 7, 16, 10, 11, 12, 14, 21, 22, 23, 24, 25, 8, 9, 13, 17, 18];
     const AGE_RANGE_OPTIONS = ['age_13_17', 'age_18_24', 'age_25_34', 'age_35_44', 'age_45_plus', 'age_prefer_not'];
     const MINOR_AGE_RANGE = 'age_13_17';
+    const CAREER_HARD_NO_OPTIONS = ['avoid_beauty', 'avoid_healthcare', 'avoid_sales', 'avoid_desk', 'avoid_physical', 'avoid_public', 'avoid_camera', 'open_all'];
+    const CAREER_HARD_NO_OPEN_ALL = 'open_all';
+    const CAREER_HARD_NO_LABELS = {
+      avoid_beauty: 'Beauty/personal care services',
+      avoid_healthcare: 'Healthcare/medical environments',
+      avoid_sales: 'Sales-heavy/commission roles',
+      avoid_desk: 'Desk/computer-heavy work',
+      avoid_physical: 'High physical labor jobs',
+      avoid_public: 'Public-facing customer service',
+      avoid_camera: 'Content creation/on-camera work'
+    };
     const MINOR_FORCE_EXCLUDE_KEYS = new Set([
       'onlyFansCreator',
       'lawyer',
@@ -1623,6 +1639,12 @@
       'eventPlanner',
       'firefighter'
     ];
+    const HARD_NO_BEAUTY_CATEGORIES = new Set(['Personal Services', 'Creative/Personal Services']);
+    const HARD_NO_HEALTHCARE_CATEGORIES = new Set(['Healthcare']);
+    const HARD_NO_SALES_CATEGORIES = new Set(['Sales']);
+    const HARD_NO_DESK_CATEGORIES = new Set(['Technology', 'Tech/Design', 'Digital Marketing', 'Online Marketing', 'Remote Services', 'Creative/Tech', 'Professional Services']);
+    const HARD_NO_PUBLIC_CATEGORIES = new Set(['Sales', 'Personal Services', 'Healthcare', 'Education', 'Public Service']);
+    const HARD_NO_CAMERA_CATEGORIES = new Set(['Content Creation']);
     let answeredStepsByTrack = {
       career: new Set(),
       life: new Set()
@@ -1662,6 +1684,45 @@
       return value === MINOR_AGE_RANGE;
     }
 
+    function isValidCareerHardNo(value) {
+      return CAREER_HARD_NO_OPTIONS.includes(value);
+    }
+
+    function normalizeCareerHardNos(values) {
+      if (!Array.isArray(values)) return [];
+      const normalized = [];
+      for (const value of values) {
+        if (!isValidCareerHardNo(value)) continue;
+        if (!normalized.includes(value)) normalized.push(value);
+      }
+      if (normalized.includes(CAREER_HARD_NO_OPEN_ALL)) return [];
+      return normalized;
+    }
+
+    function getCareerHardNoSelectionsFromUi() {
+      const checked = Array.from(document.querySelectorAll('input[name="c5_hard_no"]:checked')).map((node) => node.value);
+      return normalizeCareerHardNos(checked);
+    }
+
+    function toggleCareerHardNoOption(changedValue) {
+      const allNodes = Array.from(document.querySelectorAll('input[name="c5_hard_no"]'));
+      if (!allNodes.length) return;
+      if (changedValue === CAREER_HARD_NO_OPEN_ALL) {
+        const openAllNode = allNodes.find((node) => node.value === CAREER_HARD_NO_OPEN_ALL);
+        if (openAllNode?.checked) {
+          allNodes.forEach((node) => {
+            if (node.value !== CAREER_HARD_NO_OPEN_ALL) node.checked = false;
+          });
+        }
+        return;
+      }
+
+      const openAllNode = allNodes.find((node) => node.value === CAREER_HARD_NO_OPEN_ALL);
+      if (openAllNode) openAllNode.checked = false;
+    }
+
+    window.toggleCareerHardNoOption = toggleCareerHardNoOption;
+
     function safeJsonParse(value) {
       try {
         return JSON.parse(value);
@@ -1670,13 +1731,14 @@
       }
     }
 
-    function savePendingResults(careerAnswers, lifeAnswers, ageRange = userAgeRange) {
+    function savePendingResults(careerAnswers, lifeAnswers, ageRange = userAgeRange, hardNos = careerHardNos) {
       if (!isValidMode(quizMode)) return;
       const payload = {
         v: 1,
         savedAt: Date.now(),
         mode: quizMode,
         ageRange: isValidAgeRange(ageRange) ? ageRange : null,
+        careerHardNos: normalizeCareerHardNos(hardNos),
         careerAnswers: careerAnswers || {},
         lifeAnswers: lifeAnswers || {}
       };
@@ -1709,6 +1771,10 @@
           return null;
         }
         if (data.ageRange != null && !isValidAgeRange(data.ageRange)) {
+          localStorage.removeItem(PENDING_RESULTS_KEY);
+          return null;
+        }
+        if (data.careerHardNos != null && !Array.isArray(data.careerHardNos)) {
           localStorage.removeItem(PENDING_RESULTS_KEY);
           return null;
         }
@@ -1902,11 +1968,17 @@
         return {
           mode,
           ageRange: isValidAgeRange(window.pendingResults.ageRange) ? window.pendingResults.ageRange : null,
+          careerHardNos: normalizeCareerHardNos(window.pendingResults.careerHardNos),
           careerAnswers: window.pendingResults.careerAnswers || {},
           lifeAnswers: window.pendingResults.lifeAnswers || {}
         };
       }
-      return loadPendingResults();
+      const stored = loadPendingResults();
+      if (!stored) return null;
+      return {
+        ...stored,
+        careerHardNos: normalizeCareerHardNos(stored.careerHardNos)
+      };
     }
 
     function setHeaderForMode(mode) {
@@ -1927,6 +1999,7 @@
       if (!pending || !isValidMode(pending.mode)) return false;
       quizMode = pending.mode;
       userAgeRange = isValidAgeRange(pending.ageRange) ? pending.ageRange : null;
+      careerHardNos = normalizeCareerHardNos(pending.careerHardNos);
       setHeaderForMode(quizMode);
       hidePaywall();
       window.requestAnimationFrame(() => {
@@ -2001,6 +2074,7 @@
       if (sessionId && pending && isValidMode(pending.mode)) {
         quizMode = pending.mode;
         userAgeRange = isValidAgeRange(pending.ageRange) ? pending.ageRange : null;
+        careerHardNos = normalizeCareerHardNos(pending.careerHardNos);
         setHeaderForMode(quizMode);
         hasPaid = true;
         hidePaywall();
@@ -2253,6 +2327,23 @@
         if (selected) answers[`${prefix}${i}`] = selected.value;
       }
       return answers;
+    }
+
+    function getStepAnswerPayload(track, step) {
+      if (track === 'career' && step === 5) {
+        const selectedHardNos = getCareerHardNoSelectionsFromUi();
+        const openAllSelected = Boolean(document.querySelector(`input[name="c5_hard_no"][value="${CAREER_HARD_NO_OPEN_ALL}"]:checked`));
+        if (!selectedHardNos.length && !openAllSelected) return null;
+        return {
+          value: openAllSelected ? CAREER_HARD_NO_OPEN_ALL : selectedHardNos.join('|'),
+          hardNos: selectedHardNos
+        };
+      }
+
+      const questionName = track === 'career' ? `c${step}` : `l${step}`;
+      const answer = document.querySelector(`input[name="${questionName}"]:checked`);
+      if (!answer) return null;
+      return { value: answer.value };
     }
 
     function pushUniqueSteps(target, steps) {
@@ -2544,6 +2635,7 @@
 
       quizMode = modeInput.value;
       userAgeRange = ageInput.value;
+      careerHardNos = [];
       resetAdaptiveBranchingState();
 
       // Update header
@@ -2585,11 +2677,14 @@
     function nextQuestion(step) {
       // Validate current answer
       const track = currentTrack;
-      const questionName = track === 'career' ? `c${step}` : `l${step}`;
-      const answer = document.querySelector(`input[name="${questionName}"]:checked`);
-      if (!answer) {
+      const answerPayload = getStepAnswerPayload(track, step);
+      if (!answerPayload) {
         alert('Please select an answer');
         return;
+      }
+
+      if (track === 'career' && step === 5) {
+        careerHardNos = normalizeCareerHardNos(answerPayload.hardNos);
       }
 
       markAnsweredStep(track, step);
@@ -2610,7 +2705,7 @@
         return;
       }
 
-      const nextStep = getNextAdaptiveStep(track, step, answer.value);
+      const nextStep = getNextAdaptiveStep(track, step, answerPayload.value);
       if (!nextStep) {
         updateProgress();
         submitQuiz();
@@ -2653,6 +2748,7 @@
       let lifeAnswers = {};
 
       if (quizMode === 'career' || quizMode === 'both') {
+        careerHardNos = getCareerHardNoSelectionsFromUi();
         for (let i = 1; i <= 25; i++) {
           const selected = document.querySelector(`input[name="c${i}"]:checked`);
           if (selected) careerAnswers[`c${i}`] = selected.value;
@@ -2746,6 +2842,60 @@
       return result;
     }
 
+    function doesPathMatchCareerHardNo(result, hardNo) {
+      const path = result?.path || {};
+      const key = result?.key || '';
+      const category = String(path.category || '');
+      const name = String(path.name || '').toLowerCase();
+      const description = String(path.description || '').toLowerCase();
+      const skills = Array.isArray(path.skillsRequired) ? path.skillsRequired.map((skill) => String(skill).toLowerCase()) : [];
+      const textBlob = `${name} ${description} ${skills.join(' ')}`;
+
+      if (hardNo === 'avoid_beauty') {
+        return HARD_NO_BEAUTY_CATEGORIES.has(category) || /barber|tattoo|massage|beauty|cosmet/.test(textBlob);
+      }
+      if (hardNo === 'avoid_healthcare') {
+        return HARD_NO_HEALTHCARE_CATEGORIES.has(category) || /nurse|dentist|pharmac|healthcare|medical|chiropractor/.test(textBlob);
+      }
+      if (hardNo === 'avoid_sales') {
+        return HARD_NO_SALES_CATEGORIES.has(category) || /sales|commission|closing/.test(textBlob);
+      }
+      if (hardNo === 'avoid_desk') {
+        return HARD_NO_DESK_CATEGORIES.has(category) || key === 'softwareDeveloper' || key === 'softwareEngineer' || key === 'dataAnalyst' || key === 'uxDesigner';
+      }
+      if (hardNo === 'avoid_physical') {
+        const physicalDemand = String(path.physicalDemand || '').toLowerCase();
+        return physicalDemand === 'high' || physicalDemand === 'very high' || category === 'Skilled Trade' || category === 'Construction/Trade' || key === 'firefighter';
+      }
+      if (hardNo === 'avoid_public') {
+        return HARD_NO_PUBLIC_CATEGORIES.has(category) || textBlob.includes('customer service') || textBlob.includes('client');
+      }
+      if (hardNo === 'avoid_camera') {
+        return HARD_NO_CAMERA_CATEGORIES.has(category) || key === 'socialMediaManager' || key === 'tikTokShop' || /camera|on-camera|stream|podcast|youtube/.test(textBlob);
+      }
+      return false;
+    }
+
+    function applyCareerHardNoFilter(careerScores, hardNos) {
+      if (!Array.isArray(careerScores) || !careerScores.length) {
+        return { scores: [], isAdjusted: false, removedCount: 0, note: '' };
+      }
+
+      const activeHardNos = normalizeCareerHardNos(hardNos);
+      if (!activeHardNos.length) {
+        return { scores: careerScores, isAdjusted: false, removedCount: 0, note: '' };
+      }
+
+      const filteredScores = careerScores.filter((result) => !activeHardNos.some((hardNo) => doesPathMatchCareerHardNo(result, hardNo)));
+      const removedCount = Math.max(careerScores.length - filteredScores.length, 0);
+      const labels = activeHardNos.map((hardNo) => CAREER_HARD_NO_LABELS[hardNo] || hardNo);
+      const note = removedCount > 0
+        ? `Applied your hard no's: ${labels.join(', ')}.`
+        : `No paths matched your hard no's: ${labels.join(', ')}.`;
+
+      return { scores: filteredScores, isAdjusted: true, removedCount, note };
+    }
+
     function applyCareerEligibilityFilter(careerScores, ageRange) {
       if (!Array.isArray(careerScores) || !careerScores.length) {
         return { scores: [], isAdjusted: false, removedCount: 0, note: '' };
@@ -2786,13 +2936,14 @@
       console.log('displayResults called');
       clearHonestyPopupTimers();
       hideHonestyPopup();
+      careerHardNos = normalizeCareerHardNos(careerHardNos);
       
       // Check if user has paid before showing results
       if (!hasPaid) {
         showPaywall('Unlock your results for just $2.99');
         // Save answers for later display
-        window.pendingResults = { careerAnswers, lifeAnswers, mode: quizMode, ageRange: userAgeRange };
-        savePendingResults(careerAnswers, lifeAnswers, userAgeRange);
+        window.pendingResults = { careerAnswers, lifeAnswers, mode: quizMode, ageRange: userAgeRange, careerHardNos };
+        savePendingResults(careerAnswers, lifeAnswers, userAgeRange, careerHardNos);
         return;
       }
 
@@ -2821,7 +2972,8 @@
         console.log('Scoring career paths...');
         const careerScores = scoreCareerPaths(careerAnswers);
         console.log('Career scores:', careerScores.length, 'paths scored');
-        const careerEligibility = applyCareerEligibilityFilter(careerScores, userAgeRange);
+        const hardNoFiltered = applyCareerHardNoFilter(careerScores, careerHardNos);
+        const careerEligibility = applyCareerEligibilityFilter(hardNoFiltered.scores, userAgeRange);
         top3Career = careerEligibility.scores.slice(0, 3);
         console.log('Top 3 career:', top3Career);
         
@@ -2829,12 +2981,16 @@
           careerResultsDiv.innerHTML = '<div class="section-divider"><h3>🎯 Your Career Matches</h3></div>';
         }
 
+        if (hardNoFiltered.isAdjusted) {
+          careerResultsDiv.innerHTML += `<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">${hardNoFiltered.note}</p>`;
+        }
+
         if (careerEligibility.isAdjusted) {
           careerResultsDiv.innerHTML += `<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">${careerEligibility.note}</p>`;
         }
 
         if (!top3Career.length) {
-          careerResultsDiv.innerHTML += '<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">No age-eligible career matches were found from this pass. Try retaking with broader preferences.</p>';
+          careerResultsDiv.innerHTML += '<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">No career matches remained after your filters. Try retaking with broader preferences.</p>';
         } else {
           top3Career.forEach((result, index) => {
             careerResultsDiv.innerHTML += createPathHTML(result, index + 1, true);
@@ -2868,7 +3024,7 @@
       const archetypeKeys = [...top3Career, ...top3Life].map(r => r.key);
       persistQuizRun({
         mode: quizMode,
-        answers: { career: careerAnswers, life: lifeAnswers, meta: { ageRange: userAgeRange } },
+        answers: { career: careerAnswers, life: lifeAnswers, meta: { ageRange: userAgeRange, careerHardNos } },
         results: { career: top3Career, life: top3Life },
         archetypeKeys
       });
@@ -2927,14 +3083,7 @@
         else if (capital === 'capital_0_1k' && maxCapital <= 5000) score += 6;
         else score += 3;
 
-        // Camera comfort (for content creation paths)
-        const camera = answers.c5;
-        const isContentPath = path.category === 'Content Creation' || path.category === 'Digital Marketing';
-        maxScore += 8;
-        if (isContentPath && camera === 'camera_love') score += 8;
-        else if (isContentPath && camera === 'camera_okay') score += 5;
-        else if (!isContentPath && (camera === 'camera_no' || camera === 'camera_never')) score += 8;
-        else score += 4;
+        // Q5 is handled as post-score hard exclusions, not a weighted score factor.
 
         // Sales skills
         const sales = answers.c6;
