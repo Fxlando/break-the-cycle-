@@ -1559,6 +1559,15 @@
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
+    const DEFAULT_TRACK_ORDER = Array.from({ length: totalStepsPerTrack }, (_, idx) => idx + 1);
+    const TRACK_ORDERS = {
+      career: DEFAULT_TRACK_ORDER.slice(),
+      life: DEFAULT_TRACK_ORDER.slice()
+    };
+    let answeredStepsByTrack = {
+      career: new Set(),
+      life: new Set()
+    };
     let accessCodeStatusTimer = null;
     let accessCodeRetries = 0;
     const MAX_ACCESS_CODE_RETRIES = 3;
@@ -2145,6 +2154,164 @@
       }
     }
 
+    function resetAdaptiveBranchingState() {
+      answeredStepsByTrack = {
+        career: new Set(),
+        life: new Set()
+      };
+    }
+
+    function getAnsweredCount(track) {
+      return answeredStepsByTrack[track]?.size || 0;
+    }
+
+    function markAnsweredStep(track, step) {
+      if (!answeredStepsByTrack[track]) return;
+      answeredStepsByTrack[track].add(step);
+    }
+
+    function collectTrackAnswers(track) {
+      const prefix = track === 'career' ? 'c' : 'l';
+      const answers = {};
+      for (let i = 1; i <= totalStepsPerTrack; i++) {
+        const selected = document.querySelector(`input[name="${prefix}${i}"]:checked`);
+        if (selected) answers[`${prefix}${i}`] = selected.value;
+      }
+      return answers;
+    }
+
+    function getCareerAdaptiveCandidates(step, answerValue, answers) {
+      if (step === 1) {
+        if (answerValue === 'risk_high' || answerValue === 'risk_very_high') return [4, 12, 20, 21];
+        if (answerValue === 'risk_low') return [19, 13, 11, 3];
+        return [2, 11, 12];
+      }
+
+      if (step === 9) {
+        if (answerValue === 'people_love' || answerValue === 'people_medium') return [14, 15, 17];
+        return [7, 8, 14];
+      }
+
+      if (step === 10) {
+        if (answerValue === 'physical_high' || answerValue === 'physical_medium') return [24, 18, 22];
+        return [7, 11, 14];
+      }
+
+      if (step === 12) {
+        if (answerValue === 'time_fast') return [4, 20, 6];
+        if (answerValue === 'time_long' || answerValue === 'time_very_long') return [3, 13, 25];
+      }
+
+      if (step === 20) {
+        if (answerValue === 'path_entrepreneur') return [4, 21, 22, 6];
+        if (answerValue === 'path_corporate') return [19, 13, 23, 15];
+        if (answerValue === 'path_trade') return [10, 24, 18, 12];
+        if (answerValue === 'path_creative') return [8, 5, 17, 14];
+      }
+
+      if (step === 24) {
+        if (answerValue === 'work_hands') return [10, 18, 20];
+        if (answerValue === 'work_brain' || answerValue === 'work_desk') return [7, 11, 14];
+      }
+
+      if (step === 3 && (answers.c1 === 'risk_low' || answers.c19 === 'security_high')) {
+        return [19, 13, 11];
+      }
+
+      if (step === 6 && answers.c20 === 'path_entrepreneur') {
+        return [21, 22, 12];
+      }
+
+      return [];
+    }
+
+    function getLifeAdaptiveCandidates(step, answerValue, answers) {
+      if (step === 1) {
+        if (answerValue === 'missing_creativity') return [6, 18, 17, 14];
+        if (answerValue === 'missing_physical') return [16, 7, 11, 20];
+        if (answerValue === 'missing_social') return [4, 21, 12, 17];
+        if (answerValue === 'missing_peace') return [19, 20, 10, 13];
+      }
+
+      if (step === 3) {
+        if (answerValue === 'energy_drained') return [20, 10, 5];
+        if (answerValue === 'energy_high') return [16, 7, 24];
+        if (answerValue === 'energy_variable') return [10, 14, 22];
+      }
+
+      if (step === 4) {
+        if (answerValue === 'social_solo') return [12, 19, 13];
+        if (answerValue === 'social_large') return [21, 17, 7];
+      }
+
+      if (step === 6) {
+        if (answerValue === 'creative_badly' || answerValue === 'creative_somewhat') return [18, 17, 14];
+        if (answerValue === 'creative_not' || answerValue === 'creative_work') return [16, 20, 21];
+      }
+
+      if (step === 7) {
+        if (answerValue === 'adventure_very') return [16, 24, 11];
+        if (answerValue === 'adventure_low' || answerValue === 'adventure_none') return [19, 20, 10];
+      }
+
+      if (step === 10) {
+        if (answerValue === 'structure_yes') return [23, 22, 15];
+        if (answerValue === 'structure_freedom') return [24, 7, 18];
+      }
+
+      if (step === 12) {
+        if (answerValue === 'hobby_social') return [21, 17, 4];
+        if (answerValue === 'hobby_solo' || answerValue === 'hobby_mostly_solo') return [19, 20, 13];
+      }
+
+      if (step === 20) {
+        if (answerValue === 'stress_physical') return [16, 7, 11];
+        if (answerValue === 'stress_calm') return [19, 10, 13];
+        if (answerValue === 'stress_social') return [21, 4, 17];
+        if (answerValue === 'stress_creative') return [6, 18, 17];
+      }
+
+      if (step === 21 && (answers.l4 === 'social_solo' || answers.l12 === 'hobby_solo')) {
+        return [19, 20, 13];
+      }
+
+      return [];
+    }
+
+    function getAdaptiveCandidates(track, step, answerValue, answers) {
+      if (track === 'career') return getCareerAdaptiveCandidates(step, answerValue, answers);
+      if (track === 'life') return getLifeAdaptiveCandidates(step, answerValue, answers);
+      return [];
+    }
+
+    function pickFirstUnansweredStep(track, candidates) {
+      const answered = answeredStepsByTrack[track];
+      if (!answered || !Array.isArray(candidates)) return null;
+      for (const candidate of candidates) {
+        if (!Number.isInteger(candidate)) continue;
+        if (candidate < 1 || candidate > totalStepsPerTrack) continue;
+        if (!answered.has(candidate)) return candidate;
+      }
+      return null;
+    }
+
+    function getNextAdaptiveStep(track, step, answerValue) {
+      const answers = collectTrackAnswers(track);
+      const adaptiveCandidates = getAdaptiveCandidates(track, step, answerValue, answers);
+      const adaptiveNext = pickFirstUnansweredStep(track, adaptiveCandidates);
+      if (adaptiveNext) return adaptiveNext;
+      return pickFirstUnansweredStep(track, TRACK_ORDERS[track]);
+    }
+
+    function getCompletedQuestionCount() {
+      if (quizMode === 'both') {
+        if (currentTrack === 'career') return getAnsweredCount('career');
+        return totalStepsPerTrack + getAnsweredCount('life');
+      }
+      const activeTrack = quizMode === 'life' ? 'life' : 'career';
+      return getAnsweredCount(activeTrack);
+    }
+
     async function startQuiz() {
       clearHonestyPopupTimers();
       hideHonestyPopup();
@@ -2157,16 +2324,17 @@
       }
 
       quizMode = modeInput.value;
-      
+      resetAdaptiveBranchingState();
+
       // Update header
       setHeaderForMode(quizMode);
 
       // Hide mode selection
       document.querySelector('[data-step="0"]').classList.remove('active');
-      
+
       // Show progress bar
       document.getElementById('progressContainer').style.display = 'block';
-      
+
       // Start with first question of appropriate track
       if (quizMode === 'career' || quizMode === 'both') {
         currentTrack = 'career';
@@ -2184,42 +2352,53 @@
     function showQuestion(step, track) {
       // Hide all questions
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      
+
       // Show the specific question
       const question = document.querySelector(`[data-step="${step}"][data-track="${track}"]`);
       if (question) {
         question.classList.add('active');
       }
-      
+
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function nextQuestion(step) {
       // Validate current answer
-      const questionName = currentTrack === 'career' ? `c${step}` : `l${step}`;
+      const track = currentTrack;
+      const questionName = track === 'career' ? `c${step}` : `l${step}`;
       const answer = document.querySelector(`input[name="${questionName}"]:checked`);
       if (!answer) {
         alert('Please select an answer');
         return;
       }
 
-      currentStep = step + 1;
+      markAnsweredStep(track, step);
 
       // Check if we finished current track
-      if (currentStep > totalStepsPerTrack) {
+      if (getAnsweredCount(track) >= totalStepsPerTrack) {
         // If both mode and just finished career, switch to life
-        if (quizMode === 'both' && currentTrack === 'career') {
+        if (quizMode === 'both' && track === 'career') {
           currentTrack = 'life';
           currentStep = 1;
           showQuestion(1, 'life');
-        } else {
-          // Done with quiz - submit
-          submitQuiz();
+          updateProgress();
+          return;
         }
-      } else {
-        showQuestion(currentStep, currentTrack);
+
+        updateProgress();
+        submitQuiz();
+        return;
       }
 
+      const nextStep = getNextAdaptiveStep(track, step, answer.value);
+      if (!nextStep) {
+        updateProgress();
+        submitQuiz();
+        return;
+      }
+
+      currentStep = nextStep;
+      showQuestion(currentStep, track);
       updateProgress();
     }
 
@@ -2235,14 +2414,13 @@
     }
 
     function updateProgress() {
-      let totalQuestions = quizMode === 'both' ? 50 : 25;
-      let completedQuestions = currentTrack === 'career' ? currentStep : (25 + currentStep);
-      if (quizMode !== 'both') completedQuestions = currentStep;
+      const totalQuestions = quizMode === 'both' ? 50 : 25;
+      const completedQuestions = getCompletedQuestionCount();
+      const currentQuestionNumber = Math.min(totalQuestions, completedQuestions + 1);
 
       document.getElementById('totalQuestions').textContent = totalQuestions;
-      document.getElementById('currentQuestion').textContent = quizMode === 'both' ? 
-        (currentTrack === 'career' ? currentStep : (25 + currentStep)) : currentStep;
-      
+      document.getElementById('currentQuestion').textContent = currentQuestionNumber;
+
       const progress = (completedQuestions / totalQuestions) * 100;
       document.getElementById('progressFill').style.width = `${progress}%`;
     }
