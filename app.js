@@ -54,6 +54,7 @@ function buildApp() {
   const cspDirectives = {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "https://js.stripe.com"],
+    scriptSrcAttr: ["'unsafe-inline'"],
     styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     imgSrc: ["'self'", "data:"],
     fontSrc: ["'self'", "https://fonts.gstatic.com"],
