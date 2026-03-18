@@ -1505,5 +1505,308 @@ const careerPaths = {
   }
 };
 
+const EXTRA_CAREER_TITLES_SOURCE = `
+Home health aide, personal care aide, retail salesperson, customer service representative, general and operations manager, laborer and freight/material mover, registered nurse, cashier, stocker, order filler, office clerk, truck driver, administrative assistant, secretary, general laborer, janitor, cleaner, receptionist, warehouse worker, construction laborer, teacher, bookkeeper, accountant, sales representative, security guard, landscaper, groundskeeping worker, medical assistant, mechanic, delivery driver, bank teller, real estate agent, insurance agent, customer support representative, warehouse associate, picker, packer, sorter, package handler, property manager, recruiter, HR assistant, recruiting coordinator, operations manager, office manager, project coordinator, scheduling coordinator, dispatcher, billing specialist, payroll clerk, accounts payable clerk, accounts receivable clerk, shipping clerk, receiving clerk, inventory clerk, procurement assistant, purchasing agent, leasing agent, mortgage processor, loan processor, title clerk, escrow assistant, claims processor, compliance assistant, administrative coordinator, data entry clerk, file clerk, records clerk, intake specialist, authorization specialist, referral specialist, patient service representative, medical receptionist, dental assistant, pharmacy technician, dental office manager, clinic manager, patient coordinator, care coordinator, childcare worker, daycare assistant, paraprofessional, teacher aide, substitute teacher aide, tutor, librarian assistant, library technician, community outreach coordinator, nonprofit program coordinator, volunteer coordinator, caseworker, housing specialist, caregiver, home care coordinator, direct support professional, behavioral health technician, resident services coordinator, community manager, social media manager, virtual assistant, IT support specialist, help desk technician, desktop support technician, tech support agent, customer success specialist, onboarding specialist, implementation specialist, client services coordinator, member support specialist, content moderator, content reviewer, trust and safety associate, Discord moderator, forum moderator, Facebook group moderator, Reddit community moderator, Telegram group moderator, livestream moderator, chat moderator, email support rep, live chat support rep, player support agent, game master.
+
+Store manager, assistant store manager, district manager, regional sales manager, sales manager, inside sales representative, outside sales representative, territory manager, account executive, account manager, account coordinator, branch manager, branch supervisor, relationship banker, bank operations clerk, fraud claims specialist, collections specialist, customer experience specialist, service coordinator, dispatch supervisor, route coordinator, logistics clerk, transportation clerk, fleet coordinator, warehouse lead, warehouse supervisor, fulfillment associate, order pickup associate, returns associate, merchandiser, stock associate, visual merchandiser, fitting room associate, service desk associate, checkout supervisor, retail department manager, category manager, assistant buyer, merchandise planner, pricing coordinator, replenishment analyst, inventory planner, store supervisor, shift lead, phone sales associate, wireless sales consultant, furniture sales consultant, jewelry sales associate, optical sales associate, dealership BDC representative, service advisor, service writer, service scheduler, parts counterperson, parts manager, lube technician, tire technician, auto technician, collision repair technician, dealership finance manager, bank teller supervisor, admissions counselor, enrollment advisor, student services coordinator, school office manager, attendance clerk, registrar assistant, guidance office assistant, school secretary, bus aide, bus monitor, youth mentor, family advocate, shelter advocate, church administrator, ministry coordinator, funeral attendant, cemetery office clerk, resident assistant, apartment manager, HOA manager, resident manager, move-in coordinator, home warranty sales rep, benefits enrollment specialist, bookkeeping assistant, tax office assistant, office administrator, communications coordinator, marketing coordinator, public relations coordinator, promotions coordinator, training specialist, onboarding coordinator, vendor coordinator, service dispatcher, permit clerk, courthouse clerk, municipal clerk assistant, front desk coordinator, front office supervisor, switchboard operator.
+
+Electrician, plumber, HVAC technician, carpenter, painter, roofer, welder, machinist, CNC operator, maintenance technician, facilities technician, groundskeeper, pest control technician, exterminator, fence installer, siding installer, gutter installer, drywall finisher, concrete finisher, masonry contractor, excavation contractor, demolition contractor, irrigation technician, sprinkler installer, lawn care technician, pressure washing technician, pool technician, pool cleaner, septic technician, mover, courier, rideshare driver, security officer, patrol officer, armed guard, unarmed guard, parking enforcement officer, crossing guard, flagger, animal control officer, code inspector, package handler, baggage handler, material handler, pallet jack operator, machine operator, production worker, assembly line worker, manufacturing associate, packaging associate, shop foreman, restoration technician, general contractor, handyman, remodeling contractor, flooring installer, cabinet installer, countertop installer, insulation installer, garage door technician, window installer, mobile mechanic, roadside assistance technician, towing operator, used tire shop worker, fleet washing operator, truck washing operator, storage manager, apartment maintenance worker, building superintendent, janitorial supervisor, maintenance manager.
+
+Software developer, web developer, frontend developer, backend developer, full-stack developer, mobile app developer, IT support analyst, systems administrator, network engineer, cloud engineer, cybersecurity analyst, data analyst, business analyst, product manager, QA tester, UX designer, UI designer, web designer, graphic designer, video editor, thumbnail designer, photographer, videographer, copywriter, technical writer, writer, editor, proofreader, SEO specialist, paid ads specialist, email marketer, digital marketer, affiliate manager, affiliate marketer, creator assistant, YouTube assistant, Twitch moderator, stream assistant, podcast assistant, newsletter assistant, blog assistant, video upload assistant, content assistant, content uploader, content scheduler, content publisher, channel assistant, social media assistant, social media coordinator, brand outreach assistant, DM setter, appointment setter, lead generation assistant, cold email assistant, sales support rep, ecommerce assistant, online store assistant, marketplace specialist, Shopify store manager, Amazon account manager, Walmart marketplace assistant, eBay store manager, Etsy shop manager, product listing specialist, catalog specialist, product researcher, product sourcing assistant, online sales rep, seller support rep, order support rep, subscription support rep, membership support rep, online community assistant, paid community assistant, virtual receptionist, executive virtual assistant.
+
+Small business owner, cleaning business owner, house cleaning business owner, commercial cleaning company owner, landscaping business owner, lawn care business owner, pressure washing business owner, moving company owner, courier service owner, delivery service owner, vending machine owner, ATM route owner, laundromat owner, car wash owner, detailing business owner, junk removal business owner, pool service business owner, pest control business owner, painting business owner, flooring business owner, fence company owner, gutter company owner, restoration company owner, courier company owner, staffing agency owner, bookkeeping business owner, tax prep business owner, insurance agency owner, real estate investor, landlord, Airbnb host, vacation rental owner, property rental business owner, self-storage business owner, convenience store owner, thrift store owner, consignment store owner, boutique owner, clothing brand owner, T-shirt brand owner, jewelry brand owner, skincare brand owner, candle brand owner, soap brand owner, print shop owner, sign shop owner, embroidery business owner, barber shop owner, salon owner, nail salon owner, spa owner, gym owner, tutoring business owner, daycare owner, senior care agency owner, home health agency owner, web design business owner, SEO business owner, digital marketing agency owner, social media management business owner, lead generation business owner, appointment-setting business owner, customer support agency owner, chat moderation agency owner, reputation management business owner, review management business owner, local marketing business owner, virtual assistant business owner.
+
+Ecommerce store owner, Shopify store owner, Amazon seller, Etsy seller, eBay seller, Walmart Marketplace seller, dropshipper, print-on-demand seller, digital product seller, template seller, printables seller, stock photo seller, stock footage seller, newsletter owner, blog owner, niche website owner, comparison website owner, directory website owner, job board owner, YouTube channel owner, content creator, streamer, podcaster, paid community owner, Discord server owner, creator manager, influencer assistant, creator management agency owner, online course seller, coaching business owner, consulting business owner, online tutoring business owner, webinar assistant, membership site owner, subscription business owner, resale business owner, online resale business owner, vintage reseller, sneaker reseller, affiliate marketer, remote closer, sales setter, cold caller, email outreach specialist, voice-over freelancer, transcription freelancer, resume writer, grant writer, freelance writer, freelance developer, paid ads freelancer, SEO freelancer, translation freelancer, web maintenance service owner, remote bookkeeping service owner, remote tax filing service owner, podcast editing business owner, UGC creator, UGC agency owner, community management business owner.
+
+Notary public, notary signing agent, mobile notary, photographer, photography studio owner, barber, hairstylist, nail technician, personal trainer, fitness manager, gym manager, wellness coordinator, recreation coordinator, youth counselor, family support specialist, resident services manager, leasing consultant, leasing assistant, resident coordinator, community relations manager, member services representative, optical manager, optician, chiropractic assistant, optometric assistant, dental treatment coordinator, insurance verification specialist, referral coordinator, surgery scheduler, patient registrar, patient account representative, rehabilitation aide, therapy aide, occupational health coordinator, funeral home assistant, cemetery grounds manager, library circulation assistant, museum visitor services associate, travel coordinator, guest services agent, hotel manager, reservation agent, event coordinator, bell attendant, valet attendant, parking attendant, shuttle driver, rental car agent, gate agent, passenger service agent, mail clerk, print shop clerk, scanner operator, copy center associate, photo center clerk, order management specialist, returns coordinator, complaints specialist, client onboarding coordinator, operations assistant, workforce coordinator, staffing coordinator, business office manager, contract clerk, vendor specialist, order processing clerk, stock control clerk, merchandise associate, telecom customer service rep, utility customer service rep.
+`;
+
+const GENERATED_CAREER_TEMPLATES = [
+  {
+    category: 'Business',
+    emoji: '💼',
+    pattern: /(owner|seller|reseller|freelancer|agency|landlord|investor|host|consulting|coaching business|brand owner|store owner|shop owner|company owner|channel owner|site owner|business owner)/i,
+    personalityFit: ['entrepreneurial', 'organized', 'adaptable', 'resilient'],
+    skillsRequired: ['operations', 'sales', 'customer service', 'problem-solving'],
+    incomeRange: [35000, 200000],
+    startupCost: [1000, 25000],
+    timeToProfit: '6-24 months',
+    lifestyle: 'flexible',
+    riskLevel: 'high',
+    educationRequired: 'none (experience-based)',
+    physicalDemand: 'low'
+  },
+  {
+    category: 'Technology',
+    emoji: '💻',
+    pattern: /(software|web developer|frontend|backend|full-stack|mobile app|it support|help desk|desktop support|systems administrator|network engineer|cloud engineer|cybersecurity|data analyst|business analyst|qa tester|ux designer|ui designer|technical writer|tech support)/i,
+    personalityFit: ['logical', 'detail-oriented', 'patient', 'continuous learner'],
+    skillsRequired: ['problem-solving', 'technical troubleshooting', 'communication', 'systems thinking'],
+    incomeRange: [50000, 170000],
+    startupCost: [0, 5000],
+    timeToProfit: '3-12 months',
+    lifestyle: 'flexible/remote-friendly',
+    riskLevel: 'low-medium',
+    educationRequired: 'certificate, portfolio, or degree',
+    physicalDemand: 'very low'
+  },
+  {
+    category: 'Healthcare',
+    emoji: '🩺',
+    pattern: /(nurse|medical|dental|pharmacy|patient|clinic|health|care coordinator|caregiver|home health|therapy|rehabilitation|chiropractic|optometric|surgery|referral|authorization)/i,
+    personalityFit: ['empathetic', 'organized', 'responsible', 'calm-under-pressure'],
+    skillsRequired: ['communication', 'attention to detail', 'patient support', 'documentation'],
+    incomeRange: [32000, 110000],
+    startupCost: [0, 12000],
+    timeToProfit: '3-18 months',
+    lifestyle: 'structured',
+    riskLevel: 'low',
+    educationRequired: 'certificate or degree',
+    physicalDemand: 'medium'
+  },
+  {
+    category: 'Education',
+    emoji: '📚',
+    pattern: /(teacher|tutor|school|student services|admissions|enrollment|librar|paraprofessional|teacher aide|bus aide|attendance|registrar|guidance office|daycare|childcare|youth mentor)/i,
+    personalityFit: ['patient', 'supportive', 'organized', 'people-focused'],
+    skillsRequired: ['communication', 'planning', 'record keeping', 'coaching'],
+    incomeRange: [30000, 80000],
+    startupCost: [0, 5000],
+    timeToProfit: '3-12 months',
+    lifestyle: 'structured',
+    riskLevel: 'low',
+    educationRequired: 'certificate or degree',
+    physicalDemand: 'low'
+  },
+  {
+    category: 'Public Service',
+    emoji: '🛡️',
+    pattern: /(security|guard|patrol|parking enforcement|crossing guard|flagger|animal control|code inspector|caseworker|housing specialist|shelter advocate|family advocate|community outreach|nonprofit|volunteer coordinator|church|ministry|resident services)/i,
+    personalityFit: ['service-oriented', 'reliable', 'calm', 'observant'],
+    skillsRequired: ['communication', 'de-escalation', 'documentation', 'teamwork'],
+    incomeRange: [30000, 90000],
+    startupCost: [0, 5000],
+    timeToProfit: '1-9 months',
+    lifestyle: 'structured',
+    riskLevel: 'low-medium',
+    educationRequired: 'certificate or on-the-job training',
+    physicalDemand: 'medium'
+  },
+  {
+    category: 'Skilled Trade',
+    emoji: '🔧',
+    pattern: /(electrician|plumber|hvac|carpenter|painter|roofer|welder|machinist|cnc|mechanic|technician|installer|construction|laborer|janitor|cleaner|groundskeeper|landscap|pest control|drywall|concrete|masonry|excavation|demolition|irrigation|sprinkler|pool|septic|handyman|remodeling|flooring|cabinet|countertop|insulation|garage door|window installer|maintenance|superintendent|restoration|contractor|foreman|towing|roadside assistance|lube technician|tire technician|collision repair)/i,
+    personalityFit: ['hands-on', 'practical', 'reliable', 'detail-oriented'],
+    skillsRequired: ['technical execution', 'safety awareness', 'problem-solving', 'consistency'],
+    incomeRange: [35000, 120000],
+    startupCost: [500, 15000],
+    timeToProfit: '3-18 months',
+    lifestyle: 'structured',
+    riskLevel: 'low-medium',
+    educationRequired: 'trade school or certification',
+    physicalDemand: 'high'
+  },
+  {
+    category: 'Transportation',
+    emoji: '🚚',
+    pattern: /(warehouse|picker|packer|sorter|package handler|shipping|receiving|inventory|freight|truck driver|delivery driver|courier|dispatcher|route coordinator|logistics|transportation|fleet|material handler|baggage handler|order filler|stocker|pallet|fulfillment associate|returns associate|order pickup)/i,
+    personalityFit: ['organized', 'reliable', 'task-focused', 'consistent'],
+    skillsRequired: ['time management', 'safety', 'inventory handling', 'coordination'],
+    incomeRange: [32000, 95000],
+    startupCost: [0, 5000],
+    timeToProfit: '1-6 months',
+    lifestyle: 'structured',
+    riskLevel: 'low',
+    educationRequired: 'on-the-job training',
+    physicalDemand: 'medium-high'
+  },
+  {
+    category: 'Digital Marketing',
+    emoji: '📣',
+    pattern: /(social media|copywriter|seo|paid ads|email marketer|digital marketer|affiliate|content|moderator|creator|youtube|twitch|podcast|newsletter|blog|videographer|video editor|thumbnail|community manager|brand outreach|lead generation|appointment setter|ugc|marketing coordinator|public relations|promotions coordinator)/i,
+    personalityFit: ['creative', 'organized', 'communicative', 'adaptable'],
+    skillsRequired: ['communication', 'content planning', 'analytics', 'audience engagement'],
+    incomeRange: [30000, 130000],
+    startupCost: [0, 7000],
+    timeToProfit: '1-9 months',
+    lifestyle: 'flexible',
+    riskLevel: 'medium',
+    educationRequired: 'portfolio or experience-based',
+    physicalDemand: 'very low'
+  },
+  {
+    category: 'Sales',
+    emoji: '🤝',
+    pattern: /(sales|account executive|account manager|territory manager|real estate agent|insurance agent|bank teller|relationship banker|loan processor|mortgage processor|leasing agent|inside sales|outside sales|remote closer|cold caller|email outreach specialist|benefits enrollment|wireless sales|furniture sales|jewelry sales|optical sales|home warranty sales)/i,
+    personalityFit: ['persuasive', 'resilient', 'social', 'goal-oriented'],
+    skillsRequired: ['communication', 'objection handling', 'relationship-building', 'follow-through'],
+    incomeRange: [35000, 160000],
+    startupCost: [0, 3000],
+    timeToProfit: '1-6 months',
+    lifestyle: 'flexible but quota-driven',
+    riskLevel: 'medium',
+    educationRequired: 'none (results-based)',
+    physicalDemand: 'low'
+  },
+  {
+    category: 'Professional Services',
+    emoji: '📋',
+    pattern: /(assistant|coordinator|clerk|receptionist|secretary|specialist|processor|bookkeeper|accountant|office|records|billing|payroll|accounts payable|accounts receivable|procurement|purchasing|title clerk|escrow|compliance|administrative|data entry|file clerk|switchboard|front desk|contract clerk|vendor specialist|recruiter|hr assistant|staffing coordinator)/i,
+    personalityFit: ['organized', 'detail-oriented', 'reliable', 'communicative'],
+    skillsRequired: ['documentation', 'coordination', 'customer communication', 'follow-through'],
+    incomeRange: [32000, 90000],
+    startupCost: [0, 3000],
+    timeToProfit: '1-6 months',
+    lifestyle: 'structured',
+    riskLevel: 'low',
+    educationRequired: 'certificate or experience-based',
+    physicalDemand: 'low'
+  },
+  {
+    category: 'Business',
+    emoji: '📈',
+    pattern: /(manager|supervisor|lead|foreman|branch|district|regional|operations manager)/i,
+    personalityFit: ['organized', 'decisive', 'communicative', 'accountable'],
+    skillsRequired: ['team leadership', 'operations', 'planning', 'communication'],
+    incomeRange: [45000, 140000],
+    startupCost: [0, 5000],
+    timeToProfit: '3-12 months',
+    lifestyle: 'structured',
+    riskLevel: 'medium',
+    educationRequired: 'experience-based or degree',
+    physicalDemand: 'low'
+  }
+];
+
+const GENERATED_CAREER_DEFAULT_TEMPLATE = {
+  category: 'Professional Services',
+  emoji: '💼',
+  personalityFit: ['organized', 'reliable', 'adaptable', 'people-focused'],
+  skillsRequired: ['communication', 'coordination', 'problem-solving', 'execution'],
+  incomeRange: [32000, 90000],
+  startupCost: [0, 3000],
+  timeToProfit: '1-6 months',
+  lifestyle: 'structured',
+  riskLevel: 'low-medium',
+  educationRequired: 'certificate or experience-based',
+  physicalDemand: 'low'
+};
+
+const CAREER_TITLE_ACRONYMS = new Set(['HR', 'IT', 'QA', 'UX', 'UI', 'SEO', 'UGC', 'HOA', 'HVAC', 'CNC', 'BDC', 'DM', 'ATM']);
+
+function normalizeCareerTitleForCompare(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function toCareerKeyFromTitle(value) {
+  const base = String(value || '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return base || 'career_path';
+}
+
+function isLikelyDuplicateCareerTitle(candidate, existing) {
+  if (!candidate || !existing) return false;
+  if (candidate === existing) return true;
+  const shortLen = Math.min(candidate.length, existing.length);
+  if (shortLen >= 8 && (candidate.includes(existing) || existing.includes(candidate))) return true;
+  const candWords = candidate.split(' ').filter(Boolean);
+  const existWords = existing.split(' ').filter(Boolean);
+  if (candWords.length < 2 || existWords.length < 2) return false;
+  const existingSet = new Set(existWords);
+  const overlap = candWords.filter((word) => existingSet.has(word));
+  return overlap.length >= 2 && overlap.length / Math.min(candWords.length, existWords.length) >= 0.8;
+}
+
+function toDisplayCareerTitle(rawTitle) {
+  return String(rawTitle || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => {
+      const upper = part.toUpperCase();
+      if (CAREER_TITLE_ACRONYMS.has(upper) || /^[A-Z0-9]{2,}$/.test(part)) return upper;
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    })
+    .join(' ')
+    .replace(/\bB2b\b/g, 'B2B')
+    .replace(/\bAi\b/g, 'AI')
+    .trim();
+}
+
+function pickGeneratedCareerTemplate(title) {
+  const match = GENERATED_CAREER_TEMPLATES.find((template) => template.pattern.test(title));
+  return match || GENERATED_CAREER_DEFAULT_TEMPLATE;
+}
+
+function buildGeneratedCareerPath(title, template) {
+  const categoryLabel = String(template.category || GENERATED_CAREER_DEFAULT_TEMPLATE.category).toLowerCase();
+  return {
+    name: title,
+    emoji: template.emoji || GENERATED_CAREER_DEFAULT_TEMPLATE.emoji,
+    category: template.category || GENERATED_CAREER_DEFAULT_TEMPLATE.category,
+    personalityFit: Array.isArray(template.personalityFit) ? template.personalityFit.slice() : GENERATED_CAREER_DEFAULT_TEMPLATE.personalityFit.slice(),
+    skillsRequired: Array.isArray(template.skillsRequired) ? template.skillsRequired.slice() : GENERATED_CAREER_DEFAULT_TEMPLATE.skillsRequired.slice(),
+    incomeRange: Array.isArray(template.incomeRange) ? template.incomeRange.slice() : GENERATED_CAREER_DEFAULT_TEMPLATE.incomeRange.slice(),
+    startupCost: Array.isArray(template.startupCost) ? template.startupCost.slice() : GENERATED_CAREER_DEFAULT_TEMPLATE.startupCost.slice(),
+    timeToProfit: template.timeToProfit || GENERATED_CAREER_DEFAULT_TEMPLATE.timeToProfit,
+    lifestyle: template.lifestyle || GENERATED_CAREER_DEFAULT_TEMPLATE.lifestyle,
+    riskLevel: template.riskLevel || GENERATED_CAREER_DEFAULT_TEMPLATE.riskLevel,
+    educationRequired: template.educationRequired || GENERATED_CAREER_DEFAULT_TEMPLATE.educationRequired,
+    physicalDemand: template.physicalDemand || GENERATED_CAREER_DEFAULT_TEMPLATE.physicalDemand,
+    description: `Build a career as a ${title}. This path has clear entry options and room to grow as you gain experience.`,
+    detailed: {
+      whoYouAre: `You are interested in practical ${categoryLabel} work and want a clear path that can turn into long-term growth.`,
+      whatToDo: `Research entry requirements for ${title}, complete any required certification or training, then target entry-level roles to build skills and advance quickly.`
+    }
+  };
+}
+
+(function addGeneratedCareersFromUserList() {
+  const rawTitles = EXTRA_CAREER_TITLES_SOURCE.replace(/\./g, ',').split(',');
+  const existingNames = Object.values(careerPaths)
+    .map((path) => normalizeCareerTitleForCompare(path && path.name))
+    .filter(Boolean);
+  const seenNames = new Set(existingNames);
+  const usedKeys = new Set(Object.keys(careerPaths));
+
+  for (const rawTitle of rawTitles) {
+    const cleanedTitle = String(rawTitle || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/[.]+$/g, '');
+    if (!cleanedTitle) continue;
+
+    const normalizedTitle = normalizeCareerTitleForCompare(cleanedTitle);
+    if (!normalizedTitle) continue;
+
+    const duplicate = existingNames.some((existing) => isLikelyDuplicateCareerTitle(normalizedTitle, existing)) ||
+      seenNames.has(normalizedTitle);
+    if (duplicate) {
+      seenNames.add(normalizedTitle);
+      continue;
+    }
+
+    const displayTitle = toDisplayCareerTitle(cleanedTitle);
+    const template = pickGeneratedCareerTemplate(displayTitle);
+    const baseKey = toCareerKeyFromTitle(displayTitle);
+    let key = baseKey;
+    let suffix = 2;
+    while (usedKeys.has(key)) {
+      key = `${baseKey}_${suffix}`;
+      suffix += 1;
+    }
+
+    careerPaths[key] = buildGeneratedCareerPath(displayTitle, template);
+    usedKeys.add(key);
+    existingNames.push(normalizedTitle);
+    seenNames.add(normalizedTitle);
+  }
+})();
+
 // Export to window for use in quiz
 window.careerPaths = careerPaths;

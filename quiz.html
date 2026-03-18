@@ -868,11 +868,15 @@
       <div class="step active" data-step="0">
         <h3>What brings you here today?</h3>
         <div class="options">
-          <div class="option"><input type="radio" name="mode" value="career" id="mode_career"><label for="mode_career">🎯 Finding my career path - I need direction on what to do for a career</label></div>
-          <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life">🌟 Finding myself - I feel a little out of order, need hobbies & passions</label></div>
-          <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both">🚀 Both - Exploring career & personal growth</label></div>
+          <div class="option"><input type="radio" name="mode" value="career" id="mode_career" onchange="showAgeStepForSelectedMode()"><label for="mode_career">🎯 Finding my career path - I need direction on what to do for a career</label></div>
+          <div class="option"><input type="radio" name="mode" value="life" id="mode_life" onchange="showAgeStepForSelectedMode()"><label for="mode_life">🌟 Finding myself - I feel a little out of order, need hobbies & passions</label></div>
+          <div class="option"><input type="radio" name="mode" value="both" id="mode_both" onchange="showAgeStepForSelectedMode()"><label for="mode_both">🚀 Both - Exploring career & personal growth</label></div>
         </div>
-        <h3 style="margin-top: 24px;">Age range (used to tailor realistic recommendations)</h3>
+        <button type="button" class="btn" onclick="showAgeStepForSelectedMode()">Continue</button>
+      </div>
+
+      <div class="step" data-step="0-age">
+        <h3>Age range (used to tailor realistic recommendations)</h3>
         <div class="options">
           <div class="option"><input type="radio" name="ageRange" value="age_13_17" id="age_13_17"><label for="age_13_17">13-17</label></div>
           <div class="option"><input type="radio" name="ageRange" value="age_18_24" id="age_18_24"><label for="age_18_24">18-24</label></div>
@@ -881,7 +885,10 @@
           <div class="option"><input type="radio" name="ageRange" value="age_45_plus" id="age_45_plus"><label for="age_45_plus">45+</label></div>
           <div class="option"><input type="radio" name="ageRange" value="age_prefer_not" id="age_prefer_not"><label for="age_prefer_not">Prefer not to say</label></div>
         </div>
-        <button type="button" class="btn" onclick="startQuiz()">Let's Go!</button>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="showModeStep()">Back</button>
+          <button type="button" class="btn" onclick="startQuiz()">Start Quiz</button>
+        </div>
       </div>
 
       <!-- CAREER QUESTIONS (1-25) - Only shown if career or both mode -->
@@ -2617,6 +2624,33 @@
       return getAnsweredCount(activeTrack);
     }
 
+    function showAgeStepForSelectedMode() {
+      const modeInput = document.querySelector('input[name="mode"]:checked');
+      if (!modeInput) {
+        alert('Please select what brings you here');
+        return;
+      }
+
+      clearHonestyPopupTimers();
+      hideHonestyPopup();
+
+      const modeStep = document.querySelector('[data-step="0"]');
+      const ageStep = document.querySelector('[data-step="0-age"]');
+      if (modeStep) modeStep.classList.remove('active');
+      if (ageStep) ageStep.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showModeStep() {
+      const modeStep = document.querySelector('[data-step="0"]');
+      const ageStep = document.querySelector('[data-step="0-age"]');
+      if (ageStep) ageStep.classList.remove('active');
+      if (modeStep) modeStep.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     async function startQuiz() {
       clearHonestyPopupTimers();
       hideHonestyPopup();
@@ -2643,6 +2677,8 @@
 
       // Hide mode selection
       document.querySelector('[data-step="0"]').classList.remove('active');
+      const ageStep = document.querySelector('[data-step="0-age"]');
+      if (ageStep) ageStep.classList.remove('active');
 
       // Show progress bar
       document.getElementById('progressContainer').style.display = 'block';
