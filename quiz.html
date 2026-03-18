@@ -1564,6 +1564,8 @@
       career: DEFAULT_TRACK_ORDER.slice(),
       life: DEFAULT_TRACK_ORDER.slice()
     };
+    const CAREER_SIGNAL_PRIORITY = [1, 2, 12, 20, 19, 3, 4, 9, 10, 7, 8, 14, 24, 21, 25, 11, 13, 15, 17, 18, 5, 6, 16, 22, 23];
+    const LIFE_SIGNAL_PRIORITY = [1, 2, 3, 4, 5, 6, 15, 20, 19, 7, 16, 10, 11, 12, 14, 21, 22, 23, 24, 25, 8, 9, 13, 17, 18];
     let answeredStepsByTrack = {
       career: new Set(),
       life: new Set()
@@ -2180,108 +2182,246 @@
       return answers;
     }
 
+    function pushUniqueSteps(target, steps) {
+      if (!Array.isArray(steps)) return;
+      for (const step of steps) {
+        if (!Number.isInteger(step)) continue;
+        if (step < 1 || step > totalStepsPerTrack) continue;
+        if (!target.includes(step)) target.push(step);
+      }
+    }
+
     function getCareerAdaptiveCandidates(step, answerValue, answers) {
+      const candidates = [];
+
       if (step === 1) {
-        if (answerValue === 'risk_high' || answerValue === 'risk_very_high') return [4, 12, 20, 21];
-        if (answerValue === 'risk_low') return [19, 13, 11, 3];
-        return [2, 11, 12];
+        if (answerValue === 'risk_high' || answerValue === 'risk_very_high') pushUniqueSteps(candidates, [4, 12, 20, 21]);
+        else if (answerValue === 'risk_low') pushUniqueSteps(candidates, [19, 13, 11, 3]);
+        else pushUniqueSteps(candidates, [2, 11, 12]);
       }
 
       if (step === 9) {
-        if (answerValue === 'people_love' || answerValue === 'people_medium') return [14, 15, 17];
-        return [7, 8, 14];
+        if (answerValue === 'people_love' || answerValue === 'people_medium') pushUniqueSteps(candidates, [14, 15, 17, 18]);
+        else pushUniqueSteps(candidates, [7, 8, 14, 24]);
       }
 
       if (step === 10) {
-        if (answerValue === 'physical_high' || answerValue === 'physical_medium') return [24, 18, 22];
-        return [7, 11, 14];
+        if (answerValue === 'physical_high' || answerValue === 'physical_medium') pushUniqueSteps(candidates, [24, 18, 22, 20]);
+        else pushUniqueSteps(candidates, [7, 11, 14, 19]);
       }
 
       if (step === 12) {
-        if (answerValue === 'time_fast') return [4, 20, 6];
-        if (answerValue === 'time_long' || answerValue === 'time_very_long') return [3, 13, 25];
+        if (answerValue === 'time_fast') pushUniqueSteps(candidates, [4, 20, 6, 11]);
+        if (answerValue === 'time_long' || answerValue === 'time_very_long') pushUniqueSteps(candidates, [3, 13, 25, 23]);
       }
 
       if (step === 20) {
-        if (answerValue === 'path_entrepreneur') return [4, 21, 22, 6];
-        if (answerValue === 'path_corporate') return [19, 13, 23, 15];
-        if (answerValue === 'path_trade') return [10, 24, 18, 12];
-        if (answerValue === 'path_creative') return [8, 5, 17, 14];
+        if (answerValue === 'path_entrepreneur') pushUniqueSteps(candidates, [4, 21, 22, 6, 12]);
+        if (answerValue === 'path_corporate') pushUniqueSteps(candidates, [19, 13, 23, 15, 11]);
+        if (answerValue === 'path_trade') pushUniqueSteps(candidates, [10, 24, 18, 12, 22]);
+        if (answerValue === 'path_creative') pushUniqueSteps(candidates, [8, 5, 17, 14, 18]);
       }
 
       if (step === 24) {
-        if (answerValue === 'work_hands') return [10, 18, 20];
-        if (answerValue === 'work_brain' || answerValue === 'work_desk') return [7, 11, 14];
+        if (answerValue === 'work_hands') pushUniqueSteps(candidates, [10, 18, 20, 22]);
+        if (answerValue === 'work_brain' || answerValue === 'work_desk') pushUniqueSteps(candidates, [7, 11, 14, 20]);
       }
 
       if (step === 3 && (answers.c1 === 'risk_low' || answers.c19 === 'security_high')) {
-        return [19, 13, 11];
+        pushUniqueSteps(candidates, [19, 13, 11, 12]);
       }
 
       if (step === 6 && answers.c20 === 'path_entrepreneur') {
-        return [21, 22, 12];
+        pushUniqueSteps(candidates, [21, 22, 12, 4]);
       }
 
-      return [];
+      return candidates;
+    }
+
+    function getCareerFineTuneCandidates(answers, answeredCount) {
+      const candidates = [];
+      const risk = answers.c1;
+      const timeline = answers.c12;
+      const path = answers.c20;
+      const social = answers.c9;
+      const physical = answers.c10;
+      const workType = answers.c24;
+      const security = answers.c19;
+
+      if (answeredCount <= 6) {
+        pushUniqueSteps(candidates, [2, 12, 20, 9, 10, 3, 4, 19, 11]);
+      }
+
+      if (risk === 'risk_high' || risk === 'risk_very_high') {
+        pushUniqueSteps(candidates, [20, 4, 12, 21, 22, 25]);
+      }
+      if (risk === 'risk_low' || security === 'security_high' || security === 'security_medium') {
+        pushUniqueSteps(candidates, [19, 13, 11, 3, 12]);
+      }
+
+      if (timeline === 'time_fast') {
+        pushUniqueSteps(candidates, [4, 20, 6, 11, 19]);
+      }
+      if (timeline === 'time_long' || timeline === 'time_very_long') {
+        pushUniqueSteps(candidates, [3, 13, 25, 23, 15]);
+      }
+
+      if (path === 'path_entrepreneur') pushUniqueSteps(candidates, [4, 6, 21, 22, 12, 25]);
+      if (path === 'path_corporate') pushUniqueSteps(candidates, [11, 13, 19, 23, 15, 14]);
+      if (path === 'path_trade') pushUniqueSteps(candidates, [10, 24, 18, 22, 12, 19]);
+      if (path === 'path_creative') pushUniqueSteps(candidates, [8, 5, 17, 14, 18, 25]);
+
+      if (social === 'people_love' || social === 'people_medium') {
+        pushUniqueSteps(candidates, [14, 15, 17, 18]);
+      }
+      if (social === 'people_low' || social === 'people_none') {
+        pushUniqueSteps(candidates, [7, 8, 24, 11]);
+      }
+
+      if (physical === 'physical_high' || physical === 'physical_medium' || workType === 'work_hands') {
+        pushUniqueSteps(candidates, [24, 10, 18, 22]);
+      }
+      if (physical === 'physical_low' || physical === 'physical_none' || workType === 'work_desk') {
+        pushUniqueSteps(candidates, [7, 11, 14, 19]);
+      }
+
+      if (answers.c7 === 'tech_high' || answers.c7 === 'tech_medium') {
+        pushUniqueSteps(candidates, [11, 14, 24, 20]);
+      }
+      if (answers.c8 === 'creative_high' || answers.c8 === 'creative_medium') {
+        pushUniqueSteps(candidates, [5, 17, 20, 18]);
+      }
+
+      // Validation pass so strong path choices are confirmed by constraints.
+      if (path) pushUniqueSteps(candidates, [19, 12, 24, 21]);
+
+      pushUniqueSteps(candidates, CAREER_SIGNAL_PRIORITY);
+      return candidates;
     }
 
     function getLifeAdaptiveCandidates(step, answerValue, answers) {
+      const candidates = [];
+
       if (step === 1) {
-        if (answerValue === 'missing_creativity') return [6, 18, 17, 14];
-        if (answerValue === 'missing_physical') return [16, 7, 11, 20];
-        if (answerValue === 'missing_social') return [4, 21, 12, 17];
-        if (answerValue === 'missing_peace') return [19, 20, 10, 13];
+        if (answerValue === 'missing_creativity') pushUniqueSteps(candidates, [6, 18, 17, 14]);
+        if (answerValue === 'missing_physical') pushUniqueSteps(candidates, [16, 7, 11, 20]);
+        if (answerValue === 'missing_social') pushUniqueSteps(candidates, [4, 21, 12, 17]);
+        if (answerValue === 'missing_peace') pushUniqueSteps(candidates, [19, 20, 10, 13]);
       }
 
       if (step === 3) {
-        if (answerValue === 'energy_drained') return [20, 10, 5];
-        if (answerValue === 'energy_high') return [16, 7, 24];
-        if (answerValue === 'energy_variable') return [10, 14, 22];
+        if (answerValue === 'energy_drained') pushUniqueSteps(candidates, [20, 10, 5, 19]);
+        if (answerValue === 'energy_high') pushUniqueSteps(candidates, [16, 7, 24, 11]);
+        if (answerValue === 'energy_variable') pushUniqueSteps(candidates, [10, 14, 22, 23]);
       }
 
       if (step === 4) {
-        if (answerValue === 'social_solo') return [12, 19, 13];
-        if (answerValue === 'social_large') return [21, 17, 7];
+        if (answerValue === 'social_solo') pushUniqueSteps(candidates, [12, 19, 13, 20]);
+        if (answerValue === 'social_large') pushUniqueSteps(candidates, [21, 17, 7, 24]);
       }
 
       if (step === 6) {
-        if (answerValue === 'creative_badly' || answerValue === 'creative_somewhat') return [18, 17, 14];
-        if (answerValue === 'creative_not' || answerValue === 'creative_work') return [16, 20, 21];
+        if (answerValue === 'creative_badly' || answerValue === 'creative_somewhat') pushUniqueSteps(candidates, [18, 17, 14, 20]);
+        if (answerValue === 'creative_not' || answerValue === 'creative_work') pushUniqueSteps(candidates, [16, 20, 21, 11]);
       }
 
       if (step === 7) {
-        if (answerValue === 'adventure_very') return [16, 24, 11];
-        if (answerValue === 'adventure_low' || answerValue === 'adventure_none') return [19, 20, 10];
+        if (answerValue === 'adventure_very') pushUniqueSteps(candidates, [16, 24, 11, 15]);
+        if (answerValue === 'adventure_low' || answerValue === 'adventure_none') pushUniqueSteps(candidates, [19, 20, 10, 13]);
       }
 
       if (step === 10) {
-        if (answerValue === 'structure_yes') return [23, 22, 15];
-        if (answerValue === 'structure_freedom') return [24, 7, 18];
+        if (answerValue === 'structure_yes') pushUniqueSteps(candidates, [23, 22, 15, 14]);
+        if (answerValue === 'structure_freedom') pushUniqueSteps(candidates, [24, 7, 18, 16]);
       }
 
       if (step === 12) {
-        if (answerValue === 'hobby_social') return [21, 17, 4];
-        if (answerValue === 'hobby_solo' || answerValue === 'hobby_mostly_solo') return [19, 20, 13];
+        if (answerValue === 'hobby_social') pushUniqueSteps(candidates, [21, 17, 4, 20]);
+        if (answerValue === 'hobby_solo' || answerValue === 'hobby_mostly_solo') pushUniqueSteps(candidates, [19, 20, 13, 10]);
       }
 
       if (step === 20) {
-        if (answerValue === 'stress_physical') return [16, 7, 11];
-        if (answerValue === 'stress_calm') return [19, 10, 13];
-        if (answerValue === 'stress_social') return [21, 4, 17];
-        if (answerValue === 'stress_creative') return [6, 18, 17];
+        if (answerValue === 'stress_physical') pushUniqueSteps(candidates, [16, 7, 11, 24]);
+        if (answerValue === 'stress_calm') pushUniqueSteps(candidates, [19, 10, 13, 12]);
+        if (answerValue === 'stress_social') pushUniqueSteps(candidates, [21, 4, 17, 12]);
+        if (answerValue === 'stress_creative') pushUniqueSteps(candidates, [6, 18, 17, 14]);
       }
 
       if (step === 21 && (answers.l4 === 'social_solo' || answers.l12 === 'hobby_solo')) {
-        return [19, 20, 13];
+        pushUniqueSteps(candidates, [19, 20, 13, 10]);
       }
 
-      return [];
+      return candidates;
     }
 
-    function getAdaptiveCandidates(track, step, answerValue, answers) {
-      if (track === 'career') return getCareerAdaptiveCandidates(step, answerValue, answers);
-      if (track === 'life') return getLifeAdaptiveCandidates(step, answerValue, answers);
-      return [];
+    function getLifeFineTuneCandidates(answers, answeredCount) {
+      const candidates = [];
+      const missing = answers.l1;
+      const time = answers.l2;
+      const energy = answers.l3;
+      const social = answers.l4;
+      const budget = answers.l15;
+      const stress = answers.l20;
+      const meaning = answers.l19;
+      const purpose = answers.l25;
+
+      if (answeredCount <= 6) {
+        pushUniqueSteps(candidates, [2, 3, 4, 5, 6, 15, 20, 10, 7, 19]);
+      }
+
+      if (missing === 'missing_creativity') pushUniqueSteps(candidates, [6, 18, 17, 14, 20]);
+      if (missing === 'missing_physical') pushUniqueSteps(candidates, [16, 7, 11, 24, 20]);
+      if (missing === 'missing_social') pushUniqueSteps(candidates, [4, 12, 21, 17, 20]);
+      if (missing === 'missing_peace') pushUniqueSteps(candidates, [19, 20, 10, 13, 12]);
+
+      if (time === 'time_2_5' || budget === 'budget_0_100') {
+        pushUniqueSteps(candidates, [14, 22, 23, 10]);
+      }
+      if (time === 'time_20_plus' || budget === 'budget_2000_plus') {
+        pushUniqueSteps(candidates, [16, 24, 22, 18]);
+      }
+
+      if (energy === 'energy_drained') pushUniqueSteps(candidates, [20, 10, 19, 13, 5]);
+      if (energy === 'energy_high') pushUniqueSteps(candidates, [16, 7, 11, 24, 21]);
+
+      if (social === 'social_solo' || answers.l12 === 'hobby_solo' || answers.l21 === 'people_no') {
+        pushUniqueSteps(candidates, [12, 19, 13, 20, 10]);
+      }
+      if (social === 'social_large' || answers.l12 === 'hobby_social' || answers.l21 === 'people_yes') {
+        pushUniqueSteps(candidates, [21, 17, 4, 7, 24]);
+      }
+
+      if (stress === 'stress_physical') pushUniqueSteps(candidates, [16, 7, 11, 24]);
+      if (stress === 'stress_calm') pushUniqueSteps(candidates, [19, 10, 13, 12]);
+      if (stress === 'stress_social') pushUniqueSteps(candidates, [21, 4, 17, 12]);
+      if (stress === 'stress_creative') pushUniqueSteps(candidates, [6, 18, 17, 14]);
+
+      if (meaning === 'meaning_yes' || meaning === 'meaning_somewhat') {
+        pushUniqueSteps(candidates, [19, 20, 25, 10]);
+      }
+
+      if (purpose === 'purpose_helping') pushUniqueSteps(candidates, [21, 4, 12, 23]);
+      if (purpose === 'purpose_growth') pushUniqueSteps(candidates, [22, 8, 14, 23]);
+      if (purpose === 'purpose_fun') pushUniqueSteps(candidates, [7, 16, 18, 24]);
+
+      // Validation pass to confirm feasibility after emotional preference questions.
+      if (missing || stress || purpose) pushUniqueSteps(candidates, [2, 15, 23, 14]);
+
+      pushUniqueSteps(candidates, LIFE_SIGNAL_PRIORITY);
+      return candidates;
+    }
+
+    function getAdaptiveCandidates(track, step, answerValue, answers, answeredCount) {
+      const candidates = [];
+      if (track === 'career') {
+        pushUniqueSteps(candidates, getCareerAdaptiveCandidates(step, answerValue, answers));
+        pushUniqueSteps(candidates, getCareerFineTuneCandidates(answers, answeredCount));
+      }
+      if (track === 'life') {
+        pushUniqueSteps(candidates, getLifeAdaptiveCandidates(step, answerValue, answers));
+        pushUniqueSteps(candidates, getLifeFineTuneCandidates(answers, answeredCount));
+      }
+      return candidates;
     }
 
     function pickFirstUnansweredStep(track, candidates) {
@@ -2297,7 +2437,8 @@
 
     function getNextAdaptiveStep(track, step, answerValue) {
       const answers = collectTrackAnswers(track);
-      const adaptiveCandidates = getAdaptiveCandidates(track, step, answerValue, answers);
+      const answeredCount = getAnsweredCount(track);
+      const adaptiveCandidates = getAdaptiveCandidates(track, step, answerValue, answers, answeredCount);
       const adaptiveNext = pickFirstUnansweredStep(track, adaptiveCandidates);
       if (adaptiveNext) return adaptiveNext;
       return pickFirstUnansweredStep(track, TRACK_ORDERS[track]);

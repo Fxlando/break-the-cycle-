@@ -42,7 +42,7 @@ break the cycle/
 ## How to Use
 
 1. **Test Locally**: Open `index-new.html` in your browser
-2. **Deploy**: Upload to Netlify, Vercel, or GitHub Pages
+2. **Deploy**: Upload to Vercel or GitHub Pages
 3. **Customize**: 
    - Update social media links in footer
    - Add your own testimonials
