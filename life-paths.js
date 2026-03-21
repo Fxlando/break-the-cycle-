@@ -1092,5 +1092,293 @@ const lifePaths = {
   }
 };
 
+const EXTRA_LIFE_PATH_TITLES_SOURCE = `
+Fitness, weightlifting, bodybuilding, calisthenics, running, jogging, walking, hiking, backpacking, camping, fishing, hunting, kayaking, canoeing, paddleboarding, swimming, lap swimming, snorkeling, scuba diving, surfing, bodyboarding, skateboarding, longboarding, rollerblading, biking, mountain biking, BMX, dirt biking, motocross, rock climbing, bouldering, martial arts, boxing, kickboxing, MMA, wrestling, jiu-jitsu, judo, karate, taekwondo, yoga, Pilates, stretching, mobility work, dance, hip-hop dance, breakdancing, salsa, bachata, ballroom dancing, Zumba, sports, basketball, football, soccer, baseball, softball, tennis, pickleball, volleyball, badminton, table tennis, golf, mini golf, bowling, pool, darts, disc golf, archery, paintball, airsoft, horseback riding, rodeo, parkour.
+
+Photography, videography, filmmaking, drone flying, video editing, photo editing, graphic design, drawing, sketching, painting, watercolor, acrylic painting, oil painting, digital art, pixel art, animation, 3D modeling, sculpting, pottery, ceramics, woodworking, carving, leatherworking, metalworking, blacksmithing, welding projects, jewelry making, candle making, soap making, knitting, crocheting, sewing, quilting, embroidery, fashion design, interior decorating, home DIY, furniture flipping, restoring old items, thrifting, collecting, sneaker collecting, coin collecting, card collecting, comic collecting, vinyl collecting, watch collecting, car restoration, model building, RC cars, RC planes, puzzles, Lego building, calligraphy, journaling, scrapbooking, origami.
+
+Reading, writing, creative writing, poetry, journaling, blogging, storytelling, screenwriting, songwriting, music production, beat making, rapping, singing, learning an instrument, guitar, piano, drums, violin, bass, DJing, podcasting, public speaking, debate, learning languages, studying history, studying philosophy, studying religion, studying psychology, studying business, coding, app building, game development, web design, robotics, electronics, chess, speedcubing, trivia, board games, card games, Dungeons & Dragons, game nights, streaming, content creation, YouTube, TikTok creation, meme making, Discord community building, moderation, online communities, esports, gaming, speedrunning, modding games.
+
+Cooking, baking, grilling, smoking meats, meal prep, coffee brewing, espresso making, tea tasting, gardening, vegetable gardening, flower gardening, indoor plants, bonsai, aquariums, fishkeeping, reptile keeping, birdwatching, dog training, volunteering, mentoring, tutoring, coaching kids, church groups, youth groups, community service, traveling, road trips, urban exploration, geocaching, visiting museums, visiting national parks, trying new restaurants, attending concerts, festivals, conventions, car meets, swap meets, flea markets, farmers markets, networking events, meetups, book clubs, hiking clubs, photography walks, local sports leagues, rec leagues.
+
+Meditation, prayer, spiritual study, self-improvement, therapy work, shadow work, goal setting, habit tracking, budgeting, investing, side hustles, freelancing, reselling, ecommerce, affiliate marketing, flipping items, starting a business, real estate investing, building a brand, personal branding, networking, dating, socializing, making friends, hosting gatherings, family time, parenting activities, pet care, home improvement, organizing your room, upgrading your setup, learning survival skills, learning car repair, learning first aid, learning firearms safety, learning navigation, stargazing, astronomy, watching documentaries, cinema appreciation, fashion, grooming, skincare, fragrance collecting, barbering, tattoo art, piercings, exploring your city, sunset drives, beach days, lake days, bonfires, picnics, journaling your life
+`;
+
+const GENERATED_LIFE_PATH_TEMPLATES = [
+  {
+    category: "Spiritual & Mindfulness",
+    emoji: "🧘",
+    pattern: /(meditation|prayer|spiritual|shadow work|therapy work|self-improvement|goal setting|habit tracking|journaling your life)/i,
+    personalityFit: ["reflective", "self-aware", "patient", "growth-minded"],
+    skillsRequired: ["consistency", "self-reflection", "mindfulness", "emotional awareness"],
+    timeCommitment: "15-60 minutes daily",
+    startupCost: [0, 150],
+    timeToSkill: "Immediate start, lifelong depth",
+    lifestyle: "flexible and reflective",
+    fulfillmentLevel: "very high",
+    energyType: "calming",
+    socialLevel: "solo",
+    physicalDemand: "very low"
+  },
+  {
+    category: "Side Hustles",
+    emoji: "💼",
+    pattern: /(budgeting|investing|side hustles|freelancing|reselling|ecommerce|affiliate marketing|flipping items|starting a business|real estate investing|building a brand|personal branding)/i,
+    personalityFit: ["entrepreneurial", "self-directed", "resourceful", "curious"],
+    skillsRequired: ["planning", "execution", "learning", "adaptability"],
+    timeCommitment: "5-15 hours/week",
+    startupCost: [0, 1000],
+    timeToSkill: "1-3 months for first results",
+    lifestyle: "flexible and self-driven",
+    fulfillmentLevel: "high",
+    energyType: "energizing",
+    socialLevel: "flexible",
+    physicalDemand: "low"
+  },
+  {
+    category: "Performance & Expression",
+    emoji: "🎤",
+    pattern: /(dance|hip-hop dance|breakdancing|salsa|bachata|ballroom dancing|zumba|rapping|singing|djing|podcasting|public speaking|debate|streaming|content creation|youtube|tiktok creation|meme making)/i,
+    personalityFit: ["expressive", "creative", "brave", "social"],
+    skillsRequired: ["practice", "communication", "performance", "consistency"],
+    timeCommitment: "3-10 hours/week",
+    startupCost: [0, 500],
+    timeToSkill: "1-6 months to build confidence",
+    lifestyle: "evenings/weekends and flexible",
+    fulfillmentLevel: "high",
+    energyType: "energizing",
+    socialLevel: "community",
+    physicalDemand: "medium"
+  },
+  {
+    category: "Creative Arts",
+    emoji: "🎨",
+    pattern: /(photography|videography|filmmaking|drone flying|video editing|photo editing|graphic design|drawing|sketching|painting|watercolor|acrylic painting|oil painting|digital art|pixel art|animation|3d modeling|sculpting|pottery|ceramics|fashion design|calligraphy|scrapbooking|origami|collecting|sneaker collecting|coin collecting|card collecting|comic collecting|vinyl collecting|watch collecting|car restoration|puzzles|cinema appreciation)/i,
+    personalityFit: ["creative", "observant", "imaginative", "patient"],
+    skillsRequired: ["creative exploration", "consistency", "practice", "curiosity"],
+    timeCommitment: "3-10 hours/week",
+    startupCost: [0, 800],
+    timeToSkill: "1-6 months for solid progress",
+    lifestyle: "flexible schedule",
+    fulfillmentLevel: "high",
+    energyType: "balanced",
+    socialLevel: "flexible",
+    physicalDemand: "low"
+  },
+  {
+    category: "Building & Making",
+    emoji: "🛠️",
+    pattern: /(woodworking|carving|leatherworking|metalworking|blacksmithing|welding projects|jewelry making|candle making|soap making|knitting|crocheting|sewing|quilting|embroidery|interior decorating|home diy|furniture flipping|restoring old items|model building|rc cars|rc planes|lego building|cooking|baking|grilling|smoking meats|meal prep|coffee brewing|espresso making|tea tasting|gardening|vegetable gardening|flower gardening|indoor plants|bonsai|aquariums|fishkeeping|reptile keeping|dog training|home improvement|organizing your room|upgrading your setup|learning car repair|learning first aid|learning firearms safety|learning navigation|tattoo art|barbering|grooming|skincare|fragrance collecting|piercings)/i,
+    personalityFit: ["hands-on", "detail-oriented", "practical", "creative"],
+    skillsRequired: ["execution", "patience", "tool use", "iteration"],
+    timeCommitment: "3-10 hours/week",
+    startupCost: [50, 1500],
+    timeToSkill: "1-6 months to feel confident",
+    lifestyle: "hands-on and flexible",
+    fulfillmentLevel: "very high",
+    energyType: "balanced",
+    socialLevel: "solo",
+    physicalDemand: "medium"
+  },
+  {
+    category: "Adventure & Outdoors",
+    emoji: "🏕️",
+    pattern: /(hiking|backpacking|camping|fishing|hunting|kayaking|canoeing|paddleboarding|snorkeling|scuba diving|surfing|bodyboarding|mountain biking|dirt biking|motocross|rock climbing|bouldering|horseback riding|rodeo|geocaching|traveling|road trips|urban exploration|visiting national parks|birdwatching|stargazing|astronomy|sunset drives|beach days|lake days|bonfires|picnics)/i,
+    personalityFit: ["adventurous", "resilient", "curious", "present"],
+    skillsRequired: ["planning", "adaptability", "awareness", "consistency"],
+    timeCommitment: "Weekend focus + 2-8 hours/week",
+    startupCost: [0, 1200],
+    timeToSkill: "Immediate start, skills build over months",
+    lifestyle: "outdoors and flexible",
+    fulfillmentLevel: "very high",
+    energyType: "energizing",
+    socialLevel: "flexible",
+    physicalDemand: "high"
+  },
+  {
+    category: "Physical & Sports",
+    emoji: "🏃",
+    pattern: /(fitness|weightlifting|bodybuilding|calisthenics|running|jogging|walking|swimming|lap swimming|skateboarding|longboarding|rollerblading|biking|bmx|martial arts|boxing|kickboxing|mma|wrestling|jiu-jitsu|judo|karate|taekwondo|yoga|pilates|stretching|mobility work|sports|basketball|football|soccer|baseball|softball|tennis|pickleball|volleyball|badminton|table tennis|golf|mini golf|bowling|pool|darts|disc golf|archery|paintball|airsoft|parkour|local sports leagues|rec leagues)/i,
+    personalityFit: ["active", "disciplined", "goal-oriented", "resilient"],
+    skillsRequired: ["practice", "consistency", "body awareness", "recovery"],
+    timeCommitment: "3-8 hours/week",
+    startupCost: [0, 600],
+    timeToSkill: "1-3 months to build momentum",
+    lifestyle: "regular training rhythm",
+    fulfillmentLevel: "high",
+    energyType: "energizing",
+    socialLevel: "small group",
+    physicalDemand: "high"
+  },
+  {
+    category: "Intellectual & Learning",
+    emoji: "📚",
+    pattern: /(reading|writing|creative writing|poetry|blogging|storytelling|screenwriting|songwriting|music production|beat making|learning an instrument|guitar|piano|drums|violin|bass|learning languages|studying history|studying philosophy|studying religion|studying psychology|studying business|coding|app building|game development|web design|robotics|electronics|chess|speedcubing|trivia|board games|card games|dungeons & dragons|game nights|esports|gaming|speedrunning|modding games|watching documentaries|visiting museums|exploring your city|thrifting|trying new restaurants|attending concerts|festivals|conventions|car meets|swap meets|flea markets|farmers markets)/i,
+    personalityFit: ["curious", "analytical", "reflective", "persistent"],
+    skillsRequired: ["learning", "focus", "consistency", "exploration"],
+    timeCommitment: "2-8 hours/week",
+    startupCost: [0, 300],
+    timeToSkill: "Immediate engagement, lifelong learning",
+    lifestyle: "flexible and self-paced",
+    fulfillmentLevel: "high",
+    energyType: "balanced",
+    socialLevel: "solo",
+    physicalDemand: "very low"
+  },
+  {
+    category: "Social & Community",
+    emoji: "🤝",
+    pattern: /(volunteering|mentoring|tutoring|coaching kids|church groups|youth groups|community service|networking events|meetups|book clubs|hiking clubs|photography walks|networking|dating|socializing|making friends|hosting gatherings|family time|parenting activities|pet care|discord community building|moderation|online communities)/i,
+    personalityFit: ["supportive", "social", "empathetic", "reliable"],
+    skillsRequired: ["communication", "connection", "presence", "consistency"],
+    timeCommitment: "2-8 hours/week",
+    startupCost: [0, 200],
+    timeToSkill: "Immediate start",
+    lifestyle: "regular and social",
+    fulfillmentLevel: "very high",
+    energyType: "balanced",
+    socialLevel: "community",
+    physicalDemand: "low"
+  }
+];
+
+const GENERATED_LIFE_PATH_DEFAULT_TEMPLATE = {
+  category: "Intellectual & Learning",
+  emoji: "🌱",
+  personalityFit: ["curious", "open-minded", "consistent", "growth-oriented"],
+  skillsRequired: ["exploration", "practice", "reflection", "follow-through"],
+  timeCommitment: "2-8 hours/week",
+  startupCost: [0, 300],
+  timeToSkill: "1-3 months to feel momentum",
+  lifestyle: "flexible schedule",
+  fulfillmentLevel: "high",
+  energyType: "balanced",
+  socialLevel: "flexible",
+  physicalDemand: "low"
+};
+
+const LIFE_TITLE_ACRONYMS = new Set(["RC", "MMA", "BMX", "DIY", "DJ", "3D"]);
+
+function normalizeLifeTitleForCompare(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function toLifePathKeyFromTitle(value) {
+  const base = String(value || "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return base || "life_path";
+}
+
+function isLikelyDuplicateLifeTitle(candidate, existing) {
+  if (!candidate || !existing) return false;
+  if (candidate === existing) return true;
+  const shortLen = Math.min(candidate.length, existing.length);
+  if (shortLen >= 6 && (candidate.includes(existing) || existing.includes(candidate))) return true;
+  const candidateWords = candidate.split(" ").filter(Boolean);
+  const existingWords = existing.split(" ").filter(Boolean);
+  if (candidateWords.length < 2 || existingWords.length < 2) return false;
+  const existingSet = new Set(existingWords);
+  const overlap = candidateWords.filter((word) => existingSet.has(word));
+  return overlap.length >= 2 && overlap.length / Math.min(candidateWords.length, existingWords.length) >= 0.8;
+}
+
+function toDisplayLifeTitle(rawTitle) {
+  return String(rawTitle || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => {
+      const upper = part.toUpperCase();
+      if (LIFE_TITLE_ACRONYMS.has(upper) || /^[A-Z0-9]{2,}$/.test(part)) return upper;
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    })
+    .join(" ")
+    .replace(/\bDiy\b/g, "DIY")
+    .replace(/\bMma\b/g, "MMA")
+    .replace(/\bRc\b/g, "RC")
+    .replace(/\bBmx\b/g, "BMX")
+    .replace(/\bDjing\b/g, "DJing")
+    .replace(/\bTiktok\b/g, "TikTok")
+    .replace(/\bJiu-jitsu\b/g, "Jiu-Jitsu")
+    .replace(/\b3d\b/g, "3D")
+    .trim();
+}
+
+function pickGeneratedLifeTemplate(title) {
+  const match = GENERATED_LIFE_PATH_TEMPLATES.find((template) => template.pattern.test(title));
+  return match || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE;
+}
+
+function buildGeneratedLifePath(title, template) {
+  const categoryLabel = String(template.category || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.category).toLowerCase();
+  return {
+    name: title,
+    emoji: template.emoji || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.emoji,
+    category: template.category || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.category,
+    description: `Explore ${title} as a path to build energy, meaning, and momentum outside of work.`,
+    personalityFit: Array.isArray(template.personalityFit) ? template.personalityFit.slice() : GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.personalityFit.slice(),
+    skillsRequired: Array.isArray(template.skillsRequired) ? template.skillsRequired.slice() : GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.skillsRequired.slice(),
+    timeCommitment: template.timeCommitment || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.timeCommitment,
+    startupCost: Array.isArray(template.startupCost) ? template.startupCost.slice() : GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.startupCost.slice(),
+    timeToSkill: template.timeToSkill || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.timeToSkill,
+    lifestyle: template.lifestyle || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.lifestyle,
+    fulfillmentLevel: template.fulfillmentLevel || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.fulfillmentLevel,
+    energyType: template.energyType || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.energyType,
+    socialLevel: template.socialLevel || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.socialLevel,
+    physicalDemand: template.physicalDemand || GENERATED_LIFE_PATH_DEFAULT_TEMPLATE.physicalDemand,
+    detailed: {
+      whoYouAre: `You want more intentional ${categoryLabel} activities in your life and value progress you can feel each week.`,
+      whatToDo: `Start ${title} with a simple weekly plan, begin at beginner level, and track consistency for 30 days before increasing difficulty.`
+    }
+  };
+}
+
+(function addGeneratedLifePathsFromUserList() {
+  const rawTitles = EXTRA_LIFE_PATH_TITLES_SOURCE.replace(/\./g, ",").split(",");
+  const existingNames = Object.values(lifePaths)
+    .map((path) => normalizeLifeTitleForCompare(path && path.name))
+    .filter(Boolean);
+  const seenNames = new Set(existingNames);
+  const usedKeys = new Set(Object.keys(lifePaths));
+
+  for (const rawTitle of rawTitles) {
+    const cleanedTitle = String(rawTitle || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/[.]+$/g, "");
+    if (!cleanedTitle) continue;
+
+    const normalizedTitle = normalizeLifeTitleForCompare(cleanedTitle);
+    if (!normalizedTitle) continue;
+
+    const isDuplicate = existingNames.some((existing) => isLikelyDuplicateLifeTitle(normalizedTitle, existing)) ||
+      seenNames.has(normalizedTitle);
+    if (isDuplicate) {
+      seenNames.add(normalizedTitle);
+      continue;
+    }
+
+    const displayTitle = toDisplayLifeTitle(cleanedTitle);
+    const template = pickGeneratedLifeTemplate(displayTitle);
+    const baseKey = toLifePathKeyFromTitle(displayTitle);
+    let key = baseKey;
+    let suffix = 2;
+    while (usedKeys.has(key)) {
+      key = `${baseKey}_${suffix}`;
+      suffix += 1;
+    }
+
+    lifePaths[key] = buildGeneratedLifePath(displayTitle, template);
+    usedKeys.add(key);
+    existingNames.push(normalizedTitle);
+    seenNames.add(normalizedTitle);
+  }
+})();
+
 // Export to window for use in quiz
 window.lifePaths = lifePaths;
