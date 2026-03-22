@@ -366,10 +366,11 @@
       flex: 1;
       flex-direction: column;
       min-height: 0;
+      overflow: hidden;
     }
-    .step.active { 
-      display: flex; 
-      animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+    .step.active {
+      display: flex;
+      animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     @keyframes fadeInUp {
@@ -411,7 +412,8 @@
     .options::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
     .option { position: relative; }
-    .option input[type="radio"] { position: absolute; opacity: 0; cursor: pointer; }
+    .option input[type="radio"],
+    .option input[type="checkbox"] { position: absolute; opacity: 0; cursor: pointer; }
     
     .option label {
       display: block;
@@ -440,9 +442,11 @@
       transition: transform 0.3s ease;
     }
 
-    .option input[type="radio"]:checked + label::before { transform: scaleY(1); }
+    .option input[type="radio"]:checked + label::before,
+    .option input[type="checkbox"]:checked + label::before { transform: scaleY(1); }
 
-    .option input[type="radio"]:checked + label {
+    .option input[type="radio"]:checked + label,
+    .option input[type="checkbox"]:checked + label {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
       border-color: var(--primary);
       color: var(--text-primary);
