@@ -239,8 +239,7 @@
       padding: 30px 40px;
       box-shadow: var(--shadow);
       position: relative;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
       max-height: 95vh;
       display: flex;
       flex-direction: column;
@@ -357,8 +356,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
       min-height: 0;
     }
 
@@ -759,17 +757,19 @@
         align-items: flex-start;
         justify-content: center;
         overflow-y: auto;
+        background: var(--bg-dark);
       }
-      .container { 
-        padding: 15px; 
-        height: auto; 
-        max-height: none; 
-        border-radius: 0; 
-        border: none; 
-        box-shadow: none; 
+      .container {
+        padding: 20px 16px;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
         overflow: visible;
         margin: 0 auto;
         width: 100%;
+        background: var(--bg-dark);
       }
       #quizForm {
         overflow: visible;
@@ -777,80 +777,196 @@
       .step[data-track="career"][data-step="5"] .options {
         max-height: min(500px, calc(100vh - 340px));
       }
-      .container::before { height: 3px; }
-      .header { margin-bottom: 12px; padding-bottom: 12px; text-align: center; }
-      .header h1 { font-size: 1.5rem; margin-bottom: 5px; }
-      .header p { font-size: 0.9rem; }
-      .progress-container { padding: 10px; margin-bottom: 12px; }
-      .step h3 { font-size: 1.1rem; margin-bottom: 12px; line-height: 1.4; }
-      .options { gap: 8px; margin-bottom: 12px; }
-      .option label { padding: 12px 14px; font-size: 0.9rem; line-height: 1.3; min-height: 44px; display: flex; align-items: center; }
-      .honesty-popup { font-size: 0.8rem; padding: 10px 11px; top: 14px; }
-      .btn { padding: 14px; font-size: 0.95rem; min-height: 48px; }
-      
-      /* RESULTS MOBILE FIXES */
-      .results { 
-        padding: 0 10px;
+      .container::before { height: 3px; border-radius: 0; }
+
+      /* Clean compact header */
+      .header {
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+        text-align: center;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+      }
+      .header h1 { font-size: 1.4rem; margin-bottom: 4px; }
+      .header p { font-size: 0.85rem; }
+
+      /* Sleek progress bar */
+      .progress-container {
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        background: rgba(35, 35, 58, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 12px;
+      }
+      .progress-bar { height: 6px; margin-bottom: 8px; }
+      .progress-text { font-size: 0.8rem; }
+
+      /* Question styling */
+      .step h3 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+        line-height: 1.45;
+        padding: 0 2px;
+      }
+
+      /* Polished answer options */
+      .options { gap: 10px; margin-bottom: 16px; }
+      .option label {
+        padding: 14px 16px;
+        font-size: 0.92rem;
+        line-height: 1.4;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        background: rgba(35, 35, 58, 0.5);
+        transition: all 0.2s ease;
+      }
+      .option label:active {
+        transform: scale(0.98);
+      }
+      .option input[type="radio"]:checked + label {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.12) 100%);
+        box-shadow: 0 2px 12px rgba(99, 102, 241, 0.2);
+      }
+
+      .honesty-popup { font-size: 0.8rem; padding: 10px 14px; top: 14px; border-radius: 12px; }
+
+      /* CTA button */
+      .btn {
+        padding: 15px;
+        font-size: 0.95rem;
+        min-height: 50px;
+        border-radius: 14px;
+        font-weight: 700;
+      }
+
+      /* ── RESULTS MOBILE ── */
+      .results {
+        padding: 0 4px;
         max-height: none;
         overflow: visible;
       }
-      .results h2 { font-size: 2.5rem !important; margin-bottom: 10px !important; text-align: center; }
-      .results-title { font-size: 1.3rem !important; margin-bottom: 10px !important; line-height: 1.3 !important; text-align: center; }
-      .results-subtitle { font-size: 0.9rem !important; margin-bottom: 20px !important; text-align: center; }
+      .results h2 {
+        font-size: 2.8rem !important;
+        margin-bottom: 8px !important;
+        text-align: center;
+      }
+      .results-title {
+        font-size: 1.35rem !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
+        text-align: center;
+      }
+      .results-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 24px !important;
+        text-align: center;
+        color: var(--text-muted);
+      }
       .results-actions { gap: 10px; align-items: center; }
-      .results-actions .btn { width: 100%; max-width: 300px; }
-      
-      .career-path { 
-        padding: 15px; 
-        margin: 0 auto 20px auto;
+      .results-actions .btn { width: 100%; max-width: 320px; }
+
+      /* Career path cards – modern card style */
+      .career-path {
+        padding: 20px 16px;
+        margin: 0 auto 16px auto;
         max-width: 100%;
         overflow: hidden;
+        border-radius: 16px;
+        border: 1.5px solid var(--border);
+        background: rgba(35, 35, 58, 0.5);
       }
-      .career-header { 
-        flex-direction: column; 
+      .career-path.rank-1 {
+        border-color: var(--primary);
+        background: linear-gradient(160deg, rgba(99, 102, 241, 0.08) 0%, rgba(35, 35, 58, 0.5) 40%);
+      }
+      .career-header {
+        flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 10px;
+        gap: 8px;
       }
-      .career-emoji { font-size: 2rem; }
+      .career-emoji { font-size: 2.4rem; }
       .career-title { margin-left: 0 !important; width: 100%; text-align: center; }
-      .career-name { font-size: 1.2rem; text-align: center; }
-      .career-category { font-size: 0.85rem; text-align: center; }
-      .match-score { 
-        font-size: 0.85rem; 
-        padding: 6px 12px;
+      .career-name { font-size: 1.25rem; text-align: center; }
+      .career-category { font-size: 0.8rem; text-align: center; letter-spacing: 0.08em; }
+      .match-score {
+        font-size: 0.82rem;
+        padding: 5px 14px;
+        border-radius: 20px;
         position: relative;
         align-self: center;
-        margin: 5px auto 0 auto;
+        margin: 4px auto 0 auto;
       }
-      
-      .career-stats { 
-        grid-template-columns: 1fr !important; 
-        gap: 10px;
+
+      /* Stats – compact 2-col grid */
+      .career-stats {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px;
       }
       .stat-box {
-        padding: 12px;
+        padding: 10px 8px;
         text-align: center;
+        border-radius: 10px;
+        background: rgba(26, 26, 36, 0.7);
       }
-      .stat-label { font-size: 0.75rem; }
-      .stat-value { font-size: 0.9rem; }
-      
-      .career-description { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; text-align: center; }
-      .career-details { padding: 12px; margin-bottom: 12px; text-align: center; }
-      .career-details h4 { font-size: 1rem; margin-bottom: 8px; text-align: center; }
-      .career-details p { font-size: 0.85rem; line-height: 1.5; text-align: center; }
-      
-      .section-divider { margin: 20px 0 15px; text-align: center; }
-      .section-divider h3 { font-size: 1.2rem; text-align: center; }
+      .stat-label { font-size: 0.7rem; margin-bottom: 3px; }
+      .stat-value { font-size: 0.85rem; }
+
+      .career-description {
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin-bottom: 14px;
+        text-align: left;
+        color: var(--text-secondary);
+      }
+      .career-details {
+        padding: 14px;
+        margin-bottom: 10px;
+        text-align: left;
+        border-radius: 12px;
+        background: rgba(26, 26, 36, 0.6);
+        border: 1px solid rgba(42, 42, 58, 0.5);
+      }
+      .career-details h4 {
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        text-align: left;
+      }
+      .career-details p {
+        font-size: 0.85rem;
+        line-height: 1.55;
+        text-align: left;
+      }
+
+      .section-divider { margin: 24px 0 16px; text-align: center; }
+      .section-divider h3 { font-size: 1.15rem; text-align: center; }
+      .section-divider::after { width: 60px; height: 2px; margin: 10px auto 0; }
+
+      /* Paywall mobile */
+      .paywall-card { padding: 24px 18px; border-radius: 16px; }
+      .paywall-card h2 { font-size: 1.4rem; }
+
+      /* Auth bar mobile */
+      .auth-bar { padding: 10px; border-radius: 10px; }
+      .auth-bar input[type="email"] { min-width: 0; width: 100%; }
+
+      /* Access code box */
+      .access-code-box { border-radius: 12px; padding: 14px; }
     }
-    
+
     @media (max-width: 375px) {
-      .container { padding: 12px 15px; }
-      .header h1 { font-size: 1.3rem; }
-      .step h3 { font-size: 1.05rem; margin-bottom: 10px; }
-      .option label { font-size: 0.88rem; padding: 11px 12px; }
-      .progress-container { padding: 8px; }
-      .options { gap: 6px; }
+      .container { padding: 16px 14px; }
+      .header h1 { font-size: 1.25rem; }
+      .step h3 { font-size: 1.02rem; margin-bottom: 12px; }
+      .option label { font-size: 0.88rem; padding: 12px 14px; }
+      .progress-container { padding: 10px 12px; }
+      .options { gap: 8px; }
+      .career-stats { gap: 6px; }
+      .stat-box { padding: 8px 6px; }
+      .career-path { padding: 16px 14px; }
     }
   </style>
 </head>
