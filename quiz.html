@@ -858,7 +858,24 @@
         box-shadow: 0 2px 12px rgba(99, 102, 241, 0.2);
       }
 
-      .honesty-popup { font-size: 0.8rem; padding: 10px 14px; top: 14px; border-radius: 12px; }
+      .honesty-popup {
+        font-size: 0.78rem;
+        padding: 10px 14px;
+        top: 10px;
+        border-radius: 12px;
+        width: min(680px, calc(100vw - 24px));
+      }
+
+      /* Push content down on the intro screen so the reminder doesn't overlap */
+      .container {
+        padding-top: 72px;
+        justify-content: flex-start;
+      }
+
+      /* Once past step 0, tighten padding back up */
+      .container.quiz-started {
+        padding-top: 20px;
+      }
 
       /* CTA button */
       .btn {
@@ -2860,6 +2877,9 @@
       document.querySelector('[data-step="0"]').classList.remove('active');
       const ageStep = document.querySelector('[data-step="0-age"]');
       if (ageStep) ageStep.classList.remove('active');
+
+      // Tighten layout now that intro screen is done
+      document.querySelector('.container').classList.add('quiz-started');
 
       // Show progress bar
       document.getElementById('progressContainer').style.display = 'block';
