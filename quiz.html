@@ -2357,7 +2357,12 @@
       if (track === 'career' && step === 5) {
         const selectedHardNos = getCareerHardNoSelectionsFromUi();
         const openAllSelected = Boolean(document.querySelector(`input[name="c5_hard_no"][value="${CAREER_HARD_NO_OPEN_ALL}"]:checked`));
-        if (!selectedHardNos.length && !openAllSelected) return null;
+        if (!selectedHardNos.length && !openAllSelected) {
+          return {
+            value: CAREER_HARD_NO_OPEN_ALL,
+            hardNos: []
+          };
+        }
         return {
           value: openAllSelected ? CAREER_HARD_NO_OPEN_ALL : selectedHardNos.join('|'),
           hardNos: selectedHardNos
@@ -2627,10 +2632,11 @@
       const answers = collectTrackAnswers(track);
       const answeredCount = getAnsweredCount(track);
 
-      // Ensure career hard-no preferences are always collected early
-      // in both "career" and "both" modes (both starts on career track).
-      if (track === 'career' && step !== 5 && !answeredStepsByTrack.career.has(5) && answeredCount >= 2) {
-        return 5;
+      // Keep career onboarding predictable: ask 1 -> 2 -> 3 -> 4 -> 5 in order.
+      // Adaptive branching starts after step 5.
+      if (track === 'career' && step < 5) {
+        const nextLinearStep = step + 1;
+        if (!answeredStepsByTrack.career.has(nextLinearStep)) return nextLinearStep;
       }
 
       const adaptiveCandidates = getAdaptiveCandidates(track, step, answerValue, answers, answeredCount);
