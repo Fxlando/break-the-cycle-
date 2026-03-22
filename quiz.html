@@ -239,8 +239,7 @@
       padding: 30px 40px;
       box-shadow: var(--shadow);
       position: relative;
-      overflow: hidden;
-      max-height: 95vh;
+      overflow: visible;
       display: flex;
       flex-direction: column;
       word-wrap: break-word;
@@ -356,15 +355,13 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      min-height: 0;
+      overflow: visible;
     }
 
-    .step { 
+    .step {
       display: none;
       flex: 1;
       flex-direction: column;
-      min-height: 0;
     }
     .step.active { 
       display: flex; 
@@ -393,25 +390,12 @@
       flex-shrink: 0;
     }
 
-    .options { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 10px; 
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       margin-bottom: 20px;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      padding-right: 5px;
-    }
-
-    .options::-webkit-scrollbar { width: 6px; }
-    .options::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 10px; }
-    .options::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
-    .options::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
-    /* Keep the step-5 action button in view on desktop/laptop heights. */
-    .step[data-track="career"][data-step="5"] .options {
-      max-height: min(500px, calc(100vh - 440px));
+      overflow: visible;
     }
 
     .option { position: relative; }
@@ -514,18 +498,11 @@
       font-weight: 600;
     }
 
-    .results { 
+    .results {
       display: none;
-      overflow-y: auto;
-      max-height: calc(95vh - 80px);
-      padding-right: 10px;
+      overflow: visible;
     }
     .results.active { display: block; animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
-    
-    .results::-webkit-scrollbar { width: 8px; }
-    .results::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 10px; }
-    .results::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
-    .results::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     
     .results h2 { 
       font-size: 4rem; 
@@ -770,12 +747,6 @@
         margin: 0 auto;
         width: 100%;
         background: var(--bg-dark);
-      }
-      #quizForm {
-        overflow: visible;
-      }
-      .step[data-track="career"][data-step="5"] .options {
-        max-height: min(500px, calc(100vh - 340px));
       }
       .container::before { height: 3px; border-radius: 0; }
 
