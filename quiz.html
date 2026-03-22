@@ -360,6 +360,22 @@
       min-height: 0;
     }
 
+    .career-questions,
+    .life-questions {
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* Collapse wrapper when it has no active step inside */
+    .career-questions:not(:has(.step.active)),
+    .life-questions:not(:has(.step.active)) {
+      flex: 0;
+      overflow: hidden;
+    }
+
     .step {
       display: none;
       flex: 1;
