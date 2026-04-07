@@ -362,18 +362,16 @@
 
     .career-questions,
     .life-questions {
-      display: flex;
+      display: none;
       flex: 1 1 0;
       flex-direction: column;
       overflow: hidden;
       min-height: 0;
     }
 
-    /* Collapse wrapper when it has no active step inside */
-    .career-questions:not(:has(.step.active)),
-    .life-questions:not(:has(.step.active)) {
-      flex: 0;
-      overflow: hidden;
+    .career-questions.track-visible,
+    .life-questions.track-visible {
+      display: flex;
     }
 
     .step {
@@ -1759,6 +1757,8 @@
     const accessCodeStatusTargets = [accessCodeStatus].filter(Boolean);
     const resultsEl = document.getElementById('results');
     const honestyPopup = document.getElementById('honestyPopup');
+    const careerQuestionsEl = document.querySelector('.career-questions');
+    const lifeQuestionsEl = document.querySelector('.life-questions');
 
     let quizMode = null; // 'career', 'life', or 'both'
     let userAgeRange = null;
@@ -2822,6 +2822,15 @@
       return getAnsweredCount(activeTrack);
     }
 
+    function setTrackVisibility(track = null) {
+      if (careerQuestionsEl) {
+        careerQuestionsEl.classList.toggle('track-visible', track === 'career');
+      }
+      if (lifeQuestionsEl) {
+        lifeQuestionsEl.classList.toggle('track-visible', track === 'life');
+      }
+    }
+
     function showAgeStepForSelectedMode() {
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
@@ -2836,6 +2845,7 @@
       const ageStep = document.querySelector('[data-step="0-age"]');
       if (modeStep) modeStep.classList.remove('active');
       if (ageStep) ageStep.classList.add('active');
+      setTrackVisibility(null);
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2845,6 +2855,7 @@
       const ageStep = document.querySelector('[data-step="0-age"]');
       if (ageStep) ageStep.classList.remove('active');
       if (modeStep) modeStep.classList.add('active');
+      setTrackVisibility(null);
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2901,14 +2912,19 @@
     function showQuestion(step, track) {
       // Hide all questions
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      setTrackVisibility(track);
 
       // Show the specific question
       const question = document.querySelector(`[data-step="${step}"][data-track="${track}"]`);
       if (question) {
         question.classList.add('active');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        return true;
       }
 
-      window.scrollTo({top: 0, behavior: 'smooth'});
+      console.error(`Question not found for track="${track}" step="${step}"`);
+      setTrackVisibility(null);
+      return false;
     }
 
     function nextQuestion(step) {
