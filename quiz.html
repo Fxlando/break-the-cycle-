@@ -882,19 +882,20 @@
         font-size: 0.7rem;
         line-height: 1.35;
         padding: 7px 12px;
-        top: 6px;
+        top: auto;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 94px);
         border-radius: 12px;
         width: min(680px, calc(100vw - 28px));
       }
 
       .container {
-        padding-top: 78px;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
         justify-content: flex-start;
       }
 
       .container:not(.quiz-started) .header {
-        margin-bottom: 22px;
-        padding-bottom: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
       }
 
       .container:not(.quiz-started) #quizForm {
