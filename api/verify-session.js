@@ -1,7 +1,9 @@
 const crypto = require('crypto');
 const stripeLib = require('stripe');
+const { PrismaClient } = require('@prisma/client');
 
 const ACCESS_CODE_LENGTH = parseInt(process.env.ACCESS_CODE_LENGTH || '10', 10);
+const prisma = new PrismaClient();
 
 function redactSecrets(value) {
   if (!value) return '';
@@ -25,6 +27,21 @@ function setPaidCookie(res) {
     cookie += '; Secure';
   }
   res.setHeader('Set-Cookie', cookie);
+}
+
+async function persistAccessCode(code, paidSessionId) {
+  if (!code) return false;
+  try {
+    await prisma.accessCode.upsert({
+      where: { code },
+      update: paidSessionId ? { paidSessionId, revokedAt: null } : { revokedAt: null },
+      create: { code, paidSessionId: paidSessionId || null }
+    });
+    return true;
+  } catch (err) {
+    console.warn('serverless access code db persist failed', err?.message || err);
+    return false;
+  }
 }
 
 async function readJson(req) {
@@ -108,7 +125,10 @@ module.exports = async (req, res) => {
       session?.status === 'complete' ||
       session?.payment_status === 'no_payment_required';
 
-    let accessCode = session?.metadata?.access_code || null;
+    let accessCode = session?.metadata?.access_code ||
+      session?.customer?.metadata?.access_code ||
+      session?.payment_intent?.metadata?.access_code ||
+      null;
 
     if (paid && !accessCode) {
       stage = 'generate_code';
@@ -145,6 +165,11 @@ module.exports = async (req, res) => {
 
     stage = 'set_cookie';
     if (paid) setPaidCookie(res);
+
+    if (paid && accessCode) {
+      stage = 'persist_access_code';
+      await persistAccessCode(accessCode, session?.id || sessionId);
+    }
 
     stage = 'respond';
     res.statusCode = 200;

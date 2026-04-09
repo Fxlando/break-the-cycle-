@@ -188,6 +188,24 @@ function buildApp() {
     }
   };
 
+  const persistAccessCodeRecord = async (code, paidSessionId = null) => {
+    if (!code) return false;
+    try {
+      await runWithTimeout(
+        prisma.accessCode.upsert({
+          where: { code },
+          update: paidSessionId ? { paidSessionId, revokedAt: null } : { revokedAt: null },
+          create: { code, paidSessionId: paidSessionId || null }
+        }),
+        ACCESS_CODE_DB_TIMEOUT_MS
+      );
+      return true;
+    } catch (err) {
+      console.warn('access code db persist failed', err?.message || err);
+      return false;
+    }
+  };
+
   const getOrCreateStripeAccessCode = async (session) => {
     if (!STRIPE || !session) return null;
 
@@ -263,31 +281,31 @@ function buildApp() {
   };
 
   const findAccessCodeInStripe = async (code) => {
-    if (!STRIPE || !code) return false;
+    if (!STRIPE || !code) return null;
     const query = `metadata['access_code']:'${code}'`;
 
     try {
       const customers = await STRIPE.customers.search({ query, limit: 1 });
-      if (customers?.data?.length) return true;
+      if (customers?.data?.length) return { source: 'customer', paidSessionId: null };
     } catch (err) {
       console.warn('stripe customer search failed', err?.message || err);
     }
 
     try {
       const intents = await STRIPE.paymentIntents.search({ query, limit: 1 });
-      if (intents?.data?.length) return true;
+      if (intents?.data?.length) return { source: 'payment_intent', paidSessionId: null };
     } catch (err) {
       console.warn('stripe payment intent search failed', err?.message || err);
     }
 
     try {
       const sessions = await STRIPE.checkout.sessions.search({ query, limit: 1 });
-      if (sessions?.data?.length) return true;
+      if (sessions?.data?.length) return { source: 'session', paidSessionId: sessions.data[0]?.id || null };
     } catch (err) {
       console.warn('stripe session search failed', err?.message || err);
     }
 
-    return false;
+    return null;
   };
 
   const setSessionCookie = (res, token) => {
@@ -642,6 +660,10 @@ function buildApp() {
           stage = 'stripe_access_code';
           accessCode = await getOrCreateStripeAccessCode(session);
         }
+        if (accessCode) {
+          stage = 'persist_access_code';
+          await persistAccessCodeRecord(accessCode, sessionId);
+        }
       }
 
       stage = 'respond';
@@ -713,8 +735,9 @@ function buildApp() {
 
       const stripeMatch = await findAccessCodeInStripe(code);
       if (stripeMatch) {
+        await persistAccessCodeRecord(code, stripeMatch.paidSessionId || null);
         setPaidCookie(res);
-        return res.json({ ok: true, source: 'stripe' });
+        return res.json({ ok: true, source: 'stripe', matchSource: stripeMatch.source });
       }
 
       return res.status(401).json({ error: 'Invalid access ID.' });
