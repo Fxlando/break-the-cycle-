@@ -19,14 +19,25 @@ function buildApp() {
   const app = express();
 
   const PORT = process.env.PORT || 3000;
-  const FRONTEND_URL = process.env.FRONTEND_URL ||
+  const normalizeFrontendUrl = (value) => {
+    const raw = String(value || '').trim().replace(/\/+$/, '');
+    if (!raw) return `http://localhost:${PORT}`;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (/^(localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?$/i.test(raw)) {
+      return `http://${raw}`;
+    }
+    return `https://${raw}`;
+  };
+  const FRONTEND_URL = normalizeFrontendUrl(
+    process.env.FRONTEND_URL ||
     (process.env.VERCEL && process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : `http://localhost:${PORT}`);
-  const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+      : `http://localhost:${PORT}`)
+  );
+  const STRIPE_SECRET_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
   const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
-  const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
-  const STRIPE_PAYMENT_LINK = process.env.STRIPE_PAYMENT_LINK;
+  const STRIPE_PRICE_ID = (process.env.STRIPE_PRICE_ID || '').trim();
+  const STRIPE_PAYMENT_LINK = (process.env.STRIPE_PAYMENT_LINK || '').trim();
   const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
   const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev';
   const EMAIL_FROM = process.env.EMAIL_FROM || DEFAULT_EMAIL_FROM;
@@ -581,7 +592,7 @@ function buildApp() {
       }
 
       const successUrl = `${FRONTEND_URL}/quiz.html?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${FRONTEND_URL}/index.html`;
+      const cancelUrl = `${FRONTEND_URL}/quiz.html`;
 
       const session = await STRIPE.checkout.sessions.create({
         mode: 'payment',
