@@ -229,31 +229,55 @@ header .content {
 
 /* Hero Tagline */
 .hero-tagline {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-sm);
-  z-index: 10;
-  word-spacing: normal;
-  max-width: 600px;
-}
-
-.hero-tagline .tagline-highlight {
-  color: var(--text-primary);
-  font-weight: 600;
-  display: inline-block;
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  justify-content: center;
-  flex-wrap: wrap;
+  position: absolute;
+  top: 30px;
+  left: 0;
   width: 100%;
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 400;
+  letter-spacing: clamp(0.2em, 1vw, 0.8em);
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  z-index: 10;
+  padding: 0 1rem;
+  pointer-events: none;
+  word-spacing: 1em;
+  opacity: 0.8;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));
+}
+
+.hero-tagline span {
+  background: linear-gradient(135deg, #9EA8DC, #556270, #FF8B6B, #C08B84, #9EA8DC);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15));
+  animation: gradientFlow 30s ease-in-out infinite;
+}
+
+@keyframes gradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.hero-tagline .dark-word {
+  animation: gradientFlow 30s ease-in-out infinite;
+}
+
+.hero-tagline .light-word {
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15)) brightness(1.2);
+  animation: gradientFlow 30s ease-in-out infinite;
+}
+
+.hero-tagline .mobile-comma {
+  display: none;
 }
 
 @keyframes gradientShiftHorizontal {
@@ -874,10 +898,19 @@ footer p {
   }
   
   .hero-tagline {
-    font-size: 1.1rem;
-    letter-spacing: 0.02em;
-    line-height: 1.4;
-    padding: 0;
+    font-size: 1.25rem;
+    letter-spacing: 0.2em;
+    line-height: 1.5;
+    padding: 0 10px;
+    top: 20px;
+  }
+  
+  .hero-tagline .dot-separator {
+    display: none;
+  }
+  
+  .hero-tagline .mobile-comma {
+    display: inline;
   }
   
   section {
