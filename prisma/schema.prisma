@@ -23,16 +23,41 @@ enum Mode {
   BOTH
 }
 
+enum MembershipStatus {
+  INACTIVE
+  INCOMPLETE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum MemberTrack {
+  CAREER_PIVOT
+  SKILL_BUILD
+  ROUTINE_RESET
+  SIDE_PATHS
+}
+
 model User {
-  id          String          @id @default(cuid())
-  email       String          @unique
-  role        Role            @default(USER)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  sessions    Session[]
-  quizRuns    QuizRun[]
-  magicTokens MagicLinkToken[]
-  eventLogs   EventLog[]
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  role               Role             @default(USER)
+  discordId          String?          @unique
+  discordUsername    String?
+  discordAvatar      String?
+  discordConnectedAt DateTime?
+  primaryTrack       MemberTrack?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  sessions           Session[]
+  quizRuns           QuizRun[]
+  magicTokens        MagicLinkToken[]
+  eventLogs          EventLog[]
+  membership         Membership?
+  memberGoals        MemberGoal[]
+  memberCheckIns     MemberCheckIn[]
 }
 
 model Session {
@@ -45,23 +70,23 @@ model Session {
 }
 
 model MagicLinkToken {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
   email     String
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
   userId    String?
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Subscriber {
-  id          String            @id @default(cuid())
-  email       String            @unique
-  status      SubscriberStatus  @default(PENDING)
-  tokenHash   String            @unique
+  id          String           @id @default(cuid())
+  email       String           @unique
+  status      SubscriberStatus @default(PENDING)
+  tokenHash   String           @unique
   confirmedAt DateTime?
-  createdAt   DateTime          @default(now())
+  createdAt   DateTime         @default(now())
 }
 
 model QuizRun {
@@ -86,13 +111,13 @@ model FeatureFlag {
 }
 
 model QuizQuestion {
-  id       String   @id @default(cuid())
-  slug     String   @unique
-  mode     Mode
-  order    Int
-  text     String
-  options  Json
-  metadata Json?
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  mode      Mode
+  order     Int
+  text      String
+  options   Json
+  metadata  Json?
   updatedAt DateTime @updatedAt
 }
 
@@ -116,11 +141,59 @@ model EventLog {
 }
 
 model AccessCode {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  paidSessionId String?  @unique
-  useCount      Int      @default(0)
-  createdAt     DateTime @default(now())
+  id            String    @id @default(cuid())
+  code          String    @unique
+  paidSessionId String?   @unique
+  useCount      Int       @default(0)
+  createdAt     DateTime  @default(now())
   lastUsedAt    DateTime?
   revokedAt     DateTime?
+}
+
+model Membership {
+  id                      String           @id @default(cuid())
+  user                    User             @relation(fields: [userId], references: [id])
+  userId                  String           @unique
+  status                  MembershipStatus @default(INACTIVE)
+  stripeCustomerId        String?          @unique
+  stripeSubscriptionId    String?          @unique
+  stripeCheckoutSessionId String?          @unique
+  stripePriceId           String?
+  currentPeriodEnd        DateTime?
+  cancelAtPeriodEnd       Boolean          @default(false)
+  lastSyncedAt            DateTime?
+  endedAt                 DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+}
+
+model MemberGoal {
+  id          String       @id @default(cuid())
+  user        User         @relation(fields: [userId], references: [id])
+  userId      String
+  track       MemberTrack?
+  title       String
+  notes       String?
+  targetDate  DateTime?
+  status      String       @default("ACTIVE")
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId, status])
+}
+
+model MemberCheckIn {
+  id        String       @id @default(cuid())
+  user      User         @relation(fields: [userId], references: [id])
+  userId    String
+  track     MemberTrack?
+  summary   String
+  blocker   String?
+  win       String?
+  momentum  String?
+  kind      String       @default("manual")
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
 }

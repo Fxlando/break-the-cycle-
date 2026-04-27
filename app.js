@@ -9,9 +9,28 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { z } = require('zod');
-const { PrismaClient, Prisma, Role, SubscriberStatus, Mode } = require('@prisma/client');
+const { PrismaClient, Prisma, Role, SubscriberStatus, Mode, MembershipStatus, MemberTrack } = require('@prisma/client');
 const { Resend } = require('resend');
 const { PostHog } = require('posthog-node');
+const {
+  toMembershipStatus,
+  isMembershipActive,
+  normalizeTrack,
+  trackLabel,
+  inferTracksFromQuiz,
+  inferPrimaryTrack,
+  membershipSnapshotFromSubscription
+} = require('./membership-service');
+const {
+  hasDiscordOAuthConfig,
+  buildDiscordAuthUrl,
+  exchangeDiscordCode,
+  fetchDiscordIdentity,
+  joinGuildMember,
+  syncDiscordMemberRoles,
+  buildDiscordAvatarUrl,
+  getDiscordConfig
+} = require('./discord-service');
 
 const prisma = new PrismaClient();
 
@@ -37,6 +56,7 @@ function buildApp() {
   const STRIPE_SECRET_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
   const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
   const STRIPE_PRICE_ID = (process.env.STRIPE_PRICE_ID || '').trim();
+  const STRIPE_MEMBERSHIP_PRICE_ID = (process.env.STRIPE_MEMBERSHIP_PRICE_ID || STRIPE_PRICE_ID || '').trim();
   const STRIPE_PAYMENT_LINK = (process.env.STRIPE_PAYMENT_LINK || '').trim();
   const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
   const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev';
@@ -58,6 +78,10 @@ function buildApp() {
   const API_REQUEST_TIMEOUT_MS = parseInt(process.env.API_REQUEST_TIMEOUT_MS || '12000', 10);
   const DB_OPERATION_TIMEOUT_MS = parseInt(process.env.DB_OPERATION_TIMEOUT_MS || '8000', 10);
   const EMAIL_SEND_TIMEOUT_MS = parseInt(process.env.EMAIL_SEND_TIMEOUT_MS || '10000', 10);
+  const MEMBERSHIP_SYNC_TTL_MS = parseInt(process.env.MEMBERSHIP_SYNC_TTL_MS || '300000', 10);
+  const DISCORD_STATE_COOKIE = 'discord_oauth_state';
+  const DISCORD_STATE_TTL_MS = parseInt(process.env.DISCORD_STATE_TTL_MS || '900000', 10);
+  const MEMBER_DASHBOARD_RETURN = `${FRONTEND_URL}/quiz.html`;
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
@@ -326,6 +350,86 @@ function buildApp() {
     });
   };
 
+  const setDiscordStateCookie = (res, state) => {
+    res.cookie(DISCORD_STATE_COOKIE, state, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: DISCORD_STATE_TTL_MS
+    });
+  };
+
+  const clearDiscordStateCookie = (res) => {
+    res.clearCookie(DISCORD_STATE_COOKIE);
+  };
+
+  const membershipAccessPayload = (membership) => {
+    if (!membership) {
+      return {
+        active: false,
+        status: MembershipStatus.INACTIVE,
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+        stripePriceId: null
+      };
+    }
+    return {
+      active: isMembershipActive(membership.status),
+      status: membership.status,
+      currentPeriodEnd: membership.currentPeriodEnd ? membership.currentPeriodEnd.toISOString() : null,
+      cancelAtPeriodEnd: Boolean(membership.cancelAtPeriodEnd),
+      stripePriceId: membership.stripePriceId || null
+    };
+  };
+
+  const syncDiscordAccessForUser = async (user, membership) => {
+    if (!user?.discordId) return;
+    try {
+      await syncDiscordMemberRoles({
+        discordUserId: user.discordId,
+        membershipStatus: membership?.status || MembershipStatus.INACTIVE,
+        tracks: user.primaryTrack ? [user.primaryTrack] : []
+      });
+    } catch (err) {
+      console.warn('discord role sync failed', err?.message || err);
+    }
+  };
+
+  const refreshMembershipRecord = async (membership) => {
+    if (!membership || !membership.stripeSubscriptionId || !STRIPE) return membership;
+    if (membership.lastSyncedAt && (Date.now() - membership.lastSyncedAt.getTime()) < MEMBERSHIP_SYNC_TTL_MS) {
+      return membership;
+    }
+
+    const subscription = await STRIPE.subscriptions.retrieve(membership.stripeSubscriptionId);
+    const snapshot = membershipSnapshotFromSubscription(subscription);
+    const updated = await prisma.membership.update({
+      where: { userId: membership.userId },
+      data: {
+        status: snapshot.status,
+        stripeCustomerId: snapshot.stripeCustomerId,
+        stripeSubscriptionId: snapshot.stripeSubscriptionId,
+        stripePriceId: snapshot.stripePriceId,
+        currentPeriodEnd: snapshot.currentPeriodEnd,
+        cancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+        lastSyncedAt: new Date(),
+        endedAt: isMembershipActive(snapshot.status) ? null : new Date()
+      }
+    });
+    return updated;
+  };
+
+  const getRefreshedMembershipByUserId = async (userId) => {
+    const membership = await prisma.membership.findUnique({ where: { userId } });
+    if (!membership) return null;
+    try {
+      return await refreshMembershipRecord(membership);
+    } catch (err) {
+      console.warn('membership refresh failed', err?.message || err);
+      return membership;
+    }
+  };
+
   const trackEvent = (userId, name, properties = {}) => {
     if (!posthog) return;
     posthog.capture({
@@ -591,13 +695,21 @@ function buildApp() {
     next();
   };
 
-  app.get('/api/health', (req, res) => {
-    res.json({ ok: true, paid: req.cookies.quiz_paid === 'true', user: req.user ? req.user.email : null });
+  app.get('/api/health', async (req, res) => {
+    const membership = req.user ? await getRefreshedMembershipByUserId(req.user.id) : null;
+    res.json({
+      ok: true,
+      user: req.user ? req.user.email : null,
+      membershipActive: isMembershipActive(membership?.status)
+    });
   });
 
-  app.get('/api/payment/status', (req, res) => {
-    const paid = req.cookies.quiz_paid === 'true';
-    res.json({ paid });
+  app.get('/api/payment/status', async (req, res) => {
+    const membership = req.user ? await getRefreshedMembershipByUserId(req.user.id) : null;
+    res.json({
+      paid: isMembershipActive(membership?.status),
+      membership: membershipAccessPayload(membership)
+    });
   });
 
   app.post('/api/create-checkout-session', async (req, res) => {
@@ -972,12 +1084,381 @@ function buildApp() {
     }
   });
 
-  app.get('/api/auth/me', requireAuth, (req, res) => {
-    res.json({ id: req.user.id, email: req.user.email, role: req.user.role });
+  const goalSchema = z.object({
+    title: z.string().trim().min(3).max(160),
+    notes: z.string().trim().max(500).optional().or(z.literal('')),
+    track: z.string().optional(),
+    targetDate: z.string().datetime().optional().or(z.literal(''))
+  });
+
+  const checkInSchema = z.object({
+    summary: z.string().trim().min(3).max(600),
+    blocker: z.string().trim().max(300).optional().or(z.literal('')),
+    win: z.string().trim().max(300).optional().or(z.literal('')),
+    momentum: z.string().trim().max(80).optional().or(z.literal('')),
+    kind: z.string().trim().max(40).optional().or(z.literal('')),
+    track: z.string().optional()
+  });
+
+  const loadMemberSnapshot = async (userId, { includeFullResults = false } = {}) => {
+    const [membership, goals, checkIns, latestRun] = await Promise.all([
+      getRefreshedMembershipByUserId(userId),
+      prisma.memberGoal.findMany({
+        where: { userId, status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+        take: 3
+      }),
+      prisma.memberCheckIn.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 5
+      }),
+      prisma.quizRun.findFirst({
+        where: { userId },
+        orderBy: { completedAt: 'desc' }
+      })
+    ]);
+
+    return {
+      membership,
+      goals,
+      checkIns,
+      latestRun: latestRun
+        ? {
+            id: latestRun.id,
+            mode: String(latestRun.mode || '').toLowerCase(),
+            completedAt: latestRun.completedAt,
+            answers: includeFullResults ? latestRun.answers : undefined,
+            results: includeFullResults ? latestRun.results : undefined,
+            archetypeKeys: includeFullResults ? latestRun.archetypeKeys : latestRun.archetypeKeys.slice(0, 1)
+          }
+        : null
+    };
+  };
+
+  const requireActiveMember = async (req, res, next) => {
+    try {
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      if (!isMembershipActive(membership?.status)) {
+        return res.status(402).json({ error: 'Active membership required.' });
+      }
+      req.membership = membership;
+      next();
+    } catch (err) {
+      console.error('member gate error', err);
+      res.status(500).json({ error: 'Unable to verify membership.' });
+    }
+  };
+
+  app.get('/api/auth/me', requireAuth, async (req, res) => {
+    try {
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      const discordConfig = getDiscordConfig();
+      res.json({
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role,
+        discord: {
+          connected: Boolean(req.user.discordId),
+          id: req.user.discordId || null,
+          username: req.user.discordUsername || null,
+          avatarUrl: req.user.discordAvatar || null,
+          inviteUrl: discordConfig.inviteUrl || null
+        },
+        membership: membershipAccessPayload(membership),
+        primaryTrack: req.user.primaryTrack || null
+      });
+    } catch (err) {
+      console.error('auth me error', err);
+      res.status(500).json({ error: 'Unable to load account.' });
+    }
+  });
+
+  app.get('/api/discord/connect-url', requireAuth, async (req, res) => {
+    if (!hasDiscordOAuthConfig()) {
+      return res.status(503).json({ error: 'Discord OAuth is not configured yet.' });
+    }
+
+    const state = randomToken();
+    setDiscordStateCookie(res, state);
+    res.json({
+      url: buildDiscordAuthUrl({ state }),
+      connected: Boolean(req.user.discordId)
+    });
+  });
+
+  app.get('/api/discord/callback', async (req, res) => {
+    const state = String(req.query?.state || '');
+    const code = String(req.query?.code || '');
+    const storedState = req.cookies[DISCORD_STATE_COOKIE];
+    const params = new URLSearchParams();
+
+    if (!req.user) {
+      params.set('discord', 'login_required');
+      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+    }
+    if (!state || !code || !storedState || storedState !== state) {
+      params.set('discord', 'invalid_state');
+      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+    }
+
+    clearDiscordStateCookie(res);
+
+    try {
+      const tokenData = await exchangeDiscordCode({ code });
+      const identity = await fetchDiscordIdentity(tokenData.access_token);
+      const updatedUser = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          discordId: identity.id,
+          discordUsername: identity.username ? `${identity.username}${identity.discriminator && identity.discriminator !== '0' ? `#${identity.discriminator}` : ''}` : identity.global_name || 'Discord member',
+          discordAvatar: buildDiscordAvatarUrl(identity),
+          discordConnectedAt: new Date()
+        }
+      });
+
+      try {
+        await joinGuildMember({
+          discordUserId: identity.id,
+          accessToken: tokenData.access_token
+        });
+      } catch (err) {
+        console.warn('discord guild join failed', err?.message || err);
+      }
+
+      const membership = await getRefreshedMembershipByUserId(updatedUser.id);
+      await syncDiscordAccessForUser(updatedUser, membership);
+
+      params.set('discord', 'connected');
+      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+    } catch (err) {
+      console.error('discord callback error', err);
+      params.set('discord', 'failed');
+      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+    }
+  });
+
+  app.get('/api/membership/status', async (req, res) => {
+    if (!req.user) {
+      return res.json({
+        authenticated: false,
+        membership: membershipAccessPayload(null),
+        discord: { connected: false },
+        primaryTrack: null
+      });
+    }
+
+    try {
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      res.json({
+        authenticated: true,
+        membership: membershipAccessPayload(membership),
+        discord: {
+          connected: Boolean(req.user.discordId),
+          username: req.user.discordUsername || null
+        },
+        primaryTrack: req.user.primaryTrack || null
+      });
+    } catch (err) {
+      console.error('membership status error', err);
+      res.status(500).json({ error: 'Unable to load membership status.' });
+    }
+  });
+
+  app.post('/api/membership/create-checkout-session', requireAuth, async (req, res) => {
+    try {
+      if (!req.user.discordId) {
+        return res.status(400).json({ error: 'Connect Discord before starting membership checkout.' });
+      }
+      if ((!STRIPE || !STRIPE_MEMBERSHIP_PRICE_ID) && STRIPE_PAYMENT_LINK) {
+        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
+      }
+      if (!STRIPE || !STRIPE_MEMBERSHIP_PRICE_ID) {
+        return res.status(500).json({ error: 'Stripe membership pricing is not configured.' });
+      }
+
+      const existingMembership = await getRefreshedMembershipByUserId(req.user.id);
+      if (isMembershipActive(existingMembership?.status)) {
+        return res.status(409).json({ error: 'Membership is already active.' });
+      }
+
+      const successUrl = `${FRONTEND_URL}/quiz.html?membership_session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${FRONTEND_URL}/quiz.html?membership=cancelled`;
+
+      const session = await STRIPE.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [{ price: STRIPE_MEMBERSHIP_PRICE_ID, quantity: 1 }],
+        allow_promotion_codes: true,
+        customer: existingMembership?.stripeCustomerId || undefined,
+        customer_email: existingMembership?.stripeCustomerId ? undefined : req.user.email,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          userId: req.user.id,
+          discordId: req.user.discordId || '',
+          source: 'break_the_cycle_membership'
+        }
+      });
+
+      res.json({ url: session.url });
+    } catch (err) {
+      console.error('membership checkout error', err);
+      if (STRIPE_PAYMENT_LINK) {
+        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
+      }
+      res.status(500).json({ error: 'Unable to start membership checkout.' });
+    }
+  });
+
+  app.post('/api/membership/verify-session', requireAuth, async (req, res) => {
+    try {
+      if (!STRIPE) {
+        return res.status(500).json({ error: 'Stripe is not configured.' });
+      }
+      const sessionId = req.body?.session_id;
+      if (!sessionId) return res.status(400).json({ error: 'session_id is required.' });
+
+      const session = await STRIPE.checkout.sessions.retrieve(sessionId, {
+        expand: ['subscription', 'customer']
+      });
+
+      if (session?.metadata?.userId && session.metadata.userId !== req.user.id) {
+        return res.status(403).json({ error: 'That checkout session belongs to another account.' });
+      }
+
+      const paid = session?.payment_status === 'paid' || session?.status === 'complete';
+      const subscription = session?.subscription && typeof session.subscription === 'object'
+        ? session.subscription
+        : (session?.subscription ? await STRIPE.subscriptions.retrieve(session.subscription) : null);
+
+      const snapshot = membershipSnapshotFromSubscription(subscription);
+      const membership = await prisma.membership.upsert({
+        where: { userId: req.user.id },
+        update: {
+          status: paid ? snapshot.status : MembershipStatus.INCOMPLETE,
+          stripeCustomerId: snapshot.stripeCustomerId || (typeof session.customer === 'string' ? session.customer : session.customer?.id || null),
+          stripeSubscriptionId: snapshot.stripeSubscriptionId,
+          stripeCheckoutSessionId: session.id,
+          stripePriceId: snapshot.stripePriceId || STRIPE_MEMBERSHIP_PRICE_ID,
+          currentPeriodEnd: snapshot.currentPeriodEnd,
+          cancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+          lastSyncedAt: new Date(),
+          endedAt: paid && isMembershipActive(snapshot.status) ? null : new Date()
+        },
+        create: {
+          userId: req.user.id,
+          status: paid ? snapshot.status : MembershipStatus.INCOMPLETE,
+          stripeCustomerId: snapshot.stripeCustomerId || (typeof session.customer === 'string' ? session.customer : session.customer?.id || null),
+          stripeSubscriptionId: snapshot.stripeSubscriptionId,
+          stripeCheckoutSessionId: session.id,
+          stripePriceId: snapshot.stripePriceId || STRIPE_MEMBERSHIP_PRICE_ID,
+          currentPeriodEnd: snapshot.currentPeriodEnd,
+          cancelAtPeriodEnd: snapshot.cancelAtPeriodEnd,
+          lastSyncedAt: new Date(),
+          endedAt: paid && isMembershipActive(snapshot.status) ? null : new Date()
+        }
+      });
+
+      const freshUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+      await syncDiscordAccessForUser(freshUser, membership);
+
+      res.json({
+        ok: true,
+        membership: membershipAccessPayload(membership)
+      });
+    } catch (err) {
+      console.error('membership verify error', err);
+      res.status(500).json({ error: 'Unable to verify membership session.' });
+    }
+  });
+
+  app.post('/api/membership/billing-portal', requireAuth, async (req, res) => {
+    try {
+      if (!STRIPE) return res.status(500).json({ error: 'Stripe is not configured.' });
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      if (!membership?.stripeCustomerId) {
+        return res.status(404).json({ error: 'No Stripe customer found for this account yet.' });
+      }
+
+      const portal = await STRIPE.billingPortal.sessions.create({
+        customer: membership.stripeCustomerId,
+        return_url: `${FRONTEND_URL}/quiz.html?view=member`
+      });
+
+      res.json({ url: portal.url });
+    } catch (err) {
+      console.error('billing portal error', err);
+      res.status(500).json({ error: 'Unable to open billing portal.' });
+    }
+  });
+
+  app.get('/api/member/dashboard', requireAuth, requireActiveMember, async (req, res) => {
+    try {
+      const snapshot = await loadMemberSnapshot(req.user.id, { includeFullResults: true });
+      res.json({
+        user: {
+          id: req.user.id,
+          email: req.user.email,
+          discordUsername: req.user.discordUsername || null,
+          primaryTrack: req.user.primaryTrack || null
+        },
+        membership: membershipAccessPayload(snapshot.membership),
+        goals: snapshot.goals,
+        checkIns: snapshot.checkIns,
+        latestRun: snapshot.latestRun
+      });
+    } catch (err) {
+      console.error('member dashboard error', err);
+      res.status(500).json({ error: 'Unable to load member dashboard.' });
+    }
+  });
+
+  app.post('/api/member/goals', requireAuth, requireActiveMember, async (req, res) => {
+    try {
+      const parsed = goalSchema.parse(req.body);
+      const goal = await prisma.memberGoal.create({
+        data: {
+          userId: req.user.id,
+          title: parsed.title,
+          notes: parsed.notes || null,
+          track: normalizeTrack(parsed.track) || req.user.primaryTrack || null,
+          targetDate: parsed.targetDate ? new Date(parsed.targetDate) : null
+        }
+      });
+      res.json({ ok: true, goal });
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid goal payload.' });
+      console.error('member goal error', err);
+      res.status(500).json({ error: 'Unable to save goal.' });
+    }
+  });
+
+  app.post('/api/member/checkins', requireAuth, requireActiveMember, async (req, res) => {
+    try {
+      const parsed = checkInSchema.parse(req.body);
+      const checkIn = await prisma.memberCheckIn.create({
+        data: {
+          userId: req.user.id,
+          track: normalizeTrack(parsed.track) || req.user.primaryTrack || null,
+          summary: parsed.summary,
+          blocker: parsed.blocker || null,
+          win: parsed.win || null,
+          momentum: parsed.momentum || null,
+          kind: parsed.kind || 'manual'
+        }
+      });
+      res.json({ ok: true, checkIn });
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid check-in payload.' });
+      console.error('member checkin error', err);
+      res.status(500).json({ error: 'Unable to save check-in.' });
+    }
   });
 
   app.post('/api/auth/logout', (req, res) => {
     res.clearCookie('session_token');
+    clearDiscordStateCookie(res);
     res.json({ ok: true });
   });
 
@@ -1007,6 +1488,7 @@ function buildApp() {
     try {
       const data = quizSubmitSchema.parse(req.body);
       const modeMap = { career: Mode.CAREER, life: Mode.LIFE, both: Mode.BOTH };
+      const inferredTrack = inferPrimaryTrack({ mode: data.mode, results: data.results || {} });
       const run = await prisma.quizRun.create({
         data: {
           userId: req.user.id,
@@ -1017,8 +1499,16 @@ function buildApp() {
           featureVariant: data.featureVariant
         }
       });
+      const updatedUser = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          primaryTrack: inferredTrack ? MemberTrack[inferredTrack] || inferredTrack : undefined
+        }
+      });
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      await syncDiscordAccessForUser(updatedUser, membership);
       trackEvent(req.user.id, 'quiz_completed', { mode: data.mode });
-      res.json({ id: run.id });
+      res.json({ id: run.id, primaryTrack: inferredTrack, inferredTracks: inferTracksFromQuiz({ mode: data.mode, results: data.results || {} }) });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid payload' });
       console.error('quiz submit error', err);

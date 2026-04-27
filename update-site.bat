@@ -9,6 +9,11 @@ echo ================================
 echo  Updating Break the Cycle Site
 echo ================================
 echo.
+echo NOTE:
+echo - This pushes code to GitHub and triggers Vercel.
+echo - It does NOT upload your local .env, local Postgres, local Ollama, or running bot process.
+echo - Vercel environment variables must already be set in the dashboard.
+echo.
 
 REM Check if git is available
 git --version >nul 2>&1

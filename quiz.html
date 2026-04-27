@@ -286,6 +286,120 @@
       font-size: 0.9rem;
     }
 
+    .btn-inline {
+      width: auto;
+      min-width: 220px;
+      padding-inline: 18px;
+    }
+
+    .member-panel,
+    .member-dashboard {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin: 0 auto 22px;
+      max-width: 720px;
+    }
+
+    .member-panel .access-code-value {
+      display: none;
+    }
+
+    .member-panel-copy h3,
+    .member-form h3 {
+      font-family: var(--site-title-font);
+      font-size: 1.15rem;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .member-panel-copy p,
+    .member-status-note {
+      color: var(--text-secondary);
+    }
+
+    .member-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .member-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .member-grid,
+    .member-form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .member-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .member-card,
+    .member-form {
+      background: rgba(10, 10, 15, 0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .member-label {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .member-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .member-form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 12px;
+    }
+
+    .member-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .member-form input,
+    .member-form textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      background: #0f0f17;
+      color: var(--text-primary);
+      resize: vertical;
+      min-height: 46px;
+      font-family: inherit;
+    }
+
+    .member-form textarea {
+      min-height: 100px;
+    }
+
     .container::before {
       content: '';
       position: absolute;
@@ -1049,6 +1163,24 @@
       /* Auth bar mobile */
       .auth-bar { padding: 10px; border-radius: 10px; }
       .auth-bar input[type="email"] { min-width: 0; width: 100%; }
+      .btn-inline { width: 100%; min-width: 0; }
+
+      .member-panel,
+      .member-dashboard {
+        padding: 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+      }
+      .member-grid,
+      .member-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .member-actions {
+        flex-direction: column;
+      }
+      .member-actions > * {
+        width: 100%;
+      }
 
       /* Access code box */
       .access-code-box { border-radius: 12px; padding: 14px; }
@@ -1090,6 +1222,14 @@
     <div class="header">
       <h1 id="headerTitle">Break The Cycle</h1>
       <p id="headerSubtitle">Choose your destiny to get started</p>
+    </div>
+
+    <div class="auth-bar" id="authBar">
+      <form id="authForm">
+        <input type="email" id="authEmail" name="email" placeholder="Enter your email to save progress and unlock membership" required>
+        <button type="submit" class="btn btn-inline" id="authSubmit">Email me a sign-in link</button>
+      </form>
+      <div class="auth-status" id="authStatus">Take the quiz free. Sign in when you want to save progress, connect Discord, or join the membership.</div>
     </div>
 
     <div class="progress-container" id="progressContainer" style="display: none;">
@@ -1741,15 +1881,57 @@
       <h1 class="results-title">Your Perfect Matches</h1>
       <p class="results-subtitle" id="resultsSubtitle">Based on your answers, here are your top paths</p>
 
-      <div id="accessCodeBox" class="access-code-box hidden">
-        <div class="access-code-label">Your Access ID</div>
-        <div class="access-code-row">
+      <div id="memberPrompt" class="member-panel">
+        <div class="member-panel-copy">
+          <div id="memberChip" class="member-chip">Free teaser</div>
+          <h3 id="memberPromptTitle">The first signal is free. The full reset lives inside membership.</h3>
           <span id="accessCodeValue" class="access-code-value">••••••••••</span>
-          <button type="button" id="accessCodeCopy" class="btn-ghost btn-small">Copy</button>
+          <p id="memberPromptText">Get the full roadmap, saved progress, Discord access, and the accountability coach that keeps your next step in front of you.</p>
         </div>
-        <div id="accessCodeStatus" class="access-code-note">Save this ID to unlock your results anytime.</div>
+        <div id="memberActions" class="member-actions">
+          <button type="button" id="connectDiscordBtn" class="btn-primary hidden">Connect Discord</button>
+          <button type="button" id="memberCheckoutBtn" class="btn-primary hidden">Join for $9/month</button>
+          <button type="button" id="memberRefreshBtn" class="btn-ghost hidden">Refresh access</button>
+          <button type="button" id="billingPortalBtn" class="btn-ghost hidden">Manage membership</button>
+        </div>
       </div>
       
+      <div id="memberDashboard" class="member-dashboard hidden">
+        <div class="member-grid">
+          <div class="member-card">
+            <div class="member-label">Primary track</div>
+            <div class="member-value" id="memberPrimaryTrack">Not set yet</div>
+          </div>
+          <div class="member-card">
+            <div class="member-label">Discord</div>
+            <div class="member-value" id="memberDiscordStatus">Not connected yet</div>
+          </div>
+          <div class="member-card">
+            <div class="member-label">Current goal</div>
+            <div class="member-value" id="memberCurrentGoal">No goal saved yet</div>
+          </div>
+        </div>
+
+        <div class="member-form-grid">
+          <form id="memberGoalForm" class="member-form">
+            <h3>Set this week's goal</h3>
+            <input type="text" id="memberGoalTitle" placeholder="Example: Finish resume draft and apply to 2 roles" maxlength="160" required>
+            <textarea id="memberGoalNotes" placeholder="Constraints, context, or why this matters" maxlength="500"></textarea>
+            <button type="submit" class="btn">Save goal</button>
+          </form>
+
+          <form id="memberCheckinForm" class="member-form">
+            <h3>Log a check-in</h3>
+            <textarea id="memberCheckinSummary" placeholder="What did you do, or what got in the way?" maxlength="600" required></textarea>
+            <input type="text" id="memberCheckinWin" placeholder="Small win (optional)" maxlength="300">
+            <input type="text" id="memberCheckinBlocker" placeholder="Blocker (optional)" maxlength="300">
+            <button type="submit" class="btn">Save check-in</button>
+          </form>
+        </div>
+
+        <div id="memberDashboardStatus" class="member-status-note"></div>
+      </div>
+
       <div id="careerResults"></div>
       <div id="lifeResults"></div>
 
@@ -1799,6 +1981,38 @@
     const paywallError = document.getElementById('paywallError');
     const paywallUnlock = document.getElementById('paywallUnlock');
     let currentUser = null;
+    let membershipState = {
+      authenticated: false,
+      membership: { active: false, status: 'INACTIVE' },
+      discord: { connected: false },
+      primaryTrack: null
+    };
+    let memberDashboardData = null;
+    let lastResultInput = null;
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authStatus = document.getElementById('authStatus');
+    const authSubmit = document.getElementById('authSubmit');
+    const memberPrompt = document.getElementById('memberPrompt');
+    const memberChip = document.getElementById('memberChip');
+    const memberPromptTitle = document.getElementById('memberPromptTitle');
+    const memberPromptText = document.getElementById('memberPromptText');
+    const connectDiscordBtn = document.getElementById('connectDiscordBtn');
+    const memberCheckoutBtn = document.getElementById('memberCheckoutBtn');
+    const memberRefreshBtn = document.getElementById('memberRefreshBtn');
+    const billingPortalBtn = document.getElementById('billingPortalBtn');
+    const memberDashboard = document.getElementById('memberDashboard');
+    const memberPrimaryTrack = document.getElementById('memberPrimaryTrack');
+    const memberDiscordStatus = document.getElementById('memberDiscordStatus');
+    const memberCurrentGoal = document.getElementById('memberCurrentGoal');
+    const memberGoalForm = document.getElementById('memberGoalForm');
+    const memberGoalTitle = document.getElementById('memberGoalTitle');
+    const memberGoalNotes = document.getElementById('memberGoalNotes');
+    const memberCheckinForm = document.getElementById('memberCheckinForm');
+    const memberCheckinSummary = document.getElementById('memberCheckinSummary');
+    const memberCheckinWin = document.getElementById('memberCheckinWin');
+    const memberCheckinBlocker = document.getElementById('memberCheckinBlocker');
+    const memberDashboardStatus = document.getElementById('memberDashboardStatus');
     const accessCodeInput = document.getElementById('accessCodeInput');
     const accessCodeLogin = document.getElementById('accessCodeLogin');
     const accessCodeMessage = document.getElementById('accessCodeMessage');
@@ -1911,6 +2125,7 @@
     const PENDING_RESULTS_KEY = 'btc_pending_results_v1';
     const PENDING_RESULTS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
     const ACCESS_CODE_STORAGE_KEY = 'btc_access_code_v1';
+    const PERSISTED_RESULT_KEY = 'btc_persisted_result_v1';
 
     function isPlainObject(value) {
       return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -1975,6 +2190,357 @@
       }
     }
 
+    function trackLabelClient(value) {
+      const normalized = String(value || '').trim().toUpperCase();
+      const labels = {
+        CAREER_PIVOT: 'Career Pivot',
+        SKILL_BUILD: 'Skill Build',
+        ROUTINE_RESET: 'Routine Reset',
+        SIDE_PATHS: 'Side Paths'
+      };
+      return labels[normalized] || 'General';
+    }
+
+    function setMemberDashboardStatus(message, tone = 'neutral') {
+      if (!memberDashboardStatus) return;
+      memberDashboardStatus.textContent = message || '';
+      memberDashboardStatus.style.color = tone === 'error'
+        ? '#ff9ba1'
+        : tone === 'success'
+          ? '#9fe6b8'
+          : '';
+    }
+
+    function toggleHidden(element, hidden) {
+      if (!element) return;
+      element.classList.toggle('hidden', Boolean(hidden));
+    }
+
+    function resetMembershipState() {
+      membershipState = {
+        authenticated: false,
+        membership: { active: false, status: 'INACTIVE' },
+        discord: { connected: false },
+        primaryTrack: null
+      };
+      hasPaid = false;
+    }
+
+    function applyAccountPayload(data) {
+      currentUser = data && data.id ? data : null;
+      if (!currentUser) {
+        resetMembershipState();
+        return;
+      }
+
+      membershipState = {
+        authenticated: true,
+        membership: data.membership || { active: false, status: 'INACTIVE' },
+        discord: data.discord || { connected: false },
+        primaryTrack: data.primaryTrack || null
+      };
+      hasPaid = Boolean(membershipState.membership?.active);
+    }
+
+    function renderAuthUi(message = '') {
+      if (!authForm || !authStatus) return;
+      if (currentUser) {
+        authForm.classList.add('hidden');
+        if (hasPaid) {
+          authStatus.textContent = `Signed in as ${currentUser.email}. Membership is active${membershipState.discord?.connected ? ` and Discord is connected as ${membershipState.discord.username || 'your account'}.` : '.'}`;
+        } else if (membershipState.discord?.connected) {
+          authStatus.textContent = `Signed in as ${currentUser.email}. Discord is connected. Join the membership below to unlock the full roadmap and community.`;
+        } else {
+          authStatus.textContent = `Signed in as ${currentUser.email}. Connect Discord next so the membership can open the community and coach for you.`;
+        }
+      } else {
+        authForm.classList.remove('hidden');
+        authStatus.textContent = message || 'Take the quiz free. Sign in when you want to save progress, connect Discord, or join the membership.';
+      }
+    }
+
+    function renderMemberPrompt() {
+      if (!memberPrompt) return;
+
+      toggleHidden(connectDiscordBtn, true);
+      toggleHidden(memberCheckoutBtn, true);
+      toggleHidden(memberRefreshBtn, true);
+      toggleHidden(billingPortalBtn, true);
+      toggleHidden(memberDashboard, !hasPaid);
+
+      if (!currentUser) {
+        if (memberChip) memberChip.textContent = 'Free teaser';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'Want the full roadmap? Start by signing in.';
+        if (memberPromptText) memberPromptText.textContent = 'Use the email link above to save this result, connect Discord, and unlock the membership flow when you are ready.';
+        return;
+      }
+
+      if (!membershipState.discord?.connected) {
+        if (memberChip) memberChip.textContent = 'Step 1';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'Connect Discord so the accountability coach and community can recognize you.';
+        if (memberPromptText) memberPromptText.textContent = 'The membership is built around saved progress on the site and follow-through inside Discord. Connect your account first.';
+        toggleHidden(connectDiscordBtn, false);
+        return;
+      }
+
+      if (!hasPaid) {
+        if (memberChip) memberChip.textContent = '$9/month membership';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'Unlock the full roadmap, Discord community, and accountability coach.';
+        if (memberPromptText) memberPromptText.textContent = 'The free quiz gives you the signal. Membership gives you the saved plan, weekly follow-through, and the coach that remembers your path.';
+        toggleHidden(memberCheckoutBtn, false);
+        toggleHidden(memberRefreshBtn, false);
+        return;
+      }
+
+      if (memberChip) memberChip.textContent = 'Member active';
+      if (memberPromptTitle) memberPromptTitle.textContent = 'You have the full version unlocked.';
+      if (memberPromptText) memberPromptText.textContent = 'Use the dashboard below to keep your goal visible, log check-ins, and keep the Discord coach working from your real progress.';
+      toggleHidden(memberRefreshBtn, false);
+      toggleHidden(billingPortalBtn, false);
+    }
+
+    function renderMemberDashboard() {
+      toggleHidden(memberDashboard, !hasPaid);
+      if (!hasPaid || !memberDashboardData) {
+        if (memberPrimaryTrack) memberPrimaryTrack.textContent = trackLabelClient(membershipState.primaryTrack);
+        if (memberDiscordStatus) memberDiscordStatus.textContent = membershipState.discord?.connected
+          ? membershipState.discord.username || 'Connected'
+          : 'Not connected yet';
+        if (memberCurrentGoal) memberCurrentGoal.textContent = 'No goal saved yet';
+        return;
+      }
+
+      if (memberPrimaryTrack) {
+        memberPrimaryTrack.textContent = trackLabelClient(memberDashboardData.user?.primaryTrack || membershipState.primaryTrack);
+      }
+      if (memberDiscordStatus) {
+        memberDiscordStatus.textContent = memberDashboardData.user?.discordUsername || membershipState.discord?.username || 'Connected';
+      }
+      const activeGoal = Array.isArray(memberDashboardData.goals) && memberDashboardData.goals.length
+        ? memberDashboardData.goals[0]
+        : null;
+      if (memberCurrentGoal) {
+        memberCurrentGoal.textContent = activeGoal ? activeGoal.title : 'No goal saved yet';
+      }
+    }
+
+    async function loadCurrentUser() {
+      try {
+        const res = await fetch(api('/api/auth/me'), { credentials: 'include' });
+        if (res.status === 401) {
+          currentUser = null;
+          resetMembershipState();
+          renderAuthUi();
+          renderMemberPrompt();
+          renderMemberDashboard();
+          return null;
+        }
+        const data = await readJson(res, '/api/auth/me');
+        if (!res.ok) throw new Error(data?.data?.error || 'Unable to load account.');
+        applyAccountPayload(data.data || {});
+        renderAuthUi();
+        renderMemberPrompt();
+        renderMemberDashboard();
+        return currentUser;
+      } catch (err) {
+        console.error('loadCurrentUser error', err);
+        currentUser = null;
+        resetMembershipState();
+        renderAuthUi('Could not load account status right now.');
+        renderMemberPrompt();
+        renderMemberDashboard();
+        return null;
+      }
+    }
+
+    async function sendMagicLink(email) {
+      const cleaned = String(email || '').trim();
+      if (!cleaned) return;
+
+      if (authSubmit) authSubmit.disabled = true;
+      try {
+        const res = await fetch(api('/api/auth/magic-link'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleaned })
+        });
+        const data = await readJson(res, '/api/auth/magic-link');
+        if (!res.ok) throw new Error(data?.data?.error || 'Could not send sign-in link.');
+        renderAuthUi('Check your inbox. Your secure sign-in link is on the way.');
+        authForm?.reset();
+      } catch (err) {
+        renderAuthUi(err.message || 'Could not send sign-in link right now.');
+      } finally {
+        if (authSubmit) authSubmit.disabled = false;
+      }
+    }
+
+    async function connectDiscord() {
+      try {
+        const data = await fetchJson(api('/api/discord/connect-url'), { credentials: 'include' });
+        if (!data?.url) throw new Error(data?.error || 'Could not start Discord connect.');
+        window.location.href = data.url;
+      } catch (err) {
+        setMemberDashboardStatus(err.message || 'Could not connect Discord right now.', 'error');
+      }
+    }
+
+    async function startMembershipCheckout() {
+      try {
+        const data = await fetchJson(api('/api/membership/create-checkout-session'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        if (!data?.url) throw new Error(data?.error || 'Could not start checkout.');
+        window.location.href = data.url;
+      } catch (err) {
+        setMemberDashboardStatus(err.message || 'Could not start membership checkout.', 'error');
+      }
+    }
+
+    async function verifyMembershipSession(sessionId) {
+      if (!sessionId) return false;
+      try {
+        const data = await fetchJson(api('/api/membership/verify-session'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ session_id: sessionId })
+        });
+        hasPaid = Boolean(data?.membership?.active);
+        await loadCurrentUser();
+        return hasPaid;
+      } catch (err) {
+        console.error('verifyMembershipSession error', err);
+        setMemberDashboardStatus(err.message || 'Could not verify membership session.', 'error');
+        return false;
+      }
+    }
+
+    async function openBillingPortal() {
+      try {
+        const data = await fetchJson(api('/api/membership/billing-portal'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        if (!data?.url) throw new Error(data?.error || 'Could not open billing portal.');
+        window.location.href = data.url;
+      } catch (err) {
+        setMemberDashboardStatus(err.message || 'Could not open billing portal.', 'error');
+      }
+    }
+
+    async function loadMemberDashboard() {
+      if (!currentUser || !hasPaid) {
+        memberDashboardData = null;
+        renderMemberDashboard();
+        return null;
+      }
+      try {
+        const data = await fetchJson(api('/api/member/dashboard'), { credentials: 'include' });
+        memberDashboardData = data;
+        renderMemberDashboard();
+        return data;
+      } catch (err) {
+        console.error('loadMemberDashboard error', err);
+        memberDashboardData = null;
+        renderMemberDashboard();
+        return null;
+      }
+    }
+
+    async function createGoalFromDashboard() {
+      const title = memberGoalTitle?.value?.trim();
+      if (!title) {
+        setMemberDashboardStatus('Add a goal title first.', 'error');
+        return;
+      }
+      try {
+        const data = await fetchJson(api('/api/member/goals'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            title,
+            notes: memberGoalNotes?.value?.trim() || '',
+            track: membershipState.primaryTrack || null
+          })
+        });
+        if (!data?.ok) throw new Error(data?.error || 'Could not save goal.');
+        memberGoalForm?.reset();
+        setMemberDashboardStatus('Goal saved. Good. Keep it small enough to finish this week.', 'success');
+        await loadMemberDashboard();
+      } catch (err) {
+        setMemberDashboardStatus(err.message || 'Could not save goal.', 'error');
+      }
+    }
+
+    async function createCheckinFromDashboard() {
+      const summary = memberCheckinSummary?.value?.trim();
+      if (!summary) {
+        setMemberDashboardStatus('Add a quick summary first.', 'error');
+        return;
+      }
+      try {
+        const data = await fetchJson(api('/api/member/checkins'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            summary,
+            win: memberCheckinWin?.value?.trim() || '',
+            blocker: memberCheckinBlocker?.value?.trim() || '',
+            track: membershipState.primaryTrack || null
+          })
+        });
+        if (!data?.ok) throw new Error(data?.error || 'Could not save check-in.');
+        memberCheckinForm?.reset();
+        setMemberDashboardStatus('Check-in saved. The coach now has fresher context to work from.', 'success');
+        await loadMemberDashboard();
+      } catch (err) {
+        setMemberDashboardStatus(err.message || 'Could not save check-in.', 'error');
+      }
+    }
+
+    async function initMemberExperience() {
+      hidePaywall();
+      const params = new URLSearchParams(window.location.search);
+      await loadCurrentUser();
+
+      const membershipSessionId = params.get('membership_session_id');
+      if (membershipSessionId && currentUser) {
+        await verifyMembershipSession(membershipSessionId);
+      }
+
+      const discordState = params.get('discord');
+      if (discordState === 'connected') {
+        setMemberDashboardStatus('Discord connected. Nice. You can unlock membership now.', 'success');
+        await loadCurrentUser();
+      } else if (discordState === 'failed' || discordState === 'invalid_state') {
+        setMemberDashboardStatus('Discord connection did not complete. Try again when you are ready.', 'error');
+      }
+
+      if (restorePendingResults()) {
+        await loadMemberDashboard();
+      } else if (hasPaid) {
+        await loadMemberDashboard();
+      }
+
+      if (membershipSessionId || discordState) {
+        params.delete('membership_session_id');
+        params.delete('discord');
+        const nextQuery = params.toString();
+        const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`;
+        window.history.replaceState({}, '', nextUrl);
+      }
+
+      renderAuthUi();
+      renderMemberPrompt();
+      renderMemberDashboard();
+    }
+
     function savePendingResults(careerAnswers, lifeAnswers, ageRange = userAgeRange, hardNos = careerHardNos) {
       if (!isValidMode(quizMode)) return;
       const payload = {
@@ -2032,6 +2598,30 @@
     function clearPendingResults() {
       try {
         localStorage.removeItem(PENDING_RESULTS_KEY);
+      } catch (_) { /* ignore */ }
+    }
+
+    function buildResultSignature(careerAnswers, lifeAnswers) {
+      return JSON.stringify({
+        mode: quizMode,
+        ageRange: userAgeRange,
+        careerHardNos,
+        careerAnswers: careerAnswers || {},
+        lifeAnswers: lifeAnswers || {}
+      });
+    }
+
+    function wasResultPersisted(signature) {
+      try {
+        return sessionStorage.getItem(PERSISTED_RESULT_KEY) === signature;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function markResultPersisted(signature) {
+      try {
+        sessionStorage.setItem(PERSISTED_RESULT_KEY, signature);
       } catch (_) { /* ignore */ }
     }
 
@@ -2492,7 +3082,38 @@
     }
 
     bindAccessCodeCopy(accessCodeCopy);
-    document.addEventListener('DOMContentLoaded', initPaywall);
+    authForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendMagicLink(authEmail?.value);
+    });
+    connectDiscordBtn?.addEventListener('click', () => {
+      connectDiscord();
+    });
+    memberCheckoutBtn?.addEventListener('click', () => {
+      startMembershipCheckout();
+    });
+    memberRefreshBtn?.addEventListener('click', async () => {
+      await loadCurrentUser();
+      await loadMemberDashboard();
+      if (isResultsActive() && lastResultInput) {
+        displayResults(lastResultInput.careerAnswers || {}, lastResultInput.lifeAnswers || {}, { restored: true });
+      } else {
+        renderMemberPrompt();
+        renderMemberDashboard();
+      }
+    });
+    billingPortalBtn?.addEventListener('click', () => {
+      openBillingPortal();
+    });
+    memberGoalForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      createGoalFromDashboard();
+    });
+    memberCheckinForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      createCheckinFromDashboard();
+    });
+    document.addEventListener('DOMContentLoaded', initMemberExperience);
     window.addEventListener('load', () => scheduleHonestyPopup(), { once: true });
 
     async function persistQuizRun(payload) {
@@ -2511,6 +3132,10 @@
         } catch (_) { /* ignore parse error */ }
         if (!res.ok) {
           console.warn('Quiz save failed', data);
+        } else if (data?.primaryTrack) {
+          membershipState.primaryTrack = data.primaryTrack;
+          renderMemberPrompt();
+          renderMemberDashboard();
         }
       } catch (err) {
         console.error('persist error', err);
@@ -3212,19 +3837,9 @@
       clearHonestyPopupTimers();
       hideHonestyPopup();
       careerHardNos = normalizeCareerHardNos(careerHardNos);
-      
-      // Check if user has paid before showing results
-      if (!hasPaid) {
-        showPaywall('Unlock your results for just $2.99');
-        // Save answers for later display
-        window.pendingResults = { careerAnswers, lifeAnswers, mode: quizMode, ageRange: userAgeRange, careerHardNos };
-        savePendingResults(careerAnswers, lifeAnswers, userAgeRange, careerHardNos);
-        return;
-      }
-
-      const storedAccessCode = loadAccessCode();
-      if (storedAccessCode) showAccessCode(storedAccessCode);
-      else if (activeSessionId) scheduleAccessCodeRetry(activeSessionId);
+      lastResultInput = { careerAnswers, lifeAnswers, mode: quizMode, ageRange: userAgeRange, careerHardNos };
+      window.pendingResults = lastResultInput;
+      savePendingResults(careerAnswers, lifeAnswers, userAgeRange, careerHardNos);
 
       console.log('quizMode:', quizMode);
       console.log('careerAnswers:', careerAnswers);
@@ -3239,6 +3854,9 @@
       const lifeResultsDiv = document.getElementById('lifeResults');
       careerResultsDiv.innerHTML = '';
       lifeResultsDiv.innerHTML = '';
+      document.getElementById('resultsSubtitle').textContent = hasPaid
+        ? 'Based on your answers, here are your strongest paths and next moves.'
+        : 'Here is the strongest first signal from your answers. Unlock membership for the full roadmap and accountability layer.';
       let top3Career = [];
       let top3Life = [];
 
@@ -3264,10 +3882,14 @@
           careerResultsDiv.innerHTML += `<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">${careerEligibility.note}</p>`;
         }
 
+        const visibleCareerResults = hasPaid
+          ? top3Career
+          : ((quizMode === 'career' || quizMode === 'both') ? top3Career.slice(0, 1) : []);
+
         if (!top3Career.length) {
           careerResultsDiv.innerHTML += '<p style="text-align:center; color: var(--text-secondary); margin: 8px 0 18px;">No career matches remained after your filters. Try retaking with broader preferences.</p>';
         } else {
-          top3Career.forEach((result, index) => {
+          visibleCareerResults.forEach((result, index) => {
             careerResultsDiv.innerHTML += createPathHTML(result, index + 1, true);
           });
         }
@@ -3285,27 +3907,39 @@
           lifeResultsDiv.innerHTML = '<div class="section-divider"><h3>🌟 Your Life Fulfillment Paths</h3></div>';
         }
         
-        top3Life.forEach((result, index) => {
+        const visibleLifeResults = hasPaid
+          ? top3Life
+          : (quizMode === 'life' ? top3Life.slice(0, 1) : (!top3Career.length ? top3Life.slice(0, 1) : []));
+
+        visibleLifeResults.forEach((result, index) => {
           lifeResultsDiv.innerHTML += createPathHTML(result, index + 1, false);
         });
       }
 
       console.log('About to show results...');
       document.getElementById('results').classList.add('active');
-      syncAccessCodeVisibility();
+      renderMemberPrompt();
+      renderMemberDashboard();
       console.log('Results shown');
       window.scrollTo({top: 0, behavior: 'smooth'});
 
       const archetypeKeys = [...top3Career, ...top3Life].map(r => r.key);
-      persistQuizRun({
-        mode: quizMode,
-        answers: { career: careerAnswers, life: lifeAnswers, meta: { ageRange: userAgeRange, careerHardNos } },
-        results: { career: top3Career, life: top3Life },
-        archetypeKeys
-      });
+      const resultSignature = buildResultSignature(careerAnswers, lifeAnswers);
+      if (currentUser && !wasResultPersisted(resultSignature)) {
+        persistQuizRun({
+          mode: quizMode,
+          answers: { career: careerAnswers, life: lifeAnswers, meta: { ageRange: userAgeRange, careerHardNos } },
+          results: { career: top3Career, life: top3Life },
+          archetypeKeys
+        });
+        markResultPersisted(resultSignature);
+      }
 
-      if (window.pendingResults) delete window.pendingResults;
-      clearPendingResults();
+      if (hasPaid) {
+        if (window.pendingResults) delete window.pendingResults;
+        clearPendingResults();
+        loadMemberDashboard();
+      }
     }
 
     function scoreCareerPaths(answers) {

@@ -136,3 +136,49 @@ Located at top of `styles.css`:
 ## CI
 
 - GitHub Actions workflow at `.github/workflows/ci.yml` installs deps, runs `prisma generate`, and runs the placeholder `npm run lint`.
+
+## Discord Bot + Free Mentor Setup
+
+- The bot no longer depends on OpenAI. It is wired for a free local Ollama model by default.
+- Add these environment variables to `.env`:
+  - `DISCORD_CLIENT_ID`
+  - `DISCORD_CLIENT_SECRET`
+  - `DISCORD_REDIRECT_URI`
+  - `DISCORD_BOT_TOKEN`
+  - `DISCORD_GUILD_ID`
+  - `DISCORD_ROLE_MEMBER_ID`
+  - Track role IDs if you want automatic role routing
+  - `MENTOR_PROVIDER=ollama`
+  - `OLLAMA_BASE_URL=http://127.0.0.1:11434`
+  - `OLLAMA_MODEL=llama3.2:3b`
+- Install and prepare the local model:
+  1. Install Ollama on the machine that will run the bot.
+  2. Run `ollama pull llama3.2:3b`
+  3. Keep Ollama running locally.
+- Validate setup with `npm run bot:check`.
+- Start the bot with `npm run bot`.
+
+## Cheapest Live Setup
+
+If you want `breakthecycle.network` live without paying to host the bot yet, use this split:
+
+- Vercel hosts the website and API routes
+- a hosted Postgres database stores shared app data
+- your own machine runs `bot.js`
+- your own machine runs Ollama for mentor replies
+
+### What lives where
+
+- **GitHub / Vercel deploys code only**
+- **Vercel does not receive your local `.env`**
+- **Vercel cannot use `localhost` for `DATABASE_URL`**
+- **the local bot and Vercel site must share the same hosted `DATABASE_URL`**
+
+### Repo helpers
+
+- `.env.vercel.example` shows what the web app needs on Vercel
+- `.env.bot.local.example` shows what the local Discord bot needs
+- `npm run vercel:check` validates a Vercel-style environment
+- `npm run bot:check` validates the local bot environment
+- `start-local.bat` or `npm run local:start` starts Postgres/Ollama checks plus the web server and Discord bot
+- `stop-local.bat` or `npm run local:stop` stops the local web server and Discord bot
