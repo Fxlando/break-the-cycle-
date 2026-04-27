@@ -8,6 +8,50 @@ function Write-Section($message) {
   Write-Host "== $message ==" -ForegroundColor Cyan
 }
 
+function Get-EnvFileValue($name) {
+  $envPath = Join-Path $repoRoot '.env'
+  if (-not (Test-Path $envPath)) {
+    return ''
+  }
+
+  $line = Get-Content $envPath | Where-Object { $_ -match "^\s*$([regex]::Escape($name))\s*=" } | Select-Object -Last 1
+  if (-not $line) {
+    return ''
+  }
+
+  return ($line -replace "^\s*$([regex]::Escape($name))\s*=\s*", '').Trim()
+}
+
+function Get-DatabaseSummary() {
+  $raw = Get-EnvFileValue 'DATABASE_URL'
+  if (-not $raw) {
+    return @{
+      Raw = ''
+      Host = ''
+      IsLocal = $false
+      Valid = $false
+    }
+  }
+
+  $dbHost = ''
+  try {
+    $uri = [System.Uri]$raw
+    $dbHost = $uri.Host
+  } catch {
+    if ($raw -match '^[a-z]+:\/\/[^@]+@(?<host>[^:\/\?]+)') {
+      $dbHost = $Matches.host
+    }
+  }
+
+  $isLocal = $dbHost -match '^(localhost|127(?:\.\d{1,3}){3}|::1)$'
+  return @{
+    Raw = $raw
+    Host = $dbHost
+    IsLocal = [bool]$isLocal
+    Valid = [bool]$dbHost
+  }
+}
+
 function Test-LocalPort($port) {
   try {
     $client = New-Object System.Net.Sockets.TcpClient
@@ -33,6 +77,12 @@ function Get-NodeProcess($pattern) {
 
 function Ensure-PostgresRunning() {
   Write-Section 'Postgres'
+  $database = Get-DatabaseSummary
+  if ($database.Valid -and -not $database.IsLocal) {
+    Write-Host "DATABASE_URL points to $($database.Host). Skipping local PostgreSQL service check."
+    return
+  }
+
   $service = Get-Service -Name 'postgresql-x64-17' -ErrorAction SilentlyContinue
   if (-not $service) {
     Write-Host 'PostgreSQL service not found. Start it manually if this machine uses a different service name.' -ForegroundColor Yellow
@@ -113,6 +163,7 @@ function Start-NodeService($name, $scriptName, $outLog, $errLog) {
 
 function Show-Summary() {
   Write-Section 'Summary'
+  $database = Get-DatabaseSummary
 
   $server = Get-NodeProcess 'server\.js' | Select-Object -First 1
   $bot = Get-NodeProcess 'bot\.js' | Select-Object -First 1
@@ -133,6 +184,13 @@ function Show-Summary() {
     Write-Host 'Ollama: reachable'
   } else {
     Write-Host 'Ollama: not reachable' -ForegroundColor Yellow
+  }
+
+  if ($database.Valid) {
+    $dbMode = if ($database.IsLocal) { 'local' } else { 'hosted' }
+    Write-Host "Database: $dbMode ($($database.Host))"
+  } else {
+    Write-Host 'Database: DATABASE_URL missing or unreadable' -ForegroundColor Yellow
   }
 
   try {

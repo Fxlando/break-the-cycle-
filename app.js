@@ -157,23 +157,24 @@ function buildApp() {
     return code;
   };
 
+  const TIMEOUT_SENTINEL = Symbol('timeout');
+
   const runWithTimeout = async (promise, timeoutMs) => {
     let timeout;
     const guard = new Promise((resolve) => {
-      timeout = setTimeout(() => resolve({ timedOut: true }), timeoutMs);
+      timeout = setTimeout(() => resolve(TIMEOUT_SENTINEL), timeoutMs);
     });
     const result = await Promise.race([
-      promise.then((value) => ({ value })),
+      promise,
       guard
     ]);
     clearTimeout(timeout);
-    if (result?.timedOut) return null;
-    return result.value;
+    return result;
   };
 
   const runWithTimeoutOrThrow = async (promise, timeoutMs, { message, code, statusCode = 504 }) => {
     const result = await runWithTimeout(promise, timeoutMs);
-    if (result !== null) return result;
+    if (result !== TIMEOUT_SENTINEL) return result;
     const timeoutError = new Error(message);
     timeoutError.code = code;
     timeoutError.statusCode = statusCode;
@@ -205,6 +206,7 @@ function buildApp() {
   const getAccessCodeFromDb = async (paidSessionId) => {
     try {
       const result = await runWithTimeout(createOrGetAccessCode(paidSessionId), ACCESS_CODE_DB_TIMEOUT_MS);
+      if (result === TIMEOUT_SENTINEL) return null;
       return result?.code || null;
     } catch (err) {
       console.error('access code db error', err);
@@ -215,7 +217,7 @@ function buildApp() {
   const persistAccessCodeRecord = async (code, paidSessionId = null) => {
     if (!code) return false;
     try {
-      await runWithTimeout(
+      const result = await runWithTimeout(
         prisma.accessCode.upsert({
           where: { code },
           update: paidSessionId ? { paidSessionId, revokedAt: null } : { revokedAt: null },
@@ -223,6 +225,7 @@ function buildApp() {
         }),
         ACCESS_CODE_DB_TIMEOUT_MS
       );
+      if (result === TIMEOUT_SENTINEL) return false;
       return true;
     } catch (err) {
       console.warn('access code db persist failed', err?.message || err);
@@ -448,21 +451,31 @@ function buildApp() {
       throw configError;
     }
 
-    const { data, error } = await runWithTimeoutOrThrow(
-      resend.emails.send({
-        from: EMAIL_FROM,
-        ...(EMAIL_REPLY_TO ? { reply_to: EMAIL_REPLY_TO } : {}),
-        to,
-        subject,
-        html,
-        text
-      }),
-      EMAIL_SEND_TIMEOUT_MS,
-      {
-        message: 'Email provider timed out while sending the message.',
-        code: 'email_timeout'
+    let response;
+    try {
+      response = await runWithTimeoutOrThrow(
+        resend.emails.send({
+          from: EMAIL_FROM,
+          ...(EMAIL_REPLY_TO ? { reply_to: EMAIL_REPLY_TO } : {}),
+          to,
+          subject,
+          html,
+          text
+        }),
+        EMAIL_SEND_TIMEOUT_MS,
+        {
+          message: 'Email provider timed out while sending the message.',
+          code: 'email_timeout'
+        }
+      );
+    } catch (err) {
+      if (err?.code === 'email_timeout') {
+        err.isEmailError = true;
       }
-    );
+      throw err;
+    }
+
+    const { data, error } = response;
 
     if (error) {
       const sendError = new Error(error.message || 'Unable to send email right now.');

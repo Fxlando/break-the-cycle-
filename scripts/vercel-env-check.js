@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const REQUIRED_KEYS = [
   'FRONTEND_URL',
-  'DATABASE_URL',
   'STRIPE_SECRET_KEY',
   'STRIPE_MEMBERSHIP_PRICE_ID',
   'RESEND_API_KEY',
@@ -55,12 +54,16 @@ function main() {
   const missing = REQUIRED_KEYS.filter(isMissing);
   const frontend = summarizeUrl(getValue('FRONTEND_URL'));
   const redirect = summarizeUrl(getValue('DISCORD_REDIRECT_URI'));
+  const externalApiOrigin = summarizeUrl(getValue('EXTERNAL_API_ORIGIN'));
   const db = summarizeUrl(getValue('DATABASE_URL'));
   const issues = [];
+  const usingExternalOrigin = externalApiOrigin.ok;
 
   if (missing.length) {
     issues.push(`Missing required variables: ${missing.join(', ')}`);
   }
+
+  console.log(`- Backend mode: ${usingExternalOrigin ? 'proxy to external origin' : 'direct on Vercel'}`);
 
   if (!frontend.ok) {
     issues.push('FRONTEND_URL is missing or invalid.');
@@ -89,7 +92,15 @@ function main() {
     }
   }
 
-  if (!db.ok) {
+  if (usingExternalOrigin) {
+    console.log(`- EXTERNAL_API_ORIGIN host: ${externalApiOrigin.host}`);
+    if (externalApiOrigin.protocol !== 'https:') {
+      issues.push('EXTERNAL_API_ORIGIN should use https.');
+    }
+    if (isLocalHost(externalApiOrigin.host)) {
+      issues.push('EXTERNAL_API_ORIGIN cannot point at localhost for the live Vercel site.');
+    }
+  } else if (!db.ok) {
     issues.push('DATABASE_URL is missing or invalid.');
   } else {
     console.log(`- DATABASE_URL host: ${db.host}`);

@@ -158,21 +158,33 @@ Located at top of `styles.css`:
 - Validate setup with `npm run bot:check`.
 - Start the bot with `npm run bot`.
 
-## Cheapest Live Setup
+## Recommended Public Setup
+
+If you want `breakthecycle.network` to work publicly without paying for extra backend hosting yet, the clean path now is:
+
+- Vercel hosts the site
+- Supabase Free hosts the database
+- your PC runs the Discord bot
+- your PC runs Ollama for mentor replies
+
+Use [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) for the step-by-step setup.
+
+## Alternative: Proxy From Your PC
 
 If you want `breakthecycle.network` live without paying to host the bot yet, use this split:
 
 - Vercel hosts the website and API routes
-- a hosted Postgres database stores shared app data
+- Vercel can proxy API requests to your own PC through a tunnel
 - your own machine runs `bot.js`
 - your own machine runs Ollama for mentor replies
+- your own machine can keep using local Postgres
 
 ### What lives where
 
 - **GitHub / Vercel deploys code only**
 - **Vercel does not receive your local `.env`**
-- **Vercel cannot use `localhost` for `DATABASE_URL`**
-- **the local bot and Vercel site must share the same hosted `DATABASE_URL`**
+- **your public site can still use your local backend if `/api/*` is proxied to a public tunnel origin**
+- **the local bot and the local API server share the same local database**
 
 ### Repo helpers
 
@@ -182,3 +194,30 @@ If you want `breakthecycle.network` live without paying to host the bot yet, use
 - `npm run bot:check` validates the local bot environment
 - `start-local.bat` or `npm run local:start` starts Postgres/Ollama checks plus the web server and Discord bot
 - `stop-local.bat` or `npm run local:stop` stops the local web server and Discord bot
+- `start-public-local.bat` or `npm run public:start` starts the local stack and then tries to run `cloudflared`
+
+## Public Domain From Your PC
+
+If you want `breakthecycle.network` to work while your PC is on, the cleanest free path is:
+
+1. Keep the website on Vercel
+2. Expose your local backend with Cloudflare Tunnel
+3. Set `EXTERNAL_API_ORIGIN` in Vercel to your tunnel hostname, for example `https://origin.breakthecycle.network`
+
+That lets Vercel keep serving the site code while proxying `/api/*` to your local machine.
+
+### DNS / tunnel notes
+
+- Cloudflare's tunnel docs require **a domain on Cloudflare** to publish an application route
+- Vercel supports **external DNS providers**, so your apex domain can still point to Vercel while a subdomain points to Cloudflare Tunnel
+- Recommended split:
+  - `breakthecycle.network` -> Vercel
+  - `origin.breakthecycle.network` -> Cloudflare Tunnel -> `http://localhost:3000`
+
+### App settings for this mode
+
+- Local `.env` should use:
+  - `FRONTEND_URL=https://breakthecycle.network`
+  - `DISCORD_REDIRECT_URI=https://breakthecycle.network/api/discord/callback`
+- Vercel env should include:
+  - `EXTERNAL_API_ORIGIN=https://origin.breakthecycle.network`
