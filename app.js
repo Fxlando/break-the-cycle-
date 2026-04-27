@@ -115,6 +115,7 @@ function buildApp() {
   }));
 
   app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 
   // On Vercel, rewrites send /api/foo/bar to /api?path=foo/bar; restore path so Express can route
@@ -634,6 +635,138 @@ function buildApp() {
     `;
   };
 
+  const renderMagicLinkPage = ({
+    title,
+    intro,
+    bodyHtml = '',
+    submitLabel = '',
+    token = '',
+    statusCode = 200,
+    secondaryLabel = 'Back to Break The Cycle',
+    secondaryHref = MEMBER_DASHBOARD_RETURN
+  }) => `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(title)}</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1020;
+        --panel: rgba(17, 24, 39, 0.92);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --button: #f8fafc;
+        --button-text: #111827;
+        --button-secondary: rgba(255, 255, 255, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(99, 102, 241, 0.2), transparent 40%),
+          linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+      .card {
+        width: min(100%, 560px);
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        padding: 32px 28px;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.4);
+      }
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--panel-border);
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.08;
+      }
+      p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 16px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .btn,
+      .btn-secondary {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 18px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .btn {
+        background: var(--button);
+        color: var(--button-text);
+      }
+      .btn-secondary {
+        background: var(--button-secondary);
+        color: var(--text);
+      }
+      .note {
+        margin-top: 20px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--panel-border);
+        background: rgba(255, 255, 255, 0.04);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="eyebrow">Break The Cycle</div>
+      <h1>${escapeHtml(title)}</h1>
+      <p>${escapeHtml(intro)}</p>
+      ${bodyHtml}
+      <div class="actions">
+        ${submitLabel && token ? `
+          <form method="POST" action="/api/auth/verify" style="margin:0;">
+            <input type="hidden" name="token" value="${escapeHtml(token)}" />
+            <button class="btn" type="submit">${escapeHtml(submitLabel)}</button>
+          </form>
+        ` : ''}
+        <a class="btn-secondary" href="${escapeHtml(secondaryHref)}">${escapeHtml(secondaryLabel)}</a>
+      </div>
+      <div class="note">
+        <p style="margin:0;">Status: ${escapeHtml(String(statusCode))}</p>
+      </div>
+    </main>
+  </body>
+</html>`;
+
+  const sendMagicLinkPage = (res, options) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(options.statusCode || 200).send(renderMagicLinkPage(options));
+  };
+
   const isPrismaOperationalError = (err) =>
     err instanceof Prisma.PrismaClientInitializationError ||
     err instanceof Prisma.PrismaClientKnownRequestError ||
@@ -1046,7 +1179,7 @@ function buildApp() {
         text: [
           'Your Break The Cycle sign-in link is ready.',
           '',
-          'Open the secure link below to sign in. It is valid for 30 minutes:',
+          'Open the secure link below, then tap Continue on the page to finish signing in. It is valid for 30 minutes:',
           verifyUrl,
           '',
           'If you did not request this, you can ignore this email.'
@@ -1057,7 +1190,8 @@ function buildApp() {
           title: 'Your sign-in link is ready.',
           intro: 'Use this secure link to access your Break The Cycle account.',
           bodyHtml: `
-            <p style="margin:0 0 16px;">Click the button below to sign in.</p>
+            <p style="margin:0 0 16px;">Open the secure link below, then tap Continue on the page to finish signing in.</p>
+            <p style="margin:0 0 16px;">That extra confirmation step helps protect your link from phone mail previews and email scanners.</p>
             <p style="margin:0 0 16px;">For security, this link expires in 30 minutes and can only be used once.</p>
             <p style="margin:0;">If this request was not made by you, no action is needed.</p>
           `,
@@ -1085,13 +1219,106 @@ function buildApp() {
   });
 
   app.get('/api/auth/verify', async (req, res) => {
-    const token = req.query?.token;
-    if (!token) return res.status(400).send('Missing token');
-    const tokenHash = hashToken(token);
+    const token = String(req.query?.token || '').trim();
+    if (!token) {
+      return sendMagicLinkPage(res, {
+        statusCode: 400,
+        title: 'This sign-in link is incomplete.',
+        intro: 'Request a fresh sign-in email and try again.',
+        bodyHtml: '<p>The link you opened is missing the secure token we need to finish signing you in.</p>'
+      });
+    }
+
     try {
-      const magic = await prisma.magicLinkToken.findFirst({ where: { tokenHash, usedAt: null } });
-      if (!magic) return res.status(404).send('Token not found');
-      if (magic.expiresAt < new Date()) return res.status(410).send('Token expired');
+      const magic = await prisma.magicLinkToken.findUnique({ where: { tokenHash: hashToken(token) } });
+      if (!magic) {
+        return sendMagicLinkPage(res, {
+          statusCode: 404,
+          title: 'This sign-in link is no longer valid.',
+          intro: 'Request a fresh sign-in email from Break The Cycle and try again.',
+          bodyHtml: '<p>This usually means the link was already used or is no longer active.</p>'
+        });
+      }
+      if (magic.expiresAt < new Date()) {
+        return sendMagicLinkPage(res, {
+          statusCode: 410,
+          title: 'This sign-in link has expired.',
+          intro: 'Request a new sign-in email and use it within 30 minutes.',
+          bodyHtml: '<p>For security, magic links expire automatically after a short window.</p>'
+        });
+      }
+      if (magic.usedAt) {
+        if (req.user?.id && req.user.id === magic.userId) {
+          return res.redirect(302, MEMBER_DASHBOARD_RETURN);
+        }
+        return sendMagicLinkPage(res, {
+          statusCode: 409,
+          title: 'This sign-in link was already used.',
+          intro: 'Request a fresh sign-in email and then tap Continue on the page that opens.',
+          bodyHtml: '<p>Some phone mail apps and email scanners can open links early. The new flow protects against that, but this older link cannot be reused.</p>'
+        });
+      }
+
+      return sendMagicLinkPage(res, {
+        statusCode: 200,
+        title: 'Ready to sign in?',
+        intro: 'Tap Continue to finish signing in to your Break The Cycle member area.',
+        bodyHtml: '<p>This extra step helps stop phone mail previews and email scanners from consuming your magic link before you do.</p>',
+        submitLabel: 'Continue to Member Area',
+        token
+      });
+    } catch (err) {
+      console.error('magic-link confirm page error', err);
+      return sendMagicLinkPage(res, {
+        statusCode: 500,
+        title: 'We could not verify this sign-in link.',
+        intro: 'Please request a fresh email and try again.',
+        bodyHtml: '<p>Something went wrong while checking the link.</p>'
+      });
+    }
+  });
+
+  app.post('/api/auth/verify', async (req, res) => {
+    const token = String(req.body?.token || req.query?.token || '').trim();
+    if (!token) {
+      return sendMagicLinkPage(res, {
+        statusCode: 400,
+        title: 'This sign-in link is incomplete.',
+        intro: 'Request a fresh sign-in email and try again.',
+        bodyHtml: '<p>The secure token was missing when we tried to finish signing you in.</p>'
+      });
+    }
+
+    try {
+      const tokenHash = hashToken(token);
+      const magic = await prisma.magicLinkToken.findUnique({ where: { tokenHash } });
+      if (!magic) {
+        return sendMagicLinkPage(res, {
+          statusCode: 404,
+          title: 'This sign-in link is no longer valid.',
+          intro: 'Request a fresh sign-in email from Break The Cycle and try again.',
+          bodyHtml: '<p>This usually means the link was already used or is no longer active.</p>'
+        });
+      }
+      if (magic.expiresAt < new Date()) {
+        return sendMagicLinkPage(res, {
+          statusCode: 410,
+          title: 'This sign-in link has expired.',
+          intro: 'Request a new sign-in email and use it within 30 minutes.',
+          bodyHtml: '<p>For security, magic links expire automatically after a short window.</p>'
+        });
+      }
+      if (magic.usedAt) {
+        if (req.user?.id && req.user.id === magic.userId) {
+          return res.redirect(302, MEMBER_DASHBOARD_RETURN);
+        }
+        return sendMagicLinkPage(res, {
+          statusCode: 409,
+          title: 'This sign-in link was already used.',
+          intro: 'Request a fresh sign-in email and then tap Continue on the page that opens.',
+          bodyHtml: '<p>If you opened the link on another device or email app first, that earlier session used this token.</p>'
+        });
+      }
 
       const sessionToken = randomToken();
       await prisma.session.create({
@@ -1099,10 +1326,15 @@ function buildApp() {
       });
       await prisma.magicLinkToken.update({ where: { id: magic.id }, data: { usedAt: new Date() } });
       setSessionCookie(res, sessionToken);
-      res.redirect(302, MEMBER_DASHBOARD_RETURN);
+      return res.redirect(302, MEMBER_DASHBOARD_RETURN);
     } catch (err) {
       console.error('verify magic error', err);
-      res.status(500).send('Unable to verify');
+      return sendMagicLinkPage(res, {
+        statusCode: 500,
+        title: 'We could not finish signing you in.',
+        intro: 'Please request a fresh sign-in email and try again.',
+        bodyHtml: '<p>Something went wrong while creating your session.</p>'
+      });
     }
   });
 
