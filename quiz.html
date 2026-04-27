@@ -1891,6 +1891,7 @@
         <div id="memberActions" class="member-actions">
           <button type="button" id="connectDiscordBtn" class="btn-primary hidden">Connect Discord</button>
           <button type="button" id="memberCheckoutBtn" class="btn-primary hidden">Join for $9/month</button>
+          <button type="button" id="memberSavedResultsBtn" class="btn-ghost hidden">View saved results</button>
           <button type="button" id="memberRefreshBtn" class="btn-ghost hidden">Refresh access</button>
           <button type="button" id="billingPortalBtn" class="btn-ghost hidden">Manage membership</button>
         </div>
@@ -1999,6 +2000,7 @@
     const memberPromptText = document.getElementById('memberPromptText');
     const connectDiscordBtn = document.getElementById('connectDiscordBtn');
     const memberCheckoutBtn = document.getElementById('memberCheckoutBtn');
+    const memberSavedResultsBtn = document.getElementById('memberSavedResultsBtn');
     const memberRefreshBtn = document.getElementById('memberRefreshBtn');
     const billingPortalBtn = document.getElementById('billingPortalBtn');
     const memberDashboard = document.getElementById('memberDashboard');
@@ -2022,6 +2024,7 @@
     const accessCodeStatus = document.getElementById('accessCodeStatus');
     const accessCodeStatusTargets = [accessCodeStatus].filter(Boolean);
     const resultsEl = document.getElementById('results');
+    const resultsIconEl = document.querySelector('.results h2');
     const resultsTitleEl = document.querySelector('.results-title');
     const resultsSubtitleEl = document.getElementById('resultsSubtitle');
     const resultsActionsEl = document.querySelector('.results-actions');
@@ -2118,6 +2121,7 @@
     let activeSessionId = null;
     let didRestoreOnLoad = false;
     let accessCodePending = false;
+    let memberViewShellActive = false;
     const HONESTY_POPUP_DELAY_MS = 5000;
     const HONESTY_POPUP_VISIBLE_MS = 20000;
     const HONESTY_POPUP_REPEAT_DELAY_MS = 10000;
@@ -2130,6 +2134,7 @@
     const ACCESS_CODE_STORAGE_KEY = 'btc_access_code_v1';
     const PERSISTED_RESULT_KEY = 'btc_persisted_result_v1';
     const MEMBER_VIEW_QUERY_VALUE = 'member';
+    const RESULTS_ICON_VALUE = String.fromCodePoint(0x1F3AF);
 
     function isPlainObject(value) {
       return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -2251,16 +2256,29 @@
       if (currentUser) {
         authForm.classList.add('hidden');
         if (hasPaid) {
-          authStatus.textContent = `Signed in as ${currentUser.email}. Membership is active${membershipState.discord?.connected ? ` and Discord is connected as ${membershipState.discord.username || 'your account'}.` : '.'}`;
+          authStatus.textContent = `Signed in as ${currentUser.email}. Dashboard unlocked${membershipState.discord?.connected ? ` and Discord is connected as ${membershipState.discord.username || 'your account'}.` : '.'}`;
         } else if (membershipState.discord?.connected) {
-          authStatus.textContent = `Signed in as ${currentUser.email}. Discord is connected. Join the membership below to unlock the full roadmap and community.`;
+          authStatus.textContent = `Signed in as ${currentUser.email}. Discord is connected. The dashboard unlocks after membership.`;
         } else {
-          authStatus.textContent = `Signed in as ${currentUser.email}. Connect Discord next so the membership can open the community and coach for you.`;
+          authStatus.textContent = `Signed in as ${currentUser.email}. Step 1 is connecting Discord. The dashboard unlocks after Discord and membership.`;
         }
       } else {
         authForm.classList.remove('hidden');
-        authStatus.textContent = message || 'Take the quiz free. Sign in when you want to save progress, connect Discord, or join the membership.';
+        authStatus.textContent = message || 'Take the quiz free. Sign in when you want to save progress, return to your member area, connect Discord, or join the membership.';
       }
+    }
+
+    function hasSavedResultsAvailable() {
+      const pending = getPendingResults();
+      return Boolean(pending && isValidMode(pending.mode));
+    }
+
+    function renderSavedResultsButton() {
+      if (!memberSavedResultsBtn) return;
+      const shouldShow = isMemberViewRequested()
+        && memberViewShellActive
+        && hasSavedResultsAvailable();
+      toggleHidden(memberSavedResultsBtn, !shouldShow);
     }
 
     function renderMemberPrompt() {
@@ -2268,39 +2286,44 @@
 
       toggleHidden(connectDiscordBtn, true);
       toggleHidden(memberCheckoutBtn, true);
+      toggleHidden(memberSavedResultsBtn, true);
       toggleHidden(memberRefreshBtn, true);
       toggleHidden(billingPortalBtn, true);
       toggleHidden(memberDashboard, !hasPaid);
 
       if (!currentUser) {
-        if (memberChip) memberChip.textContent = 'Free teaser';
-        if (memberPromptTitle) memberPromptTitle.textContent = 'Want the full roadmap? Start by signing in.';
-        if (memberPromptText) memberPromptText.textContent = 'Use the email link above to save this result, connect Discord, and unlock the membership flow when you are ready.';
+        if (memberChip) memberChip.textContent = 'Member area';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'Sign in to open your member area.';
+        if (memberPromptText) memberPromptText.textContent = 'Email sign-in saves your account so you can connect Discord, unlock membership, and come back to your saved results when you want them.';
+        renderSavedResultsButton();
         return;
       }
 
       if (!membershipState.discord?.connected) {
-        if (memberChip) memberChip.textContent = 'Step 1';
-        if (memberPromptTitle) memberPromptTitle.textContent = 'Connect Discord so the accountability coach and community can recognize you.';
-        if (memberPromptText) memberPromptText.textContent = 'The membership is built around saved progress on the site and follow-through inside Discord. Connect your account first.';
+        if (memberChip) memberChip.textContent = 'Dashboard locked';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. Step 1 is connecting Discord.';
+        if (memberPromptText) memberPromptText.textContent = 'Your account is ready. Connect Discord next so the coach and community can recognize you. Membership unlocks the full dashboard after that.';
         toggleHidden(connectDiscordBtn, false);
+        renderSavedResultsButton();
         return;
       }
 
       if (!hasPaid) {
-        if (memberChip) memberChip.textContent = '$9/month membership';
-        if (memberPromptTitle) memberPromptTitle.textContent = 'Unlock the full roadmap, Discord community, and accountability coach.';
-        if (memberPromptText) memberPromptText.textContent = 'The free quiz gives you the signal. Membership gives you the saved plan, weekly follow-through, and the coach that remembers your path.';
+        if (memberChip) memberChip.textContent = 'Dashboard locked';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. The dashboard unlocks after membership.';
+        if (memberPromptText) memberPromptText.textContent = 'Discord is connected and your account is ready. Join membership below to unlock the full roadmap, saved dashboard, weekly check-ins, and accountability layer.';
         toggleHidden(memberCheckoutBtn, false);
         toggleHidden(memberRefreshBtn, false);
+        renderSavedResultsButton();
         return;
       }
 
-      if (memberChip) memberChip.textContent = 'Member active';
-      if (memberPromptTitle) memberPromptTitle.textContent = 'You have the full version unlocked.';
+      if (memberChip) memberChip.textContent = 'Dashboard unlocked';
+      if (memberPromptTitle) memberPromptTitle.textContent = 'Your dashboard is ready.';
       if (memberPromptText) memberPromptText.textContent = 'Use the dashboard below to keep your goal visible, log check-ins, and keep the Discord coach working from your real progress.';
       toggleHidden(memberRefreshBtn, false);
       toggleHidden(billingPortalBtn, false);
+      renderSavedResultsButton();
     }
 
     function renderMemberDashboard() {
@@ -2527,13 +2550,13 @@
         setMemberDashboardStatus('Discord connection did not complete. Try again when you are ready.', 'error');
       }
 
-      const restoredResults = restorePendingResults({ focusMemberArea: memberViewRequested });
-      if (memberViewRequested && !restoredResults) {
+      let restoredResults = false;
+      if (memberViewRequested) {
         openMemberViewShell();
+      } else {
+        restoredResults = restorePendingResults();
       }
-      if (restoredResults) {
-        await loadMemberDashboard();
-      } else if (hasPaid) {
+      if (restoredResults || memberViewRequested || hasPaid) {
         await loadMemberDashboard();
       }
 
@@ -2854,6 +2877,17 @@
       if (resultsSubtitleEl) resultsSubtitleEl.textContent = subtitle || '';
     }
 
+    function setResultsIcon(icon) {
+      if (!resultsIconEl) return;
+      if (icon) {
+        resultsIconEl.textContent = icon;
+        toggleHidden(resultsIconEl, false);
+      } else {
+        resultsIconEl.textContent = '';
+        toggleHidden(resultsIconEl, true);
+      }
+    }
+
     function getMemberViewHeading() {
       if (currentUser && hasPaid) {
         return {
@@ -2895,6 +2929,7 @@
       const lifeResultsDiv = document.getElementById('lifeResults');
       const heading = getMemberViewHeading();
 
+      memberViewShellActive = true;
       clearHonestyPopupTimers();
       hideHonestyPopup();
       document.getElementById('quizForm').style.display = 'none';
@@ -2902,9 +2937,11 @@
       if (careerResultsDiv) careerResultsDiv.innerHTML = '';
       if (lifeResultsDiv) lifeResultsDiv.innerHTML = '';
       toggleHidden(resultsActionsEl, true);
+      setResultsIcon('');
       setResultsHeading(heading.title, heading.subtitle);
       resultsEl?.classList.add('active');
       syncAccessCodeVisibility();
+      renderSavedResultsButton();
     }
 
     function restorePendingResults(options = {}) {
@@ -3174,11 +3211,16 @@
     memberCheckoutBtn?.addEventListener('click', () => {
       startMembershipCheckout();
     });
+    memberSavedResultsBtn?.addEventListener('click', () => {
+      if (!restorePendingResults()) {
+        renderSavedResultsButton();
+      }
+    });
     memberRefreshBtn?.addEventListener('click', async () => {
       const memberViewRequested = isMemberViewRequested();
       await loadCurrentUser();
       await loadMemberDashboard();
-      if (isResultsActive() && lastResultInput) {
+      if (!memberViewShellActive && isResultsActive() && lastResultInput) {
         displayResults(lastResultInput.careerAnswers || {}, lastResultInput.lifeAnswers || {}, {
           restored: true,
           focusMemberArea: memberViewRequested
@@ -3924,6 +3966,7 @@
       console.log('displayResults called');
       clearHonestyPopupTimers();
       hideHonestyPopup();
+      memberViewShellActive = false;
       careerHardNos = normalizeCareerHardNos(careerHardNos);
       lastResultInput = { careerAnswers, lifeAnswers, mode: quizMode, ageRange: userAgeRange, careerHardNos };
       window.pendingResults = lastResultInput;
@@ -3943,6 +3986,7 @@
       careerResultsDiv.innerHTML = '';
       lifeResultsDiv.innerHTML = '';
       toggleHidden(resultsActionsEl, false);
+      setResultsIcon(RESULTS_ICON_VALUE);
       setResultsHeading('Your Perfect Matches', hasPaid
         ? 'Based on your answers, here are your strongest paths and next moves.'
         : 'Here is the strongest first signal from your answers. Unlock membership for the full roadmap and accountability layer.');
