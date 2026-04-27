@@ -81,7 +81,16 @@ function buildApp() {
   const MEMBERSHIP_SYNC_TTL_MS = parseInt(process.env.MEMBERSHIP_SYNC_TTL_MS || '300000', 10);
   const DISCORD_STATE_COOKIE = 'discord_oauth_state';
   const DISCORD_STATE_TTL_MS = parseInt(process.env.DISCORD_STATE_TTL_MS || '900000', 10);
-  const MEMBER_DASHBOARD_RETURN = `${FRONTEND_URL}/quiz.html`;
+  const buildMemberReturnUrl = (params = {}) => {
+    const url = new URL(`${FRONTEND_URL}/quiz.html`);
+    url.searchParams.set('view', 'member');
+    for (const [key, value] of Object.entries(params)) {
+      if (value == null || value === '') continue;
+      url.searchParams.set(key, String(value));
+    }
+    return url.toString();
+  };
+  const MEMBER_DASHBOARD_RETURN = buildMemberReturnUrl();
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
@@ -1090,7 +1099,7 @@ function buildApp() {
       });
       await prisma.magicLinkToken.update({ where: { id: magic.id }, data: { usedAt: new Date() } });
       setSessionCookie(res, sessionToken);
-      res.redirect(302, `${FRONTEND_URL}/quiz.html`);
+      res.redirect(302, MEMBER_DASHBOARD_RETURN);
     } catch (err) {
       console.error('verify magic error', err);
       res.status(500).send('Unable to verify');
@@ -1204,15 +1213,12 @@ function buildApp() {
     const state = String(req.query?.state || '');
     const code = String(req.query?.code || '');
     const storedState = req.cookies[DISCORD_STATE_COOKIE];
-    const params = new URLSearchParams();
 
     if (!req.user) {
-      params.set('discord', 'login_required');
-      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+      return res.redirect(302, buildMemberReturnUrl({ discord: 'login_required' }));
     }
     if (!state || !code || !storedState || storedState !== state) {
-      params.set('discord', 'invalid_state');
-      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+      return res.redirect(302, buildMemberReturnUrl({ discord: 'invalid_state' }));
     }
 
     clearDiscordStateCookie(res);
@@ -1242,12 +1248,10 @@ function buildApp() {
       const membership = await getRefreshedMembershipByUserId(updatedUser.id);
       await syncDiscordAccessForUser(updatedUser, membership);
 
-      params.set('discord', 'connected');
-      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+      return res.redirect(302, buildMemberReturnUrl({ discord: 'connected' }));
     } catch (err) {
       console.error('discord callback error', err);
-      params.set('discord', 'failed');
-      return res.redirect(302, `${MEMBER_DASHBOARD_RETURN}?${params.toString()}`);
+      return res.redirect(302, buildMemberReturnUrl({ discord: 'failed' }));
     }
   });
 
@@ -1295,7 +1299,7 @@ function buildApp() {
         return res.status(409).json({ error: 'Membership is already active.' });
       }
 
-      const successUrl = `${FRONTEND_URL}/quiz.html?membership_session_id={CHECKOUT_SESSION_ID}`;
+      const successUrl = `${MEMBER_DASHBOARD_RETURN}&membership_session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${FRONTEND_URL}/quiz.html?membership=cancelled`;
 
       const session = await STRIPE.checkout.sessions.create({
@@ -1396,7 +1400,7 @@ function buildApp() {
 
       const portal = await STRIPE.billingPortal.sessions.create({
         customer: membership.stripeCustomerId,
-        return_url: `${FRONTEND_URL}/quiz.html?view=member`
+        return_url: MEMBER_DASHBOARD_RETURN
       });
 
       res.json({ url: portal.url });

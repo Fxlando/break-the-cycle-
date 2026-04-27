@@ -2022,6 +2022,9 @@
     const accessCodeStatus = document.getElementById('accessCodeStatus');
     const accessCodeStatusTargets = [accessCodeStatus].filter(Boolean);
     const resultsEl = document.getElementById('results');
+    const resultsTitleEl = document.querySelector('.results-title');
+    const resultsSubtitleEl = document.getElementById('resultsSubtitle');
+    const resultsActionsEl = document.querySelector('.results-actions');
     const honestyPopup = document.getElementById('honestyPopup');
     const careerQuestionsEl = document.querySelector('.career-questions');
     const lifeQuestionsEl = document.querySelector('.life-questions');
@@ -2126,6 +2129,7 @@
     const PENDING_RESULTS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
     const ACCESS_CODE_STORAGE_KEY = 'btc_access_code_v1';
     const PERSISTED_RESULT_KEY = 'btc_persisted_result_v1';
+    const MEMBER_VIEW_QUERY_VALUE = 'member';
 
     function isPlainObject(value) {
       return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -2507,6 +2511,7 @@
     async function initMemberExperience() {
       hidePaywall();
       const params = new URLSearchParams(window.location.search);
+      const memberViewRequested = isMemberViewRequested(params);
       await loadCurrentUser();
 
       const membershipSessionId = params.get('membership_session_id');
@@ -2522,7 +2527,11 @@
         setMemberDashboardStatus('Discord connection did not complete. Try again when you are ready.', 'error');
       }
 
-      if (restorePendingResults()) {
+      const restoredResults = restorePendingResults({ focusMemberArea: memberViewRequested });
+      if (memberViewRequested && !restoredResults) {
+        openMemberViewShell();
+      }
+      if (restoredResults) {
         await loadMemberDashboard();
       } else if (hasPaid) {
         await loadMemberDashboard();
@@ -2539,6 +2548,11 @@
       renderAuthUi();
       renderMemberPrompt();
       renderMemberDashboard();
+
+      if (memberViewRequested && !restoredResults) {
+        openMemberViewShell();
+        focusMemberArea();
+      }
     }
 
     function savePendingResults(careerAnswers, lifeAnswers, ageRange = userAgeRange, hardNos = careerHardNos) {
@@ -2828,7 +2842,72 @@
       }
     }
 
-    function restorePendingResults() {
+    function isMemberViewRequested(params = null) {
+      const searchParams = params instanceof URLSearchParams
+        ? params
+        : new URLSearchParams(window.location.search);
+      return searchParams.get('view') === MEMBER_VIEW_QUERY_VALUE;
+    }
+
+    function setResultsHeading(title, subtitle) {
+      if (resultsTitleEl) resultsTitleEl.textContent = title || '';
+      if (resultsSubtitleEl) resultsSubtitleEl.textContent = subtitle || '';
+    }
+
+    function getMemberViewHeading() {
+      if (currentUser && hasPaid) {
+        return {
+          title: 'Your Member Area',
+          subtitle: 'Your dashboard, goals, Discord access, and membership controls live here.'
+        };
+      }
+      if (currentUser) {
+        return {
+          title: 'Your Member Area',
+          subtitle: membershipState.discord?.connected
+            ? 'Join the membership to unlock the full dashboard, roadmap, and accountability layer.'
+            : 'Connect Discord and unlock membership to open the full dashboard and accountability layer.'
+        };
+      }
+      return {
+        title: 'Member Access',
+        subtitle: 'Sign in to connect Discord, unlock membership, and manage your next steps from here.'
+      };
+    }
+
+    function focusMemberArea() {
+      const target = hasPaid && memberDashboard && !memberDashboard.classList.contains('hidden')
+        ? memberDashboard
+        : memberPrompt;
+      if (!target) return;
+
+      window.requestAnimationFrame(() => {
+        if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (typeof target.focus === 'function') {
+          target.focus({ preventScroll: true });
+        }
+      });
+    }
+
+    function openMemberViewShell() {
+      const careerResultsDiv = document.getElementById('careerResults');
+      const lifeResultsDiv = document.getElementById('lifeResults');
+      const heading = getMemberViewHeading();
+
+      clearHonestyPopupTimers();
+      hideHonestyPopup();
+      document.getElementById('quizForm').style.display = 'none';
+      document.getElementById('progressContainer').style.display = 'none';
+      if (careerResultsDiv) careerResultsDiv.innerHTML = '';
+      if (lifeResultsDiv) lifeResultsDiv.innerHTML = '';
+      toggleHidden(resultsActionsEl, true);
+      setResultsHeading(heading.title, heading.subtitle);
+      resultsEl?.classList.add('active');
+      syncAccessCodeVisibility();
+    }
+
+    function restorePendingResults(options = {}) {
       const pending = getPendingResults();
       if (!pending || !isValidMode(pending.mode)) return false;
       quizMode = pending.mode;
@@ -2837,7 +2916,10 @@
       setHeaderForMode(quizMode);
       hidePaywall();
       window.requestAnimationFrame(() => {
-        displayResults(pending.careerAnswers || {}, pending.lifeAnswers || {}, { restored: true });
+        displayResults(pending.careerAnswers || {}, pending.lifeAnswers || {}, {
+          restored: true,
+          focusMemberArea: Boolean(options.focusMemberArea)
+        });
       });
       return true;
     }
@@ -3093,13 +3175,19 @@
       startMembershipCheckout();
     });
     memberRefreshBtn?.addEventListener('click', async () => {
+      const memberViewRequested = isMemberViewRequested();
       await loadCurrentUser();
       await loadMemberDashboard();
       if (isResultsActive() && lastResultInput) {
-        displayResults(lastResultInput.careerAnswers || {}, lastResultInput.lifeAnswers || {}, { restored: true });
+        displayResults(lastResultInput.careerAnswers || {}, lastResultInput.lifeAnswers || {}, {
+          restored: true,
+          focusMemberArea: memberViewRequested
+        });
       } else {
+        if (memberViewRequested) openMemberViewShell();
         renderMemberPrompt();
         renderMemberDashboard();
+        if (memberViewRequested) focusMemberArea();
       }
     });
     billingPortalBtn?.addEventListener('click', () => {
@@ -3854,9 +3942,10 @@
       const lifeResultsDiv = document.getElementById('lifeResults');
       careerResultsDiv.innerHTML = '';
       lifeResultsDiv.innerHTML = '';
-      document.getElementById('resultsSubtitle').textContent = hasPaid
+      toggleHidden(resultsActionsEl, false);
+      setResultsHeading('Your Perfect Matches', hasPaid
         ? 'Based on your answers, here are your strongest paths and next moves.'
-        : 'Here is the strongest first signal from your answers. Unlock membership for the full roadmap and accountability layer.';
+        : 'Here is the strongest first signal from your answers. Unlock membership for the full roadmap and accountability layer.');
       let top3Career = [];
       let top3Life = [];
 
@@ -3920,8 +4009,13 @@
       document.getElementById('results').classList.add('active');
       renderMemberPrompt();
       renderMemberDashboard();
+      syncAccessCodeVisibility();
       console.log('Results shown');
-      window.scrollTo({top: 0, behavior: 'smooth'});
+      if (options.focusMemberArea) {
+        focusMemberArea();
+      } else {
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      }
 
       const archetypeKeys = [...top3Career, ...top3Life].map(r => r.key);
       const resultSignature = buildResultSignature(careerAnswers, lifeAnswers);
