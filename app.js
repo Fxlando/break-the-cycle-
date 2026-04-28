@@ -801,6 +801,38 @@ function buildApp() {
     })
   });
 
+  const lookupUserFromSessionToken = async (token) => {
+    if (!token) return null;
+    const session = await prisma.session.findUnique({ where: { token } });
+    if (!session) return null;
+    if (session.expiresAt <= new Date()) {
+      await prisma.session.delete({ where: { id: session.id } });
+      return null;
+    }
+    const user = await prisma.user.findUnique({ where: { id: session.userId } });
+    return user ? { user, session } : null;
+  };
+
+  const attachUserFromSession = async (req, { strict = false } = {}) => {
+    if (req.user) return req.user;
+    const token = req.cookies?.session_token;
+    if (!token) return null;
+
+    const lookup = lookupUserFromSessionToken(token);
+    const result = strict
+      ? await lookup
+      : await Promise.race([
+          lookup,
+          new Promise((resolve) => setTimeout(() => resolve(null), SESSION_LOOKUP_TIMEOUT_MS))
+        ]);
+
+    if (result?.user) {
+      req.user = result.user;
+      return req.user;
+    }
+    return null;
+  };
+
   const shouldSkipSessionLookup = (req) => {
     const rawPath = req.path || '';
     const path = rawPath.startsWith('/api/') ? rawPath.slice(4) : rawPath;
@@ -817,32 +849,25 @@ function buildApp() {
   // Attach user if session cookie present
   app.use(async (req, _res, next) => {
     if (DISABLE_SESSION_LOOKUP || shouldSkipSessionLookup(req)) return next();
-    const token = req.cookies.session_token;
-    if (!token) return next();
     try {
-      const lookup = (async () => {
-        const session = await prisma.session.findUnique({ where: { token } });
-        if (!session) return null;
-        if (session.expiresAt <= new Date()) {
-          await prisma.session.delete({ where: { id: session.id } });
-          return null;
-        }
-        const user = await prisma.user.findUnique({ where: { id: session.userId } });
-        return user ? { user } : null;
-      })();
-
-      const timeout = new Promise((resolve) => setTimeout(() => resolve(null), SESSION_LOOKUP_TIMEOUT_MS));
-      const result = await Promise.race([lookup, timeout]);
-      if (result?.user) req.user = result.user;
+      await attachUserFromSession(req);
     } catch (err) {
       console.error('session lookup error', err);
     }
     next();
   });
 
-  const requireAuth = (req, res, next) => {
-    if (!req.user) return res.status(401).json({ error: 'Auth required' });
-    next();
+  const requireAuth = async (req, res, next) => {
+    try {
+      if (!req.user) {
+        await attachUserFromSession(req, { strict: true });
+      }
+      if (!req.user) return res.status(401).json({ error: 'Auth required' });
+      next();
+    } catch (err) {
+      console.error('strict auth lookup error', err);
+      res.status(503).json({ error: 'Unable to verify your session right now.' });
+    }
   };
 
   const requireAdmin = (req, res, next) => {
@@ -1230,6 +1255,7 @@ function buildApp() {
     }
 
     try {
+      await attachUserFromSession(req, { strict: true });
       const magic = await prisma.magicLinkToken.findUnique({ where: { tokenHash: hashToken(token) } });
       if (!magic) {
         return sendMagicLinkPage(res, {
@@ -1290,6 +1316,7 @@ function buildApp() {
     }
 
     try {
+      await attachUserFromSession(req, { strict: true });
       const tokenHash = hashToken(token);
       const magic = await prisma.magicLinkToken.findUnique({ where: { tokenHash } });
       if (!magic) {
@@ -1513,6 +1540,13 @@ function buildApp() {
     const state = String(req.query?.state || '');
     const code = String(req.query?.code || '');
     const storedState = req.cookies[DISCORD_STATE_COOKIE];
+
+    try {
+      await attachUserFromSession(req, { strict: true });
+    } catch (err) {
+      console.error('discord callback auth lookup error', err);
+      return res.redirect(302, buildDashboardReturnUrl({ discord: 'login_required' }));
+    }
 
     if (!req.user) {
       return res.redirect(302, buildDashboardReturnUrl({ discord: 'login_required' }));
