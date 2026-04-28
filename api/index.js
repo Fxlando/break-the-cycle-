@@ -58,7 +58,10 @@ async function proxyToExternalOrigin(req, res) {
   const upstream = await fetch(targetUrl, {
     method,
     headers,
-    body
+    body,
+    // Preserve upstream 3xx responses so the browser receives the original
+    // redirect plus any auth cookies instead of the proxy following it first.
+    redirect: 'manual'
   });
 
   res.statusCode = upstream.status;
