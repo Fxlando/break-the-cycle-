@@ -81,16 +81,16 @@ function buildApp() {
   const MEMBERSHIP_SYNC_TTL_MS = parseInt(process.env.MEMBERSHIP_SYNC_TTL_MS || '300000', 10);
   const DISCORD_STATE_COOKIE = 'discord_oauth_state';
   const DISCORD_STATE_TTL_MS = parseInt(process.env.DISCORD_STATE_TTL_MS || '900000', 10);
-  const buildMemberReturnUrl = (params = {}) => {
-    const url = new URL(`${FRONTEND_URL}/quiz.html`);
-    url.searchParams.set('view', 'member');
+  const buildDashboardReturnUrl = (params = {}) => {
+    const url = new URL(`${FRONTEND_URL}/dashboard.html`);
     for (const [key, value] of Object.entries(params)) {
       if (value == null || value === '') continue;
       url.searchParams.set(key, String(value));
     }
     return url.toString();
   };
-  const MEMBER_DASHBOARD_RETURN = buildMemberReturnUrl();
+  const DASHBOARD_RETURN = buildDashboardReturnUrl();
+  const DASHBOARD_LOGIN_RETURN = buildDashboardReturnUrl({ login: 'success' });
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
@@ -643,7 +643,7 @@ function buildApp() {
     token = '',
     statusCode = 200,
     secondaryLabel = 'Back to Break The Cycle',
-    secondaryHref = MEMBER_DASHBOARD_RETURN
+    secondaryHref = DASHBOARD_RETURN
   }) => `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -1249,7 +1249,7 @@ function buildApp() {
       }
       if (magic.usedAt) {
         if (req.user?.id && req.user.id === magic.userId) {
-          return res.redirect(302, MEMBER_DASHBOARD_RETURN);
+          return res.redirect(302, DASHBOARD_RETURN);
         }
         return sendMagicLinkPage(res, {
           statusCode: 409,
@@ -1310,7 +1310,7 @@ function buildApp() {
       }
       if (magic.usedAt) {
         if (req.user?.id && req.user.id === magic.userId) {
-          return res.redirect(302, MEMBER_DASHBOARD_RETURN);
+          return res.redirect(302, DASHBOARD_RETURN);
         }
         return sendMagicLinkPage(res, {
           statusCode: 409,
@@ -1326,7 +1326,7 @@ function buildApp() {
       });
       await prisma.magicLinkToken.update({ where: { id: magic.id }, data: { usedAt: new Date() } });
       setSessionCookie(res, sessionToken);
-      return res.redirect(302, MEMBER_DASHBOARD_RETURN);
+      return res.redirect(302, DASHBOARD_LOGIN_RETURN);
     } catch (err) {
       console.error('verify magic error', err);
       return sendMagicLinkPage(res, {
@@ -1354,6 +1354,43 @@ function buildApp() {
     track: z.string().optional()
   });
 
+  const serializeResultTeaserEntries = (entries, limit = 2) => {
+    if (!Array.isArray(entries)) return [];
+    return entries.slice(0, limit).map((entry, index) => ({
+      rank: index + 1,
+      key: entry?.key || null,
+      percentage: typeof entry?.percentage === 'number' ? entry.percentage : null,
+      path: {
+        name: entry?.path?.name || null,
+        emoji: entry?.path?.emoji || null,
+        category: entry?.path?.category || null,
+        description: entry?.path?.description || null
+      }
+    }));
+  };
+
+  const serializeLatestRun = (latestRun, { includeFullResults = false } = {}) => {
+    if (!latestRun) return null;
+    const results = latestRun.results && typeof latestRun.results === 'object' ? latestRun.results : {};
+    return {
+      id: latestRun.id,
+      mode: String(latestRun.mode || '').toLowerCase(),
+      completedAt: latestRun.completedAt,
+      archetypeKeys: Array.isArray(latestRun.archetypeKeys) ? latestRun.archetypeKeys : [],
+      teaser: {
+        career: serializeResultTeaserEntries(results.career),
+        life: serializeResultTeaserEntries(results.life)
+      },
+      results: includeFullResults ? results : undefined
+    };
+  };
+
+  const deriveDashboardState = ({ membership, user }) => {
+    if (isMembershipActive(membership?.status)) return 'member_active';
+    if (user?.discordId) return 'signed_in_locked_membership';
+    return 'signed_in_locked_discord';
+  };
+
   const loadMemberSnapshot = async (userId, { includeFullResults = false } = {}) => {
     const [membership, goals, checkIns, latestRun] = await Promise.all([
       getRefreshedMembershipByUserId(userId),
@@ -1377,16 +1414,7 @@ function buildApp() {
       membership,
       goals,
       checkIns,
-      latestRun: latestRun
-        ? {
-            id: latestRun.id,
-            mode: String(latestRun.mode || '').toLowerCase(),
-            completedAt: latestRun.completedAt,
-            answers: includeFullResults ? latestRun.answers : undefined,
-            results: includeFullResults ? latestRun.results : undefined,
-            archetypeKeys: includeFullResults ? latestRun.archetypeKeys : latestRun.archetypeKeys.slice(0, 1)
-          }
-        : null
+      latestRun: serializeLatestRun(latestRun, { includeFullResults })
     };
   };
 
@@ -1428,6 +1456,46 @@ function buildApp() {
     }
   });
 
+  app.get('/api/account/overview', requireAuth, async (req, res) => {
+    try {
+      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      const activeMember = isMembershipActive(membership?.status);
+      const snapshot = await loadMemberSnapshot(req.user.id, {
+        includeFullResults: activeMember
+      });
+      const discordConfig = getDiscordConfig();
+
+      res.json({
+        user: {
+          id: req.user.id,
+          email: req.user.email,
+          role: req.user.role,
+          primaryTrack: req.user.primaryTrack || null,
+          primaryTrackLabel: trackLabel(req.user.primaryTrack || null)
+        },
+        discord: {
+          connected: Boolean(req.user.discordId),
+          id: req.user.discordId || null,
+          username: req.user.discordUsername || null,
+          avatarUrl: req.user.discordAvatar || null,
+          inviteUrl: discordConfig.inviteUrl || null
+        },
+        membership: membershipAccessPayload(membership),
+        latestRun: snapshot.latestRun,
+        goals: activeMember ? snapshot.goals : [],
+        checkIns: activeMember ? snapshot.checkIns : [],
+        locked: {
+          goals: !activeMember,
+          checkIns: !activeMember
+        },
+        dashboardState: deriveDashboardState({ membership, user: req.user })
+      });
+    } catch (err) {
+      console.error('account overview error', err);
+      res.status(500).json({ error: 'Unable to load account overview.' });
+    }
+  });
+
   app.get('/api/discord/connect-url', requireAuth, async (req, res) => {
     if (!hasDiscordOAuthConfig()) {
       return res.status(503).json({ error: 'Discord OAuth is not configured yet.' });
@@ -1447,10 +1515,10 @@ function buildApp() {
     const storedState = req.cookies[DISCORD_STATE_COOKIE];
 
     if (!req.user) {
-      return res.redirect(302, buildMemberReturnUrl({ discord: 'login_required' }));
+      return res.redirect(302, buildDashboardReturnUrl({ discord: 'login_required' }));
     }
     if (!state || !code || !storedState || storedState !== state) {
-      return res.redirect(302, buildMemberReturnUrl({ discord: 'invalid_state' }));
+      return res.redirect(302, buildDashboardReturnUrl({ discord: 'invalid_state' }));
     }
 
     clearDiscordStateCookie(res);
@@ -1480,10 +1548,10 @@ function buildApp() {
       const membership = await getRefreshedMembershipByUserId(updatedUser.id);
       await syncDiscordAccessForUser(updatedUser, membership);
 
-      return res.redirect(302, buildMemberReturnUrl({ discord: 'connected' }));
+      return res.redirect(302, buildDashboardReturnUrl({ discord: 'connected' }));
     } catch (err) {
       console.error('discord callback error', err);
-      return res.redirect(302, buildMemberReturnUrl({ discord: 'failed' }));
+      return res.redirect(302, buildDashboardReturnUrl({ discord: 'failed' }));
     }
   });
 
@@ -1531,8 +1599,8 @@ function buildApp() {
         return res.status(409).json({ error: 'Membership is already active.' });
       }
 
-      const successUrl = `${MEMBER_DASHBOARD_RETURN}&membership_session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${FRONTEND_URL}/quiz.html?membership=cancelled`;
+      const successUrl = `${DASHBOARD_RETURN}${DASHBOARD_RETURN.includes('?') ? '&' : '?'}membership_session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = buildDashboardReturnUrl({ membership: 'cancelled' });
 
       const session = await STRIPE.checkout.sessions.create({
         mode: 'subscription',
@@ -1632,7 +1700,7 @@ function buildApp() {
 
       const portal = await STRIPE.billingPortal.sessions.create({
         customer: membership.stripeCustomerId,
-        return_url: MEMBER_DASHBOARD_RETURN
+        return_url: DASHBOARD_RETURN
       });
 
       res.json({ url: portal.url });

@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Break The Cycle Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-panel: rgba(14, 22, 38, 0.88);
+      --bg-panel-strong: rgba(20, 31, 52, 0.96);
+      --bg-soft: rgba(94, 106, 210, 0.12);
+      --text: #f5f7ff;
+      --text-secondary: #aeb8d4;
+      --text-muted: #7d87a8;
+      --border: rgba(166, 179, 225, 0.14);
+      --border-strong: rgba(166, 179, 225, 0.22);
+      --primary: #7c86ff;
+      --primary-strong: #606cf4;
+      --accent: #58d1c9;
+      --danger: #ff8d98;
+      --success: #8ee0a8;
+      --warning: #ffd37c;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background:
+        radial-gradient(circle at top left, rgba(124, 134, 255, 0.25), transparent 36%),
+        radial-gradient(circle at top right, rgba(88, 209, 201, 0.18), transparent 32%),
+        linear-gradient(180deg, #07111f 0%, #091524 54%, #040811 100%);
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Inter Tight", "Inter", system-ui, sans-serif;
+      color: var(--text);
+      background: transparent;
+      padding: 28px 20px 40px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .page-shell {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+    }
+
+    .app-frame {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(18, 27, 46, 0.95) 0%, rgba(10, 16, 29, 0.98) 100%);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .app-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(124, 134, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 100% 0%, rgba(88, 209, 201, 0.16), transparent 24%);
+      pointer-events: none;
+    }
+
+    .dashboard-header,
+    .hero-grid,
+    .dashboard-grid,
+    .latest-panel-grid,
+    .locked-preview-grid {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-mark-badge {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      box-shadow: 0 0 24px rgba(124, 134, 255, 0.45);
+    }
+
+    .brand-copy {
+      margin-top: 8px;
+      color: var(--text-secondary);
+      max-width: 540px;
+      line-height: 1.55;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .chip-link,
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      min-height: unset;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      letter-spacing: 0.01em;
+    }
+
+    .status-pill.active {
+      color: var(--text);
+      border-color: rgba(142, 224, 168, 0.4);
+      background: rgba(142, 224, 168, 0.12);
+    }
+
+    .status-pill.pending {
+      color: var(--warning);
+      border-color: rgba(255, 211, 124, 0.34);
+      background: rgba(255, 211, 124, 0.1);
+    }
+
+    .status-pill.off {
+      color: var(--text-muted);
+      border-color: rgba(166, 179, 225, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn,
+    .btn-secondary,
+    .btn-ghost {
+      border: 0;
+      border-radius: var(--radius-sm);
+      min-height: 48px;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      font-weight: 700;
+    }
+
+    .btn:hover,
+    .btn-secondary:hover,
+    .btn-ghost:hover,
+    .chip-link:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 42%, #8d67ff 100%);
+      box-shadow: 0 16px 30px rgba(96, 108, 244, 0.28);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost {
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px dashed var(--border-strong);
+    }
+
+    .status-banner {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+    }
+
+    .status-banner.success {
+      border-color: rgba(142, 224, 168, 0.34);
+      color: var(--success);
+      background: rgba(142, 224, 168, 0.1);
+    }
+
+    .status-banner.warning {
+      border-color: rgba(255, 211, 124, 0.34);
+      color: var(--warning);
+      background: rgba(255, 211, 124, 0.1);
+    }
+
+    .status-banner.error {
+      border-color: rgba(255, 141, 152, 0.34);
+      color: var(--danger);
+      background: rgba(255, 141, 152, 0.1);
+    }
+
+    .auth-panel,
+    .panel,
+    .hero-card,
+    .summary-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .auth-panel {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+      margin: 12px auto 0;
+      padding: 28px;
+    }
+
+    .auth-eyebrow,
+    .panel-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .auth-panel h1,
+    .hero-card h1 {
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      margin-bottom: 12px;
+    }
+
+    .auth-panel p,
+    .hero-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .auth-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .auth-form input,
+    .form-field,
+    .form-textarea {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: rgba(5, 10, 20, 0.72);
+      color: var(--text);
+      padding: 13px 14px;
+    }
+
+    .form-textarea {
+      min-height: 132px;
+      resize: vertical;
+    }
+
+    .auth-note,
+    .form-note,
+    .empty-state {
+      margin-top: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .hero-card,
+    .summary-card,
+    .panel {
+      padding: 24px;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(180deg, rgba(17, 29, 52, 0.96) 0%, rgba(11, 18, 32, 0.96) 100%);
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -60px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(124, 134, 255, 0.2) 0%, transparent 68%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+    }
+
+    .hero-pills,
+    .summary-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(166, 179, 225, 0.08);
+    }
+
+    .summary-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .summary-label {
+      color: var(--text-muted);
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .summary-value {
+      color: var(--text);
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .panel.span-5 { grid-column: span 5; }
+    .panel.span-7 { grid-column: span 7; }
+    .panel.span-6 { grid-column: span 6; }
+    .panel.span-12 { grid-column: span 12; }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .panel-title h2 {
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-copy {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .check-bullet {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      margin-top: 3px;
+      border: 1px solid var(--border-strong);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .check-item.done .check-bullet {
+      border-color: rgba(142, 224, 168, 0.42);
+      background: linear-gradient(135deg, rgba(142, 224, 168, 0.75), rgba(88, 209, 201, 0.72));
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .latest-panel-grid,
+    .locked-preview-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .result-card,
+    .locked-card,
+    .mini-card {
+      border: 1px solid rgba(166, 179, 225, 0.12);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 18px;
+    }
+
+    .result-card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .result-rank {
+      display: inline-flex;
+      min-width: 32px;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: rgba(124, 134, 255, 0.14);
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .result-name {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-category {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .result-score {
+      color: var(--text);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .result-description,
+    .result-detail,
+    .locked-card p,
+    .mini-card p {
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .stat {
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(166, 179, 225, 0.08);
+    }
+
+    .stat-label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .result-detail {
+      margin-top: 10px;
+    }
+
+    .result-detail strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .list-block {
+      display: grid;
+      gap: 12px;
+    }
+
+    .list-item {
+      border-radius: var(--radius-md);
+      padding: 15px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(166, 179, 225, 0.1);
+    }
+
+    .list-item strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .list-item-meta {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      margin-top: 8px;
+    }
+
+    .panel-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .split {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .locked-card {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      min-height: 220px;
+    }
+
+    .empty-state {
+      border: 1px dashed rgba(166, 179, 225, 0.2);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel.span-5,
+      .panel.span-6,
+      .panel.span-7,
+      .panel.span-12 {
+        grid-column: span 12;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px 12px 28px;
+      }
+
+      .app-frame {
+        padding: 18px;
+      }
+
+      .dashboard-header {
+        flex-direction: column;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .auth-form,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .action-row {
+        flex-direction: column;
+      }
+
+      .action-row > * {
+        width: 100%;
+      }
+
+      .result-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-row {
+        flex-direction: column;
+      }
+
+      .summary-value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div class="app-frame">
+      <header class="dashboard-header">
+        <div>
+          <a class="brand-mark" href="index.html">
+            <span class="brand-mark-badge" aria-hidden="true"></span>
+            <span>Break The Cycle</span>
+          </a>
+          <p class="brand-copy">A real dashboard for your account, saved quiz signal, next step, and membership follow-through.</p>
+        </div>
+        <div class="header-actions">
+          <a class="chip-link" href="index.html">Home</a>
+          <a class="chip-link" href="quiz.html">Take quiz</a>
+          <button type="button" class="btn-secondary hidden" id="logoutBtn">Switch account</button>
+        </div>
+      </header>
+
+      <div id="statusBanner" class="status-banner hidden" role="status" aria-live="polite"></div>
+
+      <section id="signedOutPanel" class="auth-panel hidden">
+        <div class="auth-eyebrow">Dashboard access</div>
+        <h1 id="signedOutTitle">Open your dashboard.</h1>
+        <p id="signedOutCopy">Sign in with your email link to save progress, view your latest quiz signal, connect Discord, and unlock the full membership dashboard.</p>
+        <form id="authForm" class="auth-form">
+          <label class="sr-only" for="authEmail">Email address</label>
+          <input type="email" id="authEmail" name="email" placeholder="Enter your email address" required>
+          <button type="submit" class="btn" id="authSubmit">Email me a sign-in link</button>
+        </form>
+        <p id="authFeedback" class="auth-note">The sign-in email opens a secure confirmation page first, then brings you back here.</p>
+      </section>
+
+      <section id="signedInPanel" class="hidden">
+        <div class="hero-grid">
+          <article class="hero-card">
+            <div class="hero-copy">
+              <div class="panel-eyebrow">Account dashboard</div>
+              <h1 id="dashboardTitle">Loading your dashboard.</h1>
+              <p id="dashboardSubtitle">Pulling your saved account, latest quiz signal, and next steps now.</p>
+            </div>
+            <div class="hero-pills" id="heroPills"></div>
+          </article>
+
+          <aside class="summary-card">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Account summary</div>
+                <h2>Your account</h2>
+              </div>
+            </div>
+            <div class="summary-list" id="accountSummary"></div>
+          </aside>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel span-5">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Next step</div>
+                <h2>What to do next</h2>
+              </div>
+            </div>
+            <p class="panel-copy" id="nextStepCopy">Your progress ladder updates here based on your account state.</p>
+            <div class="checklist" id="progressChecklist"></div>
+            <div class="action-row" id="progressActions"></div>
+          </section>
+
+          <section class="panel span-7">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Membership</div>
+                <h2>Access and billing</h2>
+              </div>
+            </div>
+            <p class="panel-copy" id="membershipCopy">Loading membership details.</p>
+            <div class="summary-list" id="membershipSummary"></div>
+            <div class="action-row" id="membershipActions" style="margin-top:18px;"></div>
+          </section>
+
+          <section class="panel span-12">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Latest result</div>
+                <h2>Your latest saved quiz signal</h2>
+              </div>
+              <div class="action-row">
+                <a href="quiz.html" class="btn-ghost">Retake quiz</a>
+              </div>
+            </div>
+            <div id="latestResultsPanel"></div>
+          </section>
+
+          <section class="panel span-6">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Weekly goal</div>
+                <h2>Focus for this week</h2>
+              </div>
+            </div>
+            <div id="goalsPanel"></div>
+          </section>
+
+          <section class="panel span-6">
+            <div class="panel-title">
+              <div>
+                <div class="panel-eyebrow">Check-ins</div>
+                <h2>Recent momentum</h2>
+              </div>
+            </div>
+            <div id="checkinsPanel"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.API_BASE_URL || '';
+    const api = (path) => `${API_BASE}${path}`;
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    const statusBanner = document.getElementById('statusBanner');
+    const signedOutPanel = document.getElementById('signedOutPanel');
+    const signedInPanel = document.getElementById('signedInPanel');
+    const signedOutTitle = document.getElementById('signedOutTitle');
+    const signedOutCopy = document.getElementById('signedOutCopy');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authSubmit = document.getElementById('authSubmit');
+    const authFeedback = document.getElementById('authFeedback');
+    const dashboardTitle = document.getElementById('dashboardTitle');
+    const dashboardSubtitle = document.getElementById('dashboardSubtitle');
+    const heroPills = document.getElementById('heroPills');
+    const accountSummary = document.getElementById('accountSummary');
+    const nextStepCopy = document.getElementById('nextStepCopy');
+    const progressChecklist = document.getElementById('progressChecklist');
+    const progressActions = document.getElementById('progressActions');
+    const membershipCopy = document.getElementById('membershipCopy');
+    const membershipSummary = document.getElementById('membershipSummary');
+    const membershipActions = document.getElementById('membershipActions');
+    const latestResultsPanel = document.getElementById('latestResultsPanel');
+    const goalsPanel = document.getElementById('goalsPanel');
+    const checkinsPanel = document.getElementById('checkinsPanel');
+
+    let currentOverview = null;
+
+    function toggleHidden(element, hidden) {
+      if (!element) return;
+      element.classList.toggle('hidden', Boolean(hidden));
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    async function readJson(res, label) {
+      const bodyText = (await res.text()) || '';
+      let data = {};
+      if (bodyText) {
+        try {
+          data = JSON.parse(bodyText);
+        } catch (err) {
+          const parseError = new Error(`Invalid JSON from ${label}.`);
+          parseError.status = res.status;
+          throw parseError;
+        }
+      }
+      if (!res.ok) {
+        const error = new Error(data?.error || `Request failed for ${label}.`);
+        error.status = res.status;
+        error.data = data;
+        throw error;
+      }
+      return data;
+    }
+
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, options);
+      return readJson(res, url);
+    }
+
+    function formatDate(value) {
+      if (!value) return 'Not available';
+      try {
+        return new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        }).format(new Date(value));
+      } catch (_) {
+        return 'Not available';
+      }
+    }
+
+    function formatRelativeTrack(overview) {
+      return overview?.user?.primaryTrackLabel || 'General';
+    }
+
+    function formatMembershipStatus(status) {
+      const normalized = String(status || 'inactive').toLowerCase().replace(/_/g, ' ');
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    }
+
+    function formatCurrencyRange(range, suffix = '') {
+      if (!Array.isArray(range) || range.length < 2) return 'Not set';
+      return `$${range[0]}-${range[1]}${suffix}`;
+    }
+
+    function formatIncomeRange(range) {
+      if (!Array.isArray(range) || range.length < 2) return 'Not set';
+      return `$${Math.floor(range[0] / 1000)}k-$${Math.floor(range[1] / 1000)}k/yr`;
+    }
+
+    function setBanner(message = '', tone = 'neutral') {
+      if (!statusBanner) return;
+      if (!message) {
+        statusBanner.textContent = '';
+        statusBanner.className = 'status-banner hidden';
+        return;
+      }
+      statusBanner.textContent = message;
+      statusBanner.className = `status-banner ${tone}`;
+    }
+
+    function setSignedOutState({ recovery = false, title, copy, feedback } = {}) {
+      currentOverview = null;
+      toggleHidden(signedInPanel, true);
+      toggleHidden(signedOutPanel, false);
+      toggleHidden(logoutBtn, true);
+      signedOutTitle.textContent = title || (recovery
+        ? "We could not keep you signed in on this device."
+        : 'Open your dashboard.');
+      signedOutCopy.textContent = copy || (recovery
+        ? 'The secure link completed, but your browser did not keep the session. Request a fresh sign-in link and open it on this same device.'
+        : 'Sign in with your email link to save progress, view your latest quiz signal, connect Discord, and unlock the full membership dashboard.');
+      authFeedback.textContent = feedback || (recovery
+        ? 'Request a new email link below. The new link opens a confirmation page first, then returns you here.'
+        : 'The sign-in email opens a secure confirmation page first, then brings you back here.');
+    }
+
+    function setSignedInState() {
+      toggleHidden(signedOutPanel, true);
+      toggleHidden(signedInPanel, false);
+      toggleHidden(logoutBtn, false);
+    }
+
+    async function sendMagicLink(email) {
+      const cleaned = String(email || '').trim();
+      if (!cleaned) return;
+      authFeedback.textContent = '';
+      if (authSubmit) authSubmit.disabled = true;
+      try {
+        const data = await fetchJson(api('/api/auth/magic-link'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleaned })
+        });
+        if (data?.status === 'sent') {
+          authForm.reset();
+          authFeedback.textContent = 'Check your inbox. Open the new secure link, then tap Continue to come back here.';
+          setBanner('A fresh sign-in email is on the way.', 'success');
+          return;
+        }
+        authFeedback.textContent = 'We could not send the sign-in link right now.';
+      } catch (err) {
+        authFeedback.textContent = err.message || 'We could not send the sign-in link right now.';
+        setBanner(err.message || 'We could not send the sign-in link right now.', 'error');
+      } finally {
+        if (authSubmit) authSubmit.disabled = false;
+      }
+    }
+
+    async function loadOverview() {
+      return fetchJson(api('/api/account/overview'), { credentials: 'include' });
+    }
+
+    async function verifyMembershipSession(sessionId) {
+      return fetchJson(api('/api/membership/verify-session'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ session_id: sessionId })
+      });
+    }
+
+    async function connectDiscord() {
+      try {
+        const data = await fetchJson(api('/api/discord/connect-url'), { credentials: 'include' });
+        if (!data?.url) throw new Error('Could not open Discord connect.');
+        window.location.href = data.url;
+      } catch (err) {
+        setBanner(err.message || 'Could not start Discord connect.', 'error');
+      }
+    }
+
+    async function startMembershipCheckout() {
+      try {
+        const data = await fetchJson(api('/api/membership/create-checkout-session'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        if (!data?.url) throw new Error('Could not start membership checkout.');
+        window.location.href = data.url;
+      } catch (err) {
+        setBanner(err.message || 'Could not start membership checkout.', 'error');
+      }
+    }
+
+    async function openBillingPortal() {
+      try {
+        const data = await fetchJson(api('/api/membership/billing-portal'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        if (!data?.url) throw new Error('Could not open billing portal.');
+        window.location.href = data.url;
+      } catch (err) {
+        setBanner(err.message || 'Could not open billing portal.', 'error');
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetchJson(api('/api/auth/logout'), {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (_) {
+        // Fall through into the signed-out state even if the server already lost the session.
+      }
+      setBanner('You are signed out. Use a new sign-in link to enter a different account.', 'success');
+      setSignedOutState();
+    }
+
+    function renderHero(overview) {
+      const activeMember = Boolean(overview?.membership?.active);
+      const discordConnected = Boolean(overview?.discord?.connected);
+      const title = activeMember
+        ? 'Your full dashboard is ready.'
+        : discordConnected
+          ? 'Your dashboard preview is ready.'
+          : 'Your dashboard starts with Discord.';
+      const subtitle = activeMember
+        ? 'Use this space to track your latest signal, your current goal, and your next check-in.'
+        : discordConnected
+          ? 'You are signed in and Discord is connected. Membership unlocks the full dashboard tools below.'
+          : 'You are signed in. Connect Discord next so the coach and community can recognize your account before membership unlocks.';
+
+      dashboardTitle.textContent = title;
+      dashboardSubtitle.textContent = subtitle;
+
+      const pills = [
+        { label: 'Signed in', tone: 'active' },
+        { label: discordConnected ? 'Discord connected' : 'Discord not connected', tone: discordConnected ? 'active' : 'pending' },
+        { label: activeMember ? 'Membership active' : 'Membership locked', tone: activeMember ? 'active' : 'pending' },
+        { label: formatRelativeTrack(overview), tone: 'off' }
+      ];
+      heroPills.innerHTML = pills.map((pill) => `<span class="status-pill ${pill.tone}">${escapeHtml(pill.label)}</span>`).join('');
+    }
+
+    function renderAccountSummary(overview) {
+      const latestRun = overview?.latestRun;
+      accountSummary.innerHTML = `
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Signed in as</div>
+          </div>
+          <div class="summary-value">${escapeHtml(overview?.user?.email || 'Unknown')}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Primary track</div>
+          </div>
+          <div class="summary-value">${escapeHtml(formatRelativeTrack(overview))}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Latest quiz run</div>
+          </div>
+          <div class="summary-value">${latestRun ? `${escapeHtml(latestRun.mode || 'unknown')} on ${escapeHtml(formatDate(latestRun.completedAt))}` : 'No saved run yet'}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Membership status</div>
+          </div>
+          <div class="summary-value">${escapeHtml(formatMembershipStatus(overview?.membership?.status))}</div>
+        </div>
+      `;
+    }
+
+    function renderChecklist(overview) {
+      const discordConnected = Boolean(overview?.discord?.connected);
+      const activeMember = Boolean(overview?.membership?.active);
+      progressChecklist.innerHTML = `
+        <div class="check-item done">
+          <span class="check-bullet" aria-hidden="true"></span>
+          <div>Email sign-in is complete. This account is now linked to ${escapeHtml(overview?.user?.email || 'your email')}.</div>
+        </div>
+        <div class="check-item ${discordConnected ? 'done' : ''}">
+          <span class="check-bullet" aria-hidden="true"></span>
+          <div>${discordConnected
+            ? `Discord is connected as ${escapeHtml(overview?.discord?.username || 'your account')}.`
+            : 'Connect Discord so the community and coach can recognize your account.'}</div>
+        </div>
+        <div class="check-item ${activeMember ? 'done' : ''}">
+          <span class="check-bullet" aria-hidden="true"></span>
+          <div>${activeMember
+            ? 'Membership is active. Full dashboard tools are unlocked.'
+            : 'Activate membership to unlock the full roadmap, goal tracking, and check-in workflow.'}</div>
+        </div>
+      `;
+
+      nextStepCopy.textContent = overview?.dashboardState === 'member_active'
+        ? 'Everything is unlocked. Keep your next step visible and update the dashboard as you move.'
+        : overview?.dashboardState === 'signed_in_locked_membership'
+          ? 'You are one step away from the full dashboard. Membership is the last unlock.'
+          : 'Discord is the first unlock. Once that is connected, membership can open the full dashboard.';
+
+      const actions = [];
+      if (!discordConnected) {
+        actions.push('<button type="button" class="btn" id="connectDiscordAction">Connect Discord</button>');
+      } else if (!activeMember) {
+        actions.push('<button type="button" class="btn" id="joinMembershipAction">Join for $9/month</button>');
+      } else {
+        actions.push('<button type="button" class="btn-secondary" id="manageMembershipAction">Manage membership</button>');
+        if (overview?.discord?.inviteUrl) {
+          actions.push(`<a class="btn-ghost" href="${escapeHtml(overview.discord.inviteUrl)}" target="_blank" rel="noopener">Open Discord</a>`);
+        }
+      }
+      actions.push('<a href="quiz.html" class="btn-ghost">Retake quiz</a>');
+      progressActions.innerHTML = actions.join('');
+
+      document.getElementById('connectDiscordAction')?.addEventListener('click', connectDiscord);
+      document.getElementById('joinMembershipAction')?.addEventListener('click', startMembershipCheckout);
+      document.getElementById('manageMembershipAction')?.addEventListener('click', openBillingPortal);
+    }
+
+    function renderMembershipPanel(overview) {
+      const membership = overview?.membership || {};
+      const activeMember = Boolean(membership.active);
+      membershipCopy.textContent = activeMember
+        ? 'Billing and access are active. You can manage your membership or head back into Discord from here.'
+        : 'This dashboard preview is real, but the full planning and accountability tools stay locked until membership is active.';
+
+      membershipSummary.innerHTML = `
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Status</div>
+          </div>
+          <div class="summary-value">${escapeHtml(formatMembershipStatus(membership.status))}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Discord</div>
+          </div>
+          <div class="summary-value">${overview?.discord?.connected ? escapeHtml(overview.discord.username || 'Connected') : 'Connect required first'}</div>
+        </div>
+        <div class="summary-row">
+          <div>
+            <div class="summary-label">Current period end</div>
+          </div>
+          <div class="summary-value">${membership.currentPeriodEnd ? escapeHtml(formatDate(membership.currentPeriodEnd)) : 'Not active yet'}</div>
+        </div>
+      `;
+
+      const actions = [];
+      if (!overview?.discord?.connected) {
+        actions.push('<button type="button" class="btn" id="membershipDiscordBtn">Connect Discord first</button>');
+      } else if (!activeMember) {
+        actions.push('<button type="button" class="btn" id="membershipCheckoutBtn">Unlock full dashboard</button>');
+      } else {
+        actions.push('<button type="button" class="btn-secondary" id="membershipPortalBtn">Billing portal</button>');
+      }
+      membershipActions.innerHTML = actions.join('');
+
+      document.getElementById('membershipDiscordBtn')?.addEventListener('click', connectDiscord);
+      document.getElementById('membershipCheckoutBtn')?.addEventListener('click', startMembershipCheckout);
+      document.getElementById('membershipPortalBtn')?.addEventListener('click', openBillingPortal);
+    }
+
+    function renderFullResultCard(match, type, rank) {
+      const path = match?.path || {};
+      const isCareer = type === 'career';
+      const stats = isCareer
+        ? [
+            ['Income range', formatIncomeRange(path.incomeRange)],
+            ['Time to profit', path.timeToProfit || 'Not set'],
+            ['Startup cost', formatCurrencyRange(path.startupCost)],
+            ['Risk level', path.riskLevel || 'Not set']
+          ]
+        : [
+            ['Time commitment', path.timeCommitment || 'Not set'],
+            ['Startup cost', formatCurrencyRange(path.startupCost)],
+            ['Social level', path.socialLevel || 'Not set'],
+            ['Fulfillment', path.fulfillmentLevel || 'Not set']
+          ];
+      return `
+        <article class="result-card">
+          <div class="result-card-header">
+            <div>
+              <span class="result-rank">#${rank}</span>
+              <div class="result-name" style="margin-top:10px;">${escapeHtml(path.name || 'Saved match')}</div>
+              <div class="result-category">${escapeHtml(path.category || type)}</div>
+            </div>
+            <div class="result-score">${match?.percentage != null ? `${escapeHtml(String(match.percentage))}% match` : 'Saved result'}</div>
+          </div>
+          <p class="result-description">${escapeHtml(path.description || 'Your saved result is ready inside the dashboard.')}</p>
+          <div class="result-stats">
+            ${stats.map(([label, value]) => `
+              <div class="stat">
+                <span class="stat-label">${escapeHtml(label)}</span>
+                <span class="stat-value">${escapeHtml(value)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="result-detail">
+            <strong>Who you are</strong>
+            <p>${escapeHtml(path?.detailed?.whoYouAre || 'Your detailed profile is saved with this result.')}</p>
+          </div>
+          <div class="result-detail">
+            <strong>What to do next</strong>
+            <p>${escapeHtml(path?.detailed?.whatToDo || 'Use the rest of your dashboard to decide the next move.')}</p>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderTeaserCard(match, type, rank) {
+      const path = match?.path || {};
+      return `
+        <article class="mini-card">
+          <div class="result-card-header">
+            <div>
+              <span class="result-rank">#${rank}</span>
+              <div class="result-name" style="margin-top:10px;">${escapeHtml(path.name || 'Saved match')}</div>
+              <div class="result-category">${escapeHtml(path.category || type)}</div>
+            </div>
+            <div class="result-score">${match?.percentage != null ? `${escapeHtml(String(match.percentage))}% match` : 'Saved'}</div>
+          </div>
+          <p>${escapeHtml(path.description || 'Your top signal is saved. Unlock membership to open the full roadmap and details.')}</p>
+        </article>
+      `;
+    }
+
+    function renderLatestResults(overview) {
+      const latestRun = overview?.latestRun;
+      if (!latestRun) {
+        latestResultsPanel.innerHTML = `
+          <div class="empty-state">
+            No saved quiz run exists for this account yet. Take the quiz to create your first saved signal.
+          </div>
+        `;
+        return;
+      }
+
+      const teaserCareer = Array.isArray(latestRun?.teaser?.career) ? latestRun.teaser.career : [];
+      const teaserLife = Array.isArray(latestRun?.teaser?.life) ? latestRun.teaser.life : [];
+      const fullCareer = Array.isArray(latestRun?.results?.career) ? latestRun.results.career : [];
+      const fullLife = Array.isArray(latestRun?.results?.life) ? latestRun.results.life : [];
+      const activeMember = Boolean(overview?.membership?.active);
+
+      const meta = `
+        <div class="result-meta">
+          <span>Mode: ${escapeHtml(latestRun.mode || 'unknown')}</span>
+          <span>Saved: ${escapeHtml(formatDate(latestRun.completedAt))}</span>
+          <span>Primary track: ${escapeHtml(formatRelativeTrack(overview))}</span>
+        </div>
+      `;
+
+      if (!activeMember) {
+        const cards = [
+          ...teaserCareer.map((match, index) => renderTeaserCard(match, 'career', index + 1)),
+          ...teaserLife.map((match, index) => renderTeaserCard(match, 'life', index + 1))
+        ];
+        latestResultsPanel.innerHTML = `
+          ${meta}
+          <p class="panel-copy">This is your saved preview. Membership unlocks the full result breakdown, dashboard tools, and next-step planning.</p>
+          <div class="locked-preview-grid">
+            ${cards.length ? cards.join('') : '<div class="empty-state">Your latest result is saved, but the full preview is not available yet.</div>'}
+            <article class="locked-card">
+              <div class="panel-eyebrow">Full result locked</div>
+              <h3>Unlock the full roadmap.</h3>
+              <p>Membership opens the detailed path cards, goal-setting tools, and the weekly accountability loop.</p>
+              <div class="action-row">
+                ${overview?.discord?.connected
+                  ? '<button type="button" class="btn" id="latestResultJoinBtn">Unlock full dashboard</button>'
+                  : '<button type="button" class="btn" id="latestResultDiscordBtn">Connect Discord first</button>'}
+              </div>
+            </article>
+          </div>
+        `;
+        document.getElementById('latestResultJoinBtn')?.addEventListener('click', startMembershipCheckout);
+        document.getElementById('latestResultDiscordBtn')?.addEventListener('click', connectDiscord);
+        return;
+      }
+
+      const sections = [];
+      if (fullCareer.length) {
+        sections.push(`
+          <div class="stack">
+            <div class="panel-eyebrow">Career matches</div>
+            <div class="latest-panel-grid">
+              ${fullCareer.map((match, index) => renderFullResultCard(match, 'career', index + 1)).join('')}
+            </div>
+          </div>
+        `);
+      }
+      if (fullLife.length) {
+        sections.push(`
+          <div class="stack">
+            <div class="panel-eyebrow">Life matches</div>
+            <div class="latest-panel-grid">
+              ${fullLife.map((match, index) => renderFullResultCard(match, 'life', index + 1)).join('')}
+            </div>
+          </div>
+        `);
+      }
+
+      latestResultsPanel.innerHTML = `
+        ${meta}
+        ${sections.length ? sections.join('') : '<div class="empty-state">Your latest run is saved, but no full match cards were available in this snapshot.</div>'}
+      `;
+    }
+
+    function renderGoals(overview) {
+      const activeMember = Boolean(overview?.membership?.active);
+      if (!activeMember) {
+        goalsPanel.innerHTML = `
+          <article class="locked-card">
+            <div class="panel-eyebrow">Locked preview</div>
+            <h3>Weekly goal tracking unlocks with membership.</h3>
+            <p>Once membership is active, you can save a weekly focus here and keep the coach anchored to that goal.</p>
+            <div class="action-row">
+              ${overview?.discord?.connected
+                ? '<button type="button" class="btn" id="goalsJoinBtn">Unlock goal tracking</button>'
+                : '<button type="button" class="btn" id="goalsDiscordBtn">Connect Discord first</button>'}
+            </div>
+          </article>
+        `;
+        document.getElementById('goalsJoinBtn')?.addEventListener('click', startMembershipCheckout);
+        document.getElementById('goalsDiscordBtn')?.addEventListener('click', connectDiscord);
+        return;
+      }
+
+      const goalItems = Array.isArray(overview?.goals) ? overview.goals : [];
+      goalsPanel.innerHTML = `
+        ${goalItems.length
+          ? `<div class="list-block">${goalItems.map((goal) => `
+              <article class="list-item">
+                <strong>${escapeHtml(goal.title || 'Untitled goal')}</strong>
+                <p>${escapeHtml(goal.notes || 'No extra notes yet.')}</p>
+                <div class="list-item-meta">Saved ${escapeHtml(formatDate(goal.createdAt))}</div>
+              </article>
+            `).join('')}</div>`
+          : '<div class="empty-state">No weekly goal is saved yet. Create one below to keep your next step visible.</div>'}
+        <form id="goalForm" class="panel-form">
+          <input id="goalTitle" class="form-field" type="text" maxlength="160" placeholder="Set this week's goal" required>
+          <textarea id="goalNotes" class="form-textarea" maxlength="500" placeholder="Why this matters, what it unlocks, or what constraints you are working around"></textarea>
+          <button type="submit" class="btn">Save goal</button>
+        </form>
+      `;
+      document.getElementById('goalForm')?.addEventListener('submit', saveGoal);
+    }
+
+    function renderCheckins(overview) {
+      const activeMember = Boolean(overview?.membership?.active);
+      if (!activeMember) {
+        checkinsPanel.innerHTML = `
+          <article class="locked-card">
+            <div class="panel-eyebrow">Locked preview</div>
+            <h3>Check-ins unlock with membership.</h3>
+            <p>Your dashboard becomes real when you can log what moved, what blocked you, and what to do next.</p>
+            <div class="action-row">
+              ${overview?.discord?.connected
+                ? '<button type="button" class="btn" id="checkinsJoinBtn">Unlock check-ins</button>'
+                : '<button type="button" class="btn" id="checkinsDiscordBtn">Connect Discord first</button>'}
+            </div>
+          </article>
+        `;
+        document.getElementById('checkinsJoinBtn')?.addEventListener('click', startMembershipCheckout);
+        document.getElementById('checkinsDiscordBtn')?.addEventListener('click', connectDiscord);
+        return;
+      }
+
+      const checkinItems = Array.isArray(overview?.checkIns) ? overview.checkIns : [];
+      checkinsPanel.innerHTML = `
+        ${checkinItems.length
+          ? `<div class="list-block">${checkinItems.map((item) => `
+              <article class="list-item">
+                <strong>${escapeHtml(item.summary || 'Saved check-in')}</strong>
+                <p>${escapeHtml(item.blocker || item.win || 'No extra blocker or win was added to this check-in.')}</p>
+                <div class="list-item-meta">Logged ${escapeHtml(formatDate(item.createdAt))}</div>
+              </article>
+            `).join('')}</div>`
+          : '<div class="empty-state">No check-ins yet. Log one below to keep the dashboard honest.</div>'}
+        <form id="checkinForm" class="panel-form">
+          <textarea id="checkinSummary" class="form-textarea" maxlength="600" placeholder="What moved this week, or what got in the way?" required></textarea>
+          <div class="split">
+            <input id="checkinWin" class="form-field" type="text" maxlength="300" placeholder="Small win (optional)">
+            <input id="checkinBlocker" class="form-field" type="text" maxlength="300" placeholder="Blocker (optional)">
+          </div>
+          <button type="submit" class="btn">Save check-in</button>
+        </form>
+      `;
+      document.getElementById('checkinForm')?.addEventListener('submit', saveCheckin);
+    }
+
+    async function saveGoal(event) {
+      event.preventDefault();
+      const title = document.getElementById('goalTitle')?.value?.trim();
+      const notes = document.getElementById('goalNotes')?.value?.trim() || '';
+      if (!title) return;
+      try {
+        await fetchJson(api('/api/member/goals'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            title,
+            notes,
+            track: currentOverview?.user?.primaryTrack || null
+          })
+        });
+        setBanner('Weekly goal saved.', 'success');
+        await refreshOverview();
+      } catch (err) {
+        setBanner(err.message || 'Could not save the goal right now.', 'error');
+      }
+    }
+
+    async function saveCheckin(event) {
+      event.preventDefault();
+      const summary = document.getElementById('checkinSummary')?.value?.trim();
+      const win = document.getElementById('checkinWin')?.value?.trim() || '';
+      const blocker = document.getElementById('checkinBlocker')?.value?.trim() || '';
+      if (!summary) return;
+      try {
+        await fetchJson(api('/api/member/checkins'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            summary,
+            win,
+            blocker,
+            track: currentOverview?.user?.primaryTrack || null
+          })
+        });
+        setBanner('Check-in saved.', 'success');
+        await refreshOverview();
+      } catch (err) {
+        setBanner(err.message || 'Could not save the check-in right now.', 'error');
+      }
+    }
+
+    function renderOverview(overview) {
+      currentOverview = overview;
+      setSignedInState();
+      renderHero(overview);
+      renderAccountSummary(overview);
+      renderChecklist(overview);
+      renderMembershipPanel(overview);
+      renderLatestResults(overview);
+      renderGoals(overview);
+      renderCheckins(overview);
+    }
+
+    async function refreshOverview() {
+      const overview = await loadOverview();
+      renderOverview(overview);
+    }
+
+    function cleanupTransientParams(params) {
+      const nextParams = new URLSearchParams(params);
+      ['login', 'discord', 'membership_session_id', 'membership'].forEach((key) => nextParams.delete(key));
+      const nextQuery = nextParams.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`;
+      window.history.replaceState({}, '', nextUrl);
+    }
+
+    async function initDashboard() {
+      const params = new URLSearchParams(window.location.search);
+      const loginState = params.get('login');
+      const discordState = params.get('discord');
+      const membershipState = params.get('membership');
+      const membershipSessionId = params.get('membership_session_id');
+
+      try {
+        let overview = await loadOverview();
+
+        if (membershipSessionId) {
+          await verifyMembershipSession(membershipSessionId);
+          overview = await loadOverview();
+          setBanner('Membership confirmed. Your full dashboard is now unlocked.', 'success');
+        } else if (loginState === 'success') {
+          setBanner('Sign-in complete. Welcome back to your dashboard.', 'success');
+        } else if (membershipState === 'cancelled') {
+          setBanner('Membership checkout was cancelled. Your dashboard preview is still here when you are ready.', 'warning');
+        }
+
+        if (discordState === 'connected') {
+          setBanner('Discord connected. Your dashboard now reflects the account we linked.', 'success');
+          overview = await loadOverview();
+        } else if (discordState === 'failed' || discordState === 'invalid_state') {
+          setBanner('Discord connection did not finish. You can try again from the dashboard.', 'error');
+        } else if (discordState === 'login_required') {
+          setBanner('Sign in again before finishing Discord connection.', 'warning');
+        }
+
+        renderOverview(overview);
+      } catch (err) {
+        if (err.status === 401) {
+          if (loginState === 'success' || membershipSessionId || discordState === 'connected') {
+            setBanner('This device did not keep the session after the redirect. Request a fresh sign-in link to finish here.', 'warning');
+            setSignedOutState({
+              recovery: true,
+              feedback: 'Request a new sign-in link below, then open it and tap Continue on this same device.'
+            });
+          } else if (discordState === 'login_required') {
+            setBanner('Sign in first, then restart the Discord connect flow from the dashboard.', 'warning');
+            setSignedOutState();
+          } else {
+            setSignedOutState();
+          }
+        } else {
+          setBanner(err.message || 'We could not load the dashboard right now.', 'error');
+          setSignedOutState();
+        }
+      } finally {
+        cleanupTransientParams(params);
+      }
+    }
+
+    authForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      sendMagicLink(authEmail?.value);
+    });
+
+    logoutBtn?.addEventListener('click', logout);
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

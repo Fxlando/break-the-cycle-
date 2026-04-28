@@ -286,6 +286,20 @@
       font-size: 0.9rem;
     }
 
+    .auth-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .auth-actions .btn-ghost {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
     .btn-inline {
       width: auto;
       min-width: 220px;
@@ -1164,6 +1178,8 @@
       .auth-bar { padding: 10px; border-radius: 10px; }
       .auth-bar input[type="email"] { min-width: 0; width: 100%; }
       .btn-inline { width: 100%; min-width: 0; }
+      .auth-actions { flex-direction: column; }
+      .auth-actions > * { width: 100%; }
 
       .member-panel,
       .member-dashboard {
@@ -1230,6 +1246,9 @@
         <button type="submit" class="btn btn-inline" id="authSubmit">Email me a sign-in link</button>
       </form>
       <div class="auth-status" id="authStatus">Take the quiz free. Sign in when you want to save progress, connect Discord, or join the membership.</div>
+      <div class="auth-actions hidden" id="authActions">
+        <a href="dashboard.html" id="openDashboardLink" class="btn-ghost">Open Dashboard</a>
+      </div>
     </div>
 
     <div class="progress-container" id="progressContainer" style="display: none;">
@@ -1937,6 +1956,7 @@
       <div id="lifeResults"></div>
 
       <div class="results-actions">
+        <a href="dashboard.html" id="resultsDashboardLink" class="btn-ghost hidden">Open Dashboard</a>
         <a href="index.html" class="btn back-btn">← Back to Home</a>
         <button class="btn" onclick="retakeQuiz()">Retake Quiz</button>
       </div>
@@ -1994,6 +2014,7 @@
     const authEmail = document.getElementById('authEmail');
     const authStatus = document.getElementById('authStatus');
     const authSubmit = document.getElementById('authSubmit');
+    const authActions = document.getElementById('authActions');
     const memberPrompt = document.getElementById('memberPrompt');
     const memberChip = document.getElementById('memberChip');
     const memberPromptTitle = document.getElementById('memberPromptTitle');
@@ -2028,6 +2049,7 @@
     const resultsTitleEl = document.querySelector('.results-title');
     const resultsSubtitleEl = document.getElementById('resultsSubtitle');
     const resultsActionsEl = document.querySelector('.results-actions');
+    const resultsDashboardLink = document.getElementById('resultsDashboardLink');
     const honestyPopup = document.getElementById('honestyPopup');
     const careerQuestionsEl = document.querySelector('.career-questions');
     const lifeQuestionsEl = document.querySelector('.life-questions');
@@ -2255,6 +2277,8 @@
       if (!authForm || !authStatus) return;
       if (currentUser) {
         authForm.classList.add('hidden');
+        toggleHidden(authActions, false);
+        toggleHidden(resultsDashboardLink, false);
         if (hasPaid) {
           authStatus.textContent = `Signed in as ${currentUser.email}. Dashboard unlocked${membershipState.discord?.connected ? ` and Discord is connected as ${membershipState.discord.username || 'your account'}.` : '.'}`;
         } else if (membershipState.discord?.connected) {
@@ -2264,7 +2288,9 @@
         }
       } else {
         authForm.classList.remove('hidden');
-        authStatus.textContent = message || 'Take the quiz free. Sign in when you want to save progress, return to your member area, connect Discord, or join the membership.';
+        toggleHidden(authActions, true);
+        toggleHidden(resultsDashboardLink, true);
+        authStatus.textContent = message || 'Take the quiz free. Sign in when you want to save progress, return to your dashboard, connect Discord, or join the membership.';
       }
     }
 
