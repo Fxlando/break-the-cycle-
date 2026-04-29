@@ -1,4 +1,5 @@
 require('dotenv').config();
+const stripeLib = require('stripe');
 
 const REQUIRED_KEYS = [
   'FRONTEND_URL',
@@ -48,7 +49,13 @@ function samePath(a, b) {
   return String(a || '').replace(/\/+$/, '') === String(b || '').replace(/\/+$/, '');
 }
 
-function main() {
+function getStripeKeyMode(secretKey) {
+  if (/^sk_live_/i.test(String(secretKey || ''))) return 'live';
+  if (/^sk_test_/i.test(String(secretKey || ''))) return 'test';
+  return null;
+}
+
+async function main() {
   console.log('Break the Cycle Vercel env check');
 
   const missing = REQUIRED_KEYS.filter(isMissing);
@@ -56,6 +63,9 @@ function main() {
   const redirect = summarizeUrl(getValue('DISCORD_REDIRECT_URI'));
   const externalApiOrigin = summarizeUrl(getValue('EXTERNAL_API_ORIGIN'));
   const db = summarizeUrl(getValue('DATABASE_URL'));
+  const stripeSecretKey = getValue('STRIPE_SECRET_KEY');
+  const stripePriceId = getValue('STRIPE_PRICE_ID');
+  const stripeMembershipPriceId = getValue('STRIPE_MEMBERSHIP_PRICE_ID');
   const issues = [];
   const usingExternalOrigin = externalApiOrigin.ok;
 
@@ -109,6 +119,37 @@ function main() {
     }
   }
 
+  if (!isMissing('STRIPE_MEMBERSHIP_PRICE_ID') && stripePriceId && stripeMembershipPriceId === stripePriceId) {
+    issues.push('STRIPE_MEMBERSHIP_PRICE_ID must not match STRIPE_PRICE_ID.');
+  }
+
+  if (!isMissing('STRIPE_SECRET_KEY') && !isMissing('STRIPE_MEMBERSHIP_PRICE_ID')) {
+    try {
+      const stripe = stripeLib(stripeSecretKey);
+      const price = await stripe.prices.retrieve(stripeMembershipPriceId);
+      console.log(`- STRIPE_MEMBERSHIP_PRICE_ID type: ${price.type}`);
+      console.log(`- STRIPE_MEMBERSHIP_PRICE_ID mode: ${price.livemode ? 'live' : 'test'}`);
+
+      if (!price.active) {
+        issues.push('STRIPE_MEMBERSHIP_PRICE_ID must be active.');
+      }
+      const expectedMode = getStripeKeyMode(stripeSecretKey);
+      if (expectedMode === 'live' && !price.livemode) {
+        issues.push('STRIPE_MEMBERSHIP_PRICE_ID must be a live price for the live Stripe key.');
+      } else if (expectedMode === 'test' && price.livemode) {
+        issues.push('STRIPE_MEMBERSHIP_PRICE_ID must be a test price for the test Stripe key.');
+      }
+
+      if (price.type !== 'recurring' || !price.recurring) {
+        issues.push('STRIPE_MEMBERSHIP_PRICE_ID must be a recurring monthly price.');
+      } else if (price.recurring.interval !== 'month' || Number(price.recurring.interval_count || 1) !== 1) {
+        issues.push('STRIPE_MEMBERSHIP_PRICE_ID must recur monthly.');
+      }
+    } catch (err) {
+      issues.push(`Could not load STRIPE_MEMBERSHIP_PRICE_ID from Stripe: ${err?.message || err}`);
+    }
+  }
+
   console.log('\nSummary');
   if (!issues.length) {
     console.log('- Ready: this env shape fits the Vercel web app.');
@@ -121,4 +162,7 @@ function main() {
   process.exit(1);
 }
 
-main();
+main().catch((err) => {
+  console.error(err?.message || err);
+  process.exit(1);
+});

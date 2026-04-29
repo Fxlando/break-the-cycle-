@@ -1909,7 +1909,7 @@
         </div>
         <div id="memberActions" class="member-actions">
           <button type="button" id="connectDiscordBtn" class="btn-primary hidden">Connect Discord</button>
-          <button type="button" id="memberCheckoutBtn" class="btn-primary hidden">Join for $9/month</button>
+          <button type="button" id="memberCheckoutBtn" class="btn-primary hidden">Unlock full dashboard</button>
           <button type="button" id="memberSavedResultsBtn" class="btn-ghost hidden">View saved results</button>
           <button type="button" id="memberRefreshBtn" class="btn-ghost hidden">Refresh access</button>
           <button type="button" id="billingPortalBtn" class="btn-ghost hidden">Manage membership</button>
@@ -2006,7 +2006,8 @@
       authenticated: false,
       membership: { active: false, status: 'INACTIVE' },
       discord: { connected: false },
-      primaryTrack: null
+      primaryTrack: null,
+      membershipOffer: { available: false }
     };
     let memberDashboardData = null;
     let lastResultInput = null;
@@ -2252,7 +2253,8 @@
         authenticated: false,
         membership: { active: false, status: 'INACTIVE' },
         discord: { connected: false },
-        primaryTrack: null
+        primaryTrack: null,
+        membershipOffer: { available: false }
       };
       hasPaid = false;
     }
@@ -2268,7 +2270,8 @@
         authenticated: true,
         membership: data.membership || { active: false, status: 'INACTIVE' },
         discord: data.discord || { connected: false },
-        primaryTrack: data.primaryTrack || null
+        primaryTrack: data.primaryTrack || null,
+        membershipOffer: data.membershipOffer || { available: false }
       };
       hasPaid = Boolean(membershipState.membership?.active);
     }
@@ -2307,6 +2310,14 @@
       toggleHidden(memberSavedResultsBtn, !shouldShow);
     }
 
+    function getMembershipOfferLabel(source, fallback = 'Unlock full dashboard') {
+      const offer = source?.membershipOffer;
+      if (offer?.available && offer.displayText) {
+        return `Join for ${offer.displayText}`;
+      }
+      return fallback;
+    }
+
     function renderMemberPrompt() {
       if (!memberPrompt) return;
 
@@ -2338,6 +2349,7 @@
         if (memberChip) memberChip.textContent = 'Dashboard locked';
         if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. The dashboard unlocks after membership.';
         if (memberPromptText) memberPromptText.textContent = 'Discord is connected and your account is ready. Join membership below to unlock the full roadmap, saved dashboard, weekly check-ins, and accountability layer.';
+        if (memberCheckoutBtn) memberCheckoutBtn.textContent = getMembershipOfferLabel(membershipState, 'Unlock full dashboard');
         toggleHidden(memberCheckoutBtn, false);
         toggleHidden(memberRefreshBtn, false);
         renderSavedResultsButton();

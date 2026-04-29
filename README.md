@@ -98,10 +98,12 @@ Located at top of `styles.css`:
 - **Setup**
   1) `npm install`
   2) Copy `.env.example` → `.env` and set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `FRONTEND_URL` (e.g., `http://localhost:3000`).
-  3) Optional: set `ACCESS_CODE_LENGTH` (default 10 digits).
-  4) Run `npm start` then open `http://localhost:3000/quiz.html`.
+  3) Set `STRIPE_MEMBERSHIP_PRICE_ID` to a separate recurring monthly Stripe Price ID for membership.
+  4) Optional: set `ACCESS_CODE_LENGTH` (default 10 digits).
+  5) Run `npm start` then open `http://localhost:3000/quiz.html`.
 - **Stripe tips**
-  - Create a Product/Price in Stripe; use its Price ID.
+  - `STRIPE_PRICE_ID` is for the quiz checkout.
+  - `STRIPE_MEMBERSHIP_PRICE_ID` must be a different recurring monthly price for the membership dashboard flow.
   - In Stripe Dashboard, add your `FRONTEND_URL` to allowed redirect URLs.
   - Optional: set `STRIPE_PAYMENT_LINK` to use a Stripe Payment Link when Checkout Session creation isn't available (static hosting, missing keys, etc.).
 - **Deployment**

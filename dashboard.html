@@ -917,6 +917,18 @@
       return normalized.charAt(0).toUpperCase() + normalized.slice(1);
     }
 
+    function getMembershipOffer(overview) {
+      return overview?.membershipOffer?.available ? overview.membershipOffer : null;
+    }
+
+    function getMembershipOfferLabel(overview, fallback = 'Unlock full dashboard') {
+      const offer = getMembershipOffer(overview);
+      if (offer?.displayText) {
+        return `Join for ${offer.displayText}`;
+      }
+      return fallback;
+    }
+
     function formatCurrencyRange(range, suffix = '') {
       if (!Array.isArray(range) || range.length < 2) return 'Not set';
       return `$${range[0]}-${range[1]}${suffix}`;
@@ -1138,7 +1150,7 @@
       if (!discordConnected) {
         actions.push('<button type="button" class="btn" id="connectDiscordAction">Connect Discord</button>');
       } else if (!activeMember) {
-        actions.push('<button type="button" class="btn" id="joinMembershipAction">Join for $9/month</button>');
+        actions.push(`<button type="button" class="btn" id="joinMembershipAction">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock full dashboard'))}</button>`);
       } else {
         actions.push('<button type="button" class="btn-secondary" id="manageMembershipAction">Manage membership</button>');
         if (overview?.discord?.inviteUrl) {
@@ -1185,7 +1197,7 @@
       if (!overview?.discord?.connected) {
         actions.push('<button type="button" class="btn" id="membershipDiscordBtn">Connect Discord first</button>');
       } else if (!activeMember) {
-        actions.push('<button type="button" class="btn" id="membershipCheckoutBtn">Unlock full dashboard</button>');
+        actions.push(`<button type="button" class="btn" id="membershipCheckoutBtn">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock full dashboard'))}</button>`);
       } else {
         actions.push('<button type="button" class="btn-secondary" id="membershipPortalBtn">Billing portal</button>');
       }
@@ -1301,7 +1313,7 @@
               <p>Membership opens the detailed path cards, goal-setting tools, and the weekly accountability loop.</p>
               <div class="action-row">
                 ${overview?.discord?.connected
-                  ? '<button type="button" class="btn" id="latestResultJoinBtn">Unlock full dashboard</button>'
+                  ? `<button type="button" class="btn" id="latestResultJoinBtn">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock full dashboard'))}</button>`
                   : '<button type="button" class="btn" id="latestResultDiscordBtn">Connect Discord first</button>'}
               </div>
             </article>
@@ -1350,7 +1362,7 @@
             <p>Once membership is active, you can save a weekly focus here and keep the coach anchored to that goal.</p>
             <div class="action-row">
               ${overview?.discord?.connected
-                ? '<button type="button" class="btn" id="goalsJoinBtn">Unlock goal tracking</button>'
+                ? `<button type="button" class="btn" id="goalsJoinBtn">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock goal tracking'))}</button>`
                 : '<button type="button" class="btn" id="goalsDiscordBtn">Connect Discord first</button>'}
             </div>
           </article>
@@ -1390,7 +1402,7 @@
             <p>Your dashboard becomes real when you can log what moved, what blocked you, and what to do next.</p>
             <div class="action-row">
               ${overview?.discord?.connected
-                ? '<button type="button" class="btn" id="checkinsJoinBtn">Unlock check-ins</button>'
+                ? `<button type="button" class="btn" id="checkinsJoinBtn">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock check-ins'))}</button>`
                 : '<button type="button" class="btn" id="checkinsDiscordBtn">Connect Discord first</button>'}
             </div>
           </article>

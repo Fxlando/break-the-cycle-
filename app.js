@@ -57,7 +57,7 @@ function buildApp() {
   const STRIPE_SECRET_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
   const STRIPE_ACCOUNT_ID = process.env.STRIPE_ACCOUNT_ID;
   const STRIPE_PRICE_ID = (process.env.STRIPE_PRICE_ID || '').trim();
-  const STRIPE_MEMBERSHIP_PRICE_ID = (process.env.STRIPE_MEMBERSHIP_PRICE_ID || STRIPE_PRICE_ID || '').trim();
+  const STRIPE_MEMBERSHIP_PRICE_ID = (process.env.STRIPE_MEMBERSHIP_PRICE_ID || '').trim();
   const STRIPE_PAYMENT_LINK = (process.env.STRIPE_PAYMENT_LINK || '').trim();
   const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
   const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev';
@@ -80,6 +80,7 @@ function buildApp() {
   const DB_OPERATION_TIMEOUT_MS = parseInt(process.env.DB_OPERATION_TIMEOUT_MS || '8000', 10);
   const EMAIL_SEND_TIMEOUT_MS = parseInt(process.env.EMAIL_SEND_TIMEOUT_MS || '10000', 10);
   const MEMBERSHIP_SYNC_TTL_MS = parseInt(process.env.MEMBERSHIP_SYNC_TTL_MS || '300000', 10);
+  const MEMBERSHIP_OFFER_CACHE_TTL_MS = parseInt(process.env.MEMBERSHIP_OFFER_CACHE_TTL_MS || '300000', 10);
   const DISCORD_STATE_COOKIE = 'discord_oauth_state';
   const DISCORD_STATE_TTL_MS = parseInt(process.env.DISCORD_STATE_TTL_MS || '900000', 10);
   const buildDashboardReturnUrl = (params = {}) => {
@@ -99,6 +100,152 @@ function buildApp() {
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
+  const buildMembershipOfferPayload = (overrides = {}) => ({
+    available: false,
+    priceId: STRIPE_MEMBERSHIP_PRICE_ID || null,
+    amount: null,
+    currency: null,
+    interval: null,
+    displayText: null,
+    productName: null,
+    livemode: null,
+    reason: null,
+    ...overrides
+  });
+  let membershipOfferCache = {
+    expiresAt: 0,
+    value: buildMembershipOfferPayload({ reason: 'Membership offer has not been loaded yet.' })
+  };
+  let membershipOfferPending = null;
+  const membershipOfferConfigBaseError = 'Membership checkout is not configured with a recurring monthly Stripe price yet.';
+  const getStripeKeyMode = () => {
+    if (/^sk_live_/i.test(STRIPE_SECRET_KEY)) return 'live';
+    if (/^sk_test_/i.test(STRIPE_SECRET_KEY)) return 'test';
+    return null;
+  };
+  const formatMembershipOfferDisplay = ({ amount, currency, interval }) => {
+    if (amount == null || !currency || !interval) return null;
+    if (amount === 0) return `Free/${interval}`;
+    try {
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: String(currency).toUpperCase()
+      }).format(amount / 100);
+      return `${formatted}/${interval}`;
+    } catch (_) {
+      return `${(amount / 100).toFixed(2)} ${String(currency).toUpperCase()}/${interval}`;
+    }
+  };
+  const loadMembershipOffer = async ({ force = false } = {}) => {
+    if (!force && membershipOfferCache.expiresAt > Date.now()) {
+      return membershipOfferCache.value;
+    }
+    if (!force && membershipOfferPending) {
+      return membershipOfferPending;
+    }
+
+    membershipOfferPending = (async () => {
+      let offer = buildMembershipOfferPayload({ reason: membershipOfferConfigBaseError });
+
+      if (!STRIPE) {
+        offer = buildMembershipOfferPayload({ reason: 'Stripe is not configured for membership checkout yet.' });
+      } else if (!STRIPE_MEMBERSHIP_PRICE_ID) {
+        offer = buildMembershipOfferPayload({ reason: membershipOfferConfigBaseError });
+      } else if (STRIPE_PRICE_ID && STRIPE_MEMBERSHIP_PRICE_ID === STRIPE_PRICE_ID) {
+        offer = buildMembershipOfferPayload({
+          reason: 'Membership checkout is pointed at the quiz price. Set STRIPE_MEMBERSHIP_PRICE_ID to a separate recurring monthly price.'
+        });
+      } else {
+        try {
+          const price = await STRIPE.prices.retrieve(STRIPE_MEMBERSHIP_PRICE_ID, {
+            expand: ['product']
+          });
+          const currency = String(price.currency || '').toUpperCase() || null;
+          const interval = price.recurring?.interval || null;
+          const intervalCount = Number(price.recurring?.interval_count || 1);
+          const displayText = formatMembershipOfferDisplay({
+            amount: typeof price.unit_amount === 'number' ? price.unit_amount : null,
+            currency,
+            interval: intervalCount > 1 && interval ? `${intervalCount} ${interval}s` : interval
+          });
+          const productName = typeof price.product === 'object' ? price.product?.name || null : null;
+          const expectedKeyMode = getStripeKeyMode();
+
+          offer = buildMembershipOfferPayload({
+            available: true,
+            priceId: price.id,
+            amount: typeof price.unit_amount === 'number' ? price.unit_amount : null,
+            currency,
+            interval,
+            displayText,
+            productName,
+            livemode: Boolean(price.livemode),
+            reason: null
+          });
+
+          if (!price.active) {
+            offer = buildMembershipOfferPayload({
+              priceId: price.id,
+              reason: 'Membership checkout is configured with an inactive Stripe price.'
+            });
+          } else if (expectedKeyMode === 'live' && !price.livemode) {
+            offer = buildMembershipOfferPayload({
+              priceId: price.id,
+              reason: 'Membership checkout needs a live Stripe price while the site is using a live Stripe key.'
+            });
+          } else if (expectedKeyMode === 'test' && price.livemode) {
+            offer = buildMembershipOfferPayload({
+              priceId: price.id,
+              reason: 'Membership checkout needs a test Stripe price while the site is using a test Stripe key.'
+            });
+          } else if (price.type !== 'recurring' || !price.recurring) {
+            offer = buildMembershipOfferPayload({
+              priceId: price.id,
+              amount: typeof price.unit_amount === 'number' ? price.unit_amount : null,
+              currency,
+              displayText,
+              livemode: Boolean(price.livemode),
+              productName,
+              reason: 'Membership checkout is using a one-time Stripe price. Replace it with a recurring monthly price.'
+            });
+          } else if (interval !== 'month' || intervalCount !== 1) {
+            offer = buildMembershipOfferPayload({
+              priceId: price.id,
+              amount: typeof price.unit_amount === 'number' ? price.unit_amount : null,
+              currency,
+              displayText,
+              livemode: Boolean(price.livemode),
+              productName,
+              reason: 'Membership checkout needs a monthly recurring Stripe price.'
+            });
+          }
+        } catch (err) {
+          offer = buildMembershipOfferPayload({
+            reason: `Could not load STRIPE_MEMBERSHIP_PRICE_ID from Stripe: ${err?.message || 'unknown error'}`
+          });
+        }
+      }
+
+      membershipOfferCache = {
+        expiresAt: Date.now() + MEMBERSHIP_OFFER_CACHE_TTL_MS,
+        value: offer
+      };
+      return offer;
+    })().finally(() => {
+      membershipOfferPending = null;
+    });
+
+    return membershipOfferPending;
+  };
+  if (process.env.NODE_ENV === 'production') {
+    void loadMembershipOffer().then((offer) => {
+      if (!offer.available) {
+        console.warn(`membership offer config warning: ${offer.reason || membershipOfferConfigBaseError}`);
+      }
+    }).catch((err) => {
+      console.warn('membership offer config warning', err?.message || err);
+    });
+  }
 
   const cspDirectives = {
     defaultSrc: ["'self'"],
@@ -1466,7 +1613,10 @@ function buildApp() {
 
   app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
-      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      const [membership, membershipOffer] = await Promise.all([
+        getRefreshedMembershipByUserId(req.user.id),
+        loadMembershipOffer()
+      ]);
       const discordConfig = getDiscordConfig();
       res.json({
         id: req.user.id,
@@ -1480,6 +1630,7 @@ function buildApp() {
           inviteUrl: discordConfig.inviteUrl || null
         },
         membership: membershipAccessPayload(membership),
+        membershipOffer,
         primaryTrack: req.user.primaryTrack || null
       });
     } catch (err) {
@@ -1490,7 +1641,10 @@ function buildApp() {
 
   app.get('/api/account/overview', requireAuth, async (req, res) => {
     try {
-      const membership = await getRefreshedMembershipByUserId(req.user.id);
+      const [membership, membershipOffer] = await Promise.all([
+        getRefreshedMembershipByUserId(req.user.id),
+        loadMembershipOffer()
+      ]);
       const activeMember = isMembershipActive(membership?.status);
       const snapshot = await loadMemberSnapshot(req.user.id, {
         includeFullResults: activeMember
@@ -1513,6 +1667,7 @@ function buildApp() {
           inviteUrl: discordConfig.inviteUrl || null
         },
         membership: membershipAccessPayload(membership),
+        membershipOffer,
         latestRun: snapshot.latestRun,
         goals: activeMember ? snapshot.goals : [],
         checkIns: activeMember ? snapshot.checkIns : [],
@@ -1603,16 +1758,18 @@ function buildApp() {
   });
 
   app.get('/api/membership/status', async (req, res) => {
-    if (!req.user) {
-      return res.json({
-        authenticated: false,
-        membership: membershipAccessPayload(null),
-        discord: { connected: false },
-        primaryTrack: null
-      });
-    }
-
     try {
+      const membershipOffer = await loadMembershipOffer();
+      if (!req.user) {
+        return res.json({
+          authenticated: false,
+          membership: membershipAccessPayload(null),
+          discord: { connected: false },
+          primaryTrack: null,
+          membershipOffer
+        });
+      }
+
       const membership = await getRefreshedMembershipByUserId(req.user.id);
       res.json({
         authenticated: true,
@@ -1621,7 +1778,8 @@ function buildApp() {
           connected: Boolean(req.user.discordId),
           username: req.user.discordUsername || null
         },
-        primaryTrack: req.user.primaryTrack || null
+        primaryTrack: req.user.primaryTrack || null,
+        membershipOffer
       });
     } catch (err) {
       console.error('membership status error', err);
@@ -1634,11 +1792,12 @@ function buildApp() {
       if (!req.user.discordId) {
         return res.status(400).json({ error: 'Connect Discord before starting membership checkout.' });
       }
-      if ((!STRIPE || !STRIPE_MEMBERSHIP_PRICE_ID) && STRIPE_PAYMENT_LINK) {
-        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
-      }
-      if (!STRIPE || !STRIPE_MEMBERSHIP_PRICE_ID) {
-        return res.status(500).json({ error: 'Stripe membership pricing is not configured.' });
+      const membershipOffer = await loadMembershipOffer({ force: true });
+      if (!membershipOffer.available || !STRIPE || !STRIPE_MEMBERSHIP_PRICE_ID) {
+        return res.status(503).json({
+          error: membershipOffer.reason || membershipOfferConfigBaseError,
+          membershipOffer
+        });
       }
 
       const existingMembership = await getRefreshedMembershipByUserId(req.user.id);
@@ -1668,9 +1827,6 @@ function buildApp() {
       res.json({ url: session.url });
     } catch (err) {
       console.error('membership checkout error', err);
-      if (STRIPE_PAYMENT_LINK) {
-        return res.json({ url: STRIPE_PAYMENT_LINK, source: 'payment_link' });
-      }
       res.status(500).json({ error: 'Unable to start membership checkout.' });
     }
   });
