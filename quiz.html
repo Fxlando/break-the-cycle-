@@ -489,6 +489,158 @@
       .progress-container { padding: 8px; }
       .options { gap: 6px; }
     }
+
+    /* Membership Styles */
+    .member-panel,
+    .member-dashboard {
+      background: rgba(247, 242, 232, 0.5);
+      border: 2px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin: 0 auto 22px;
+      max-width: 720px;
+    }
+
+    .member-panel .access-code-value {
+      display: none;
+    }
+
+    .member-panel-copy h3,
+    .member-form h3 {
+      font-size: 1.15rem;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .member-panel-copy p,
+    .member-status-note {
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .member-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .member-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .member-grid,
+    .member-form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .member-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .member-card,
+    .member-form {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .member-label {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .member-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .member-form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 12px;
+    }
+
+    .member-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .member-form input,
+    .member-form textarea {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .member-form input::placeholder,
+    .member-form textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .results-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: #ffffff;
+      padding: 14px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(35, 103, 242, 0.3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(35, 103, 242, 0.1);
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -1127,15 +1279,29 @@
       <h1 style="text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem;">Your Perfect Matches</h1>
       <p style="text-align: center; color: var(--text-secondary); margin-bottom: 40px; font-size: 1.05rem;" id="resultsSubtitle">Based on your answers, here are your top paths</p>
       
+      <div id="memberPrompt" class="member-panel">
+        <div class="member-panel-copy">
+          <div id="memberChip" class="member-chip">Free teaser</div>
+          <h3 id="memberPromptTitle">The first signal is free. The full reset lives inside membership.</h3>
+          <span id="accessCodeValue" class="access-code-value">••••••••••</span>
+          <p id="memberPromptText">Get the full roadmap, saved progress, Discord access, and the accountability coach that keeps your next step in front of you.</p>
+        </div>
+        <div id="memberActions" class="member-actions">
+          <button type="button" id="connectDiscordBtn" class="btn-primary hidden">Connect Discord</button>
+          <button type="button" id="memberCheckoutBtn" class="btn-primary hidden">Join for $9/month</button>
+          <button type="button" id="memberSavedResultsBtn" class="btn-ghost hidden">View saved results</button>
+          <button type="button" id="memberRefreshBtn" class="btn-ghost hidden">Refresh access</button>
+          <button type="button" id="billingPortalBtn" class="btn-ghost hidden">Manage membership</button>
+        </div>
+      </div>
+
       <div id="careerResults"></div>
       <div id="lifeResults"></div>
 
-      <div style="text-align: center; margin-top: 40px;">
-        <a href="dashboard.html" class="btn" style="background: linear-gradient(135deg, #2367f2 0%, #ff8452 100%); margin-bottom: 15px;">🚀 Join Membership & Save Progress</a>
-        <div style="margin-top: 20px;">
-          <a href="index.html" class="btn back-btn">← Back to Home</a>
-          <button class="btn" onclick="retakeQuiz()" style="margin-top: 15px;">Retake Quiz</button>
-        </div>
+      <div class="results-actions">
+        <a href="dashboard.html" id="resultsDashboardLink" class="btn hidden">Open Dashboard</a>
+        <a href="index.html" class="btn back-btn">← Back to Home</a>
+        <button class="btn" onclick="retakeQuiz()">Retake Quiz</button>
       </div>
     </div>
   </div>
@@ -1145,6 +1311,57 @@
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
+
+    // Membership state management
+    let currentUser = null;
+    let membershipState = {
+      authenticated: false,
+      membership: { active: false, status: 'INACTIVE' },
+      discord: { connected: false },
+      primaryTrack: null
+    };
+    let hasPaid = false;
+
+    // Get DOM elements
+    const memberPrompt = document.getElementById('memberPrompt');
+    const memberChip = document.getElementById('memberChip');
+    const memberPromptTitle = document.getElementById('memberPromptTitle');
+    const memberPromptText = document.getElementById('memberPromptText');
+    const memberCheckoutBtn = document.getElementById('memberCheckoutBtn');
+    const connectDiscordBtn = document.getElementById('connectDiscordBtn');
+    const memberSavedResultsBtn = document.getElementById('memberSavedResultsBtn');
+    const memberRefreshBtn = document.getElementById('memberRefreshBtn');
+    const billingPortalBtn = document.getElementById('billingPortalBtn');
+    const resultsDashboardLink = document.getElementById('resultsDashboardLink');
+
+    function toggleHidden(element, hidden) {
+      if (!element) return;
+      element.classList.toggle('hidden', Boolean(hidden));
+    }
+
+    function renderMemberPrompt() {
+      if (!memberPrompt) return;
+
+      if (!currentUser) {
+        if (memberChip) memberChip.textContent = 'Free teaser';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'The first signal is free. The full reset lives inside membership.';
+        if (memberPromptText) memberPromptText.textContent = 'Get the full roadmap, saved progress, Discord access, and the accountability coach that keeps your next step in front of you.';
+        toggleHidden(connectDiscordBtn, true);
+        toggleHidden(memberCheckoutBtn, false);
+        toggleHidden(memberSavedResultsBtn, true);
+        toggleHidden(memberRefreshBtn, true);
+        toggleHidden(billingPortalBtn, true);
+        if (memberCheckoutBtn) memberCheckoutBtn.textContent = 'Join for $9/month';
+        return;
+      }
+
+      if (memberChip) memberChip.textContent = 'Signed in';
+      if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. The dashboard unlocks after membership.';
+      if (memberPromptText) memberPromptText.textContent = 'Your account is ready. Join membership below to unlock the full roadmap, saved dashboard, and accountability layer.';
+      if (memberCheckoutBtn) memberCheckoutBtn.textContent = 'Unlock full dashboard';
+      toggleHidden(memberCheckoutBtn, false);
+      toggleHidden(resultsDashboardLink, hasPaid);
+    }
 
     function startQuiz() {
       const modeInput = document.querySelector('input[name="mode"]:checked');
@@ -1305,6 +1522,7 @@
       }
 
       document.getElementById('results').classList.add('active');
+      renderMemberPrompt();
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
