@@ -18,23 +18,23 @@
   </script>
   <style>
     :root {
-      --primary: #6366f1;
-      --primary-light: #818cf8;
-      --accent: #8b5cf6;
-      --accent-light: #a78bfa;
-      --bg-dark: #0a0a0f;
-      --bg-card: #1a1a24;
-      --bg-elevated: #23233a;
-      --text-primary: #ffffff;
-      --text-secondary: #a8a8b8;
-      --text-muted: #6b6b7b;
-      --border: #2a2a3a;
-      --border-light: #3a3a4a;
+      --primary: #2367f2;
+      --primary-light: #5c92ff;
+      --accent: #ff8452;
+      --accent-light: #ffb074;
+      --bg-dark: #f7f2e8;
+      --bg-card: #ffffff;
+      --bg-elevated: #f3f0e8;
+      --text-primary: #17324a;
+      --text-secondary: #556c84;
+      --text-muted: #7b8ea1;
+      --border: rgba(22, 50, 74, 0.1);
+      --border-light: rgba(22, 50, 74, 0.15);
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      --shadow-hover: 0 12px 40px rgba(99, 102, 241, 0.25);
+      --shadow: 0 8px 32px rgba(39, 79, 119, 0.08);
+      --shadow-hover: 0 12px 40px rgba(35, 103, 242, 0.15);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,15 +42,14 @@
     html { margin: 0; padding: 0; background: var(--bg-dark); }
     
     button, input[type="radio"] + label {
-      -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+      -webkit-tap-highlight-color: rgba(35, 103, 242, 0.1);
       touch-action: manipulation;
     }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a24 25%, #16213e 50%, #1a1a24 75%, #0a0a0f 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 5s ease infinite;
+      background: linear-gradient(180deg, #fbf7ef 0%, #eef6ff 52%, #f8f3ea 100%);
+      background-size: 100% 100%;
       color: var(--text-primary);
       min-height: 100vh;
       display: flex;
@@ -63,7 +62,7 @@
     .container {
       max-width: 800px;
       width: 100%;
-      background: var(--bg-card);
+      background: rgba(255, 255, 255, 0.95);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 30px 40px;
@@ -95,9 +94,8 @@
     .header h1 {
       font-size: 2rem;
       margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 50%, var(--primary-light) 100%);
+      background: linear-gradient(135deg, #0f3a66 0%, #1e4fb5 35%, #e67e3c 100%);
       background-size: 200% 200%;
-      animation: gradientShift 5s ease infinite;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -114,7 +112,7 @@
     .progress-container { 
       margin-bottom: 25px;
       padding: 15px;
-      background: var(--bg-elevated);
+      background: rgba(35, 103, 242, 0.05);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-light);
       flex-shrink: 0;
@@ -123,11 +121,11 @@
     .progress-bar {
       width: 100%;
       height: 8px;
-      background: var(--border);
+      background: rgba(22, 50, 74, 0.15);
       border-radius: 10px;
       overflow: hidden;
       margin-bottom: 10px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .progress-fill {
@@ -136,12 +134,12 @@
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 10px;
       width: 4%;
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 15px rgba(35, 103, 242, 0.4);
     }
 
     .progress-text { 
       text-align: center; 
-      color: var(--text-muted); 
+      color: var(--text-secondary); 
       font-size: 0.9rem;
       font-weight: 600;
     }
@@ -195,8 +193,8 @@
     }
 
     .options::-webkit-scrollbar { width: 6px; }
-    .options::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 10px; }
-    .options::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+    .options::-webkit-scrollbar-track { background: rgba(22, 50, 74, 0.05); border-radius: 10px; }
+    .options::-webkit-scrollbar-thumb { background: rgba(22, 50, 74, 0.2); border-radius: 10px; }
     .options::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
     .option { position: relative; }
@@ -205,7 +203,7 @@
     .option label {
       display: block;
       padding: 16px 20px;
-      background: var(--bg-elevated);
+      background: rgba(247, 242, 232, 0.6);
       border: 2px solid var(--border);
       border-radius: var(--radius-md);
       cursor: pointer;
@@ -232,22 +230,22 @@
     .option input[type="radio"]:checked + label::before { transform: scaleY(1); }
 
     .option input[type="radio"]:checked + label {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+      background: rgba(35, 103, 242, 0.1);
       border-color: var(--primary);
       color: var(--text-primary);
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 4px 20px rgba(35, 103, 242, 0.15);
     }
 
     .option label:hover { 
       border-color: var(--primary-light); 
-      background: rgba(99, 102, 241, 0.08);
+      background: rgba(35, 103, 242, 0.06);
     }
 
     .btn {
       width: 100%;
       padding: 15px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      color: var(--text-primary);
+      color: #ffffff;
       border: none;
       border-radius: var(--radius-md);
       font-weight: 700;
@@ -256,7 +254,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-family: inherit;
       letter-spacing: 0.02em;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 4px 20px rgba(35, 103, 242, 0.3);
       flex-shrink: 0;
     }
 
@@ -276,8 +274,8 @@
     .results.active { display: block; animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
     
     .results::-webkit-scrollbar { width: 8px; }
-    .results::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 10px; }
-    .results::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+    .results::-webkit-scrollbar-track { background: rgba(22, 50, 74, 0.05); border-radius: 10px; }
+    .results::-webkit-scrollbar-thumb { background: rgba(22, 50, 74, 0.2); border-radius: 10px; }
     .results::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     
     .results h2 { 
@@ -310,7 +308,7 @@
     }
 
     .career-path {
-      background: var(--bg-elevated);
+      background: rgba(247, 242, 232, 0.5);
       border: 2px solid var(--border-light);
       border-radius: var(--radius-lg);
       padding: 25px;
@@ -331,7 +329,7 @@
 
     .career-path.rank-1 {
       border-color: var(--primary);
-      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 8px 32px rgba(35, 103, 242, 0.2);
     }
 
     .career-path.rank-2 {
@@ -398,7 +396,7 @@
     }
 
     .stat-box {
-      background: var(--bg-card);
+      background: rgba(255, 255, 255, 0.7);
       padding: 15px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
@@ -420,7 +418,7 @@
     }
 
     .career-details {
-      background: var(--bg-card);
+      background: rgba(255, 255, 255, 0.7);
       border-radius: var(--radius-md);
       padding: 20px;
       margin-bottom: 15px;
@@ -440,9 +438,9 @@
     }
 
     .back-btn {
-      background: var(--bg-elevated);
+      background: rgba(35, 103, 242, 0.1);
       border: 2px solid var(--primary);
-      color: var(--primary-light);
+      color: var(--primary);
       margin-top: 15px;
       text-decoration: none;
       display: inline-block;
