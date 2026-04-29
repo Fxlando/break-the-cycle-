@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Break the Cycle — Discover Your Hustle Identity</title>
+  <title>Break the Cycle &mdash; Discover Your Hustle Identity</title>
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="Take the free quiz, find your next direction, and join Break the Cycle for accountability, progress, and community.">
@@ -27,11 +27,18 @@
   <!-- Header / Hero Section -->
   <header>
     <div class="hero-tagline">
-      <span class="light-word">life gets</span> <span class="dark-word">boring<span class="mobile-comma">,</span></span> <span class="dot-separator">·</span> <span class="dark-word">learn how to</span> <span class="light-word">live it</span>
+      <span class="light-word">life gets</span> <span class="dark-word">boring<span class="mobile-comma">,</span></span> <span class="dot-separator">&middot;</span> <span class="dark-word">learn how to</span> <span class="light-word">live it</span>
     </div>
     <div class="content container">
-      <a href="quiz.html" class="btn">Take the Quiz</a>
-      <button class="btn btn-secondary" id="watchVideoBtn" type="button">Watch Video</button>
+      <div class="hero-copy">
+        <p class="hero-kicker">Break the pattern. Build the next version.</p>
+        <h1>Break The Cycle</h1>
+        <p class="tagline">Escape boring. Design your future with a quiz, a next step, and a dashboard that keeps you in motion.</p>
+      </div>
+      <div class="hero-actions">
+        <a href="quiz.html" class="btn">Take the Quiz</a>
+        <button class="btn btn-secondary" id="watchVideoBtn" type="button" hidden>Watch Video</button>
+      </div>
     </div>
     <div class="wave-divider"></div>
   </header>
@@ -87,15 +94,15 @@
     <div class="testimonials">
       <div class="testimonial">
         <p>"I took the quiz just to see if i could find a new hobby. Now I'm two months deep into all this photography stuff. Who knew I would like photography."</p>
-        <cite>— Jordan, 19</cite>
+        <cite>&mdash; Jordan, 19</cite>
       </div>
       <div class="testimonial">
         <p>"Finally something that feels natural. Not generic hustle content, this feels a lot more natural."</p>
-        <cite>— Alex, 22</cite>
+        <cite>&mdash; Alex, 22</cite>
       </div>
       <div class="testimonial">
         <p>"I honestly was looking for new stuff to do cause i work fast food and things are just boring. now im a internet nerd coding whatever comes to my mind and making my own little apps lol."</p>
-        <cite>— Mya, 20</cite>
+        <cite>&mdash; Mya, 20</cite>
       </div>
     </div>
   </section>
@@ -222,10 +229,14 @@
     const videoModal = document.getElementById('videoModal');
     const closeVideoModal = document.getElementById('closeVideoModal');
     const heroVideo = document.getElementById('heroVideo');
-    const YT_URL = 'https://www.youtube.com/embed/PGmuztylEcc?autoplay=1&controls=0&modestbranding=1&rel=0&fs=0&iv_load_policy=3&playsinline=1';
+    const YT_URL = '';
+
+    if (!YT_URL && watchVideoBtn) {
+      watchVideoBtn.hidden = true;
+    }
 
     watchVideoBtn?.addEventListener('click', () => {
-      if (!videoModal) return;
+      if (!videoModal || !YT_URL) return;
       videoModal.classList.remove('closing');
       videoModal.classList.remove('hidden');
       // small delay to allow CSS transition

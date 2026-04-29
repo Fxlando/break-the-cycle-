@@ -125,7 +125,7 @@ function buildApp() {
   };
   const formatMembershipOfferDisplay = ({ amount, currency, interval }) => {
     if (amount == null || !currency || !interval) return null;
-    if (amount === 0) return `Free/${interval}`;
+    if (amount === 0) return 'Free';
     try {
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',

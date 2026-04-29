@@ -319,6 +319,32 @@
       resize: vertical;
     }
 
+    .loading-strip {
+      position: relative;
+      height: 10px;
+      margin-top: 24px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(166, 179, 225, 0.16);
+    }
+
+    .loading-strip::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -42%;
+      width: 42%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      animation: dashboardLoadingSweep 1.15s ease-in-out infinite;
+    }
+
+    @keyframes dashboardLoadingSweep {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(340%); }
+    }
+
     .auth-note,
     .form-note,
     .empty-state {
@@ -920,6 +946,13 @@
 
       <div id="statusBanner" class="status-banner hidden" role="status" aria-live="polite"></div>
 
+      <section id="dashboardLoadingPanel" class="auth-panel">
+        <div class="auth-eyebrow">Dashboard access</div>
+        <h1>Loading your dashboard.</h1>
+        <p>Checking this browser for your saved session, latest quiz signal, and account status.</p>
+        <div class="loading-strip" aria-hidden="true"></div>
+      </section>
+
       <section id="signedOutPanel" class="auth-panel hidden">
         <div class="auth-eyebrow">Dashboard access</div>
         <h1 id="signedOutTitle">Open your dashboard.</h1>
@@ -1022,6 +1055,7 @@
 
     const logoutBtn = document.getElementById('logoutBtn');
     const statusBanner = document.getElementById('statusBanner');
+    const dashboardLoadingPanel = document.getElementById('dashboardLoadingPanel');
     const signedOutPanel = document.getElementById('signedOutPanel');
     const signedInPanel = document.getElementById('signedInPanel');
     const signedOutTitle = document.getElementById('signedOutTitle');
@@ -1114,6 +1148,9 @@
 
     function getMembershipOfferLabel(overview, fallback = 'Unlock full dashboard') {
       const offer = getMembershipOffer(overview);
+      if (Number(offer?.amount) === 0 || /^free\b/i.test(String(offer?.displayText || ''))) {
+        return 'Join free';
+      }
       if (offer?.displayText) {
         return `Join for ${offer.displayText}`;
       }
@@ -1143,6 +1180,7 @@
 
     function setSignedOutState({ recovery = false, title, copy, feedback } = {}) {
       currentOverview = null;
+      toggleHidden(dashboardLoadingPanel, true);
       toggleHidden(signedInPanel, true);
       toggleHidden(signedOutPanel, false);
       toggleHidden(logoutBtn, true);
@@ -1158,6 +1196,7 @@
     }
 
     function setSignedInState() {
+      toggleHidden(dashboardLoadingPanel, true);
       toggleHidden(signedOutPanel, true);
       toggleHidden(signedInPanel, false);
       toggleHidden(logoutBtn, false);
