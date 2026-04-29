@@ -1738,6 +1738,17 @@
       window.history.replaceState({}, '', nextUrl);
     }
 
+    window.addEventListener('pageshow', (event) => {
+      if (!event.persisted) return;
+      const revalidateKey = 'btc_dashboard_bfcache_revalidate_once';
+      if (sessionStorage.getItem(revalidateKey) === '1') {
+        sessionStorage.removeItem(revalidateKey);
+        return;
+      }
+      sessionStorage.setItem(revalidateKey, '1');
+      window.location.reload();
+    });
+
     async function initDashboard() {
       const params = new URLSearchParams(window.location.search);
       const loginState = params.get('login');

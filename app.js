@@ -305,7 +305,16 @@ function buildApp() {
 
   // Serve static when running standalone; Vercel will serve statics separately
   if (!process.env.VERCEL) {
-    app.use(express.static(path.join(__dirname)));
+    app.use(express.static(path.join(__dirname), {
+      setHeaders: (res, filePath) => {
+        const normalized = String(filePath || '').replace(/\\/g, '/');
+        if (/(?:^|\/)(?:dashboard|quiz|index)\.html$/i.test(normalized)) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+      }
+    }));
   }
 
   const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
