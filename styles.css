@@ -249,13 +249,14 @@ header .content {
 }
 
 .hero-tagline span {
-  background: linear-gradient(135deg, #9EA8DC, #556270, #FF8B6B, #C08B84, #9EA8DC);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15));
-  animation: gradientFlow 30s ease-in-out infinite;
+  all: unset !important;
+  color: var(--text-primary) !important;
+  font-family: 'Bebas Neue', Impact, sans-serif !important;
+  font-size: inherit !important;
+  font-weight: 400 !important;
+  letter-spacing: inherit !important;
+  text-transform: uppercase !important;
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15)) !important;
 }
 
 @keyframes gradientFlow {
@@ -268,12 +269,11 @@ header .content {
 }
 
 .hero-tagline .dark-word {
-  animation: gradientFlow 30s ease-in-out infinite;
+  animation: none !important;
 }
 
 .hero-tagline .light-word {
-  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15)) brightness(1.2);
-  animation: gradientFlow 30s ease-in-out infinite;
+  animation: none !important;
 }
 
 .hero-tagline .mobile-comma {
@@ -293,16 +293,13 @@ h1 {
   font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 800;
   margin-bottom: var(--spacing-md);
-  background: linear-gradient(135deg, #ff6b6b, #feca57, #ee5a6f, #ff9ff3, #feca57);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  background: none;
   line-height: 1.2;
   letter-spacing: 0.02em;
-  filter: drop-shadow(0 2px 8px rgba(255, 107, 107, 0.15));
-  animation: gradientShift 6s ease infinite;
-  text-transform: uppercase;
+  filter: none;
+  animation: none;
+  text-transform: none;
   font-weight: 700;
 }
 
@@ -352,13 +349,10 @@ h1 {
   letter-spacing: 0.5px;
   margin-bottom: var(--spacing-lg);
   text-transform: uppercase;
-  background: linear-gradient(135deg, #86efac, #6ee7b7, #5eead4, #6ee7b7, #86efac, #6ee7b7);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 6px rgba(110, 231, 183, 0.15));
-  animation: gradientShift 6s ease infinite;
+  color: var(--text-primary);
+  background: none;
+  filter: none;
+  animation: none;
 }
 
 /* Buttons */
@@ -997,9 +991,36 @@ header .content::after {
 }
 
 .hero-tagline span {
-  background: linear-gradient(135deg, #2367f2, #ff8452, #ffb074, #2da873, #2367f2);
-  background-size: 300% 300%;
-  filter: none;
+  all: unset !important;
+  color: var(--text-primary) !important;
+  font-family: 'Bebas Neue', Impact, sans-serif !important;
+  font-size: inherit !important;
+  font-weight: 400 !important;
+  letter-spacing: inherit !important;
+  text-transform: uppercase !important;
+  filter: drop-shadow(0 1px 4px rgba(255, 255, 255, 0.15)) !important;
+  mix-blend-mode: lighten !important;
+  background: white !important;
+}
+
+.hero-tagline .light-word {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.hero-tagline .dark-word {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.hero-tagline .dot-separator {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.hero-tagline .mobile-comma {
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 h1 {
