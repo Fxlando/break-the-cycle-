@@ -1367,7 +1367,8 @@
       authenticated: false,
       membership: { active: false, status: 'INACTIVE' },
       discord: { connected: false },
-      primaryTrack: null
+      primaryTrack: null,
+      membershipOffer: { available: false }
     };
     let hasPaid = false;
 
@@ -1388,28 +1389,119 @@
       element.classList.toggle('hidden', Boolean(hidden));
     }
 
-    function renderMemberPrompt() {
+    function api(path) {
+      if (!path.startsWith('/')) return path;
+      return path;
+    }
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, options);
+      let payload = null;
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        payload = await response.json();
+      } else {
+        const text = await response.text();
+        payload = text ? { error: text } : null;
+      }
+
+      if (!response.ok) {
+        const error = new Error(payload?.error || `Request failed (${response.status})`);
+        error.status = response.status;
+        error.payload = payload;
+        throw error;
+      }
+
+      return payload;
+    }
+
+    function getMembershipOfferLabel(source, fallback = 'Unlock full dashboard') {
+      const offer = source?.membershipOffer;
+      if (offer?.available && offer.displayText) {
+        return `Join for ${offer.displayText}`;
+      }
+      return fallback;
+    }
+
+    function applyMembershipStatus(data) {
+      const authenticated = Boolean(data?.authenticated);
+      currentUser = authenticated ? { id: 'session', email: data?.email || '' } : null;
+      membershipState = {
+        authenticated,
+        membership: data?.membership || { active: false, status: 'INACTIVE' },
+        discord: data?.discord || { connected: false },
+        primaryTrack: data?.primaryTrack || null,
+        membershipOffer: data?.membershipOffer || { available: false }
+      };
+      hasPaid = Boolean(membershipState.membership?.active);
+    }
+
+    async function refreshMembershipStatus(message) {
+      try {
+        const status = await fetchJson(api('/api/membership/status'), {
+          method: 'GET',
+          credentials: 'include'
+        });
+        applyMembershipStatus(status);
+        renderMemberPrompt(message || '');
+      } catch (error) {
+        renderMemberPrompt(error.message || 'Unable to refresh account access right now.');
+      }
+    }
+
+    function renderMemberPrompt(statusMessage = '') {
       if (!memberPrompt) return;
 
       if (!currentUser) {
         if (memberChip) memberChip.textContent = 'Free teaser';
         if (memberPromptTitle) memberPromptTitle.textContent = 'The first signal is free. The full reset lives inside membership.';
-        if (memberPromptText) memberPromptText.textContent = 'Get the full roadmap, saved progress, Discord access, and the accountability coach that keeps your next step in front of you.';
+        if (memberPromptText) memberPromptText.textContent = statusMessage || 'Get the full roadmap, saved progress, Discord access, and the accountability coach that keeps your next step in front of you. Sign in through the dashboard to continue.';
         toggleHidden(connectDiscordBtn, true);
         toggleHidden(memberCheckoutBtn, false);
         toggleHidden(memberSavedResultsBtn, true);
-        toggleHidden(memberRefreshBtn, true);
+        toggleHidden(memberRefreshBtn, false);
         toggleHidden(billingPortalBtn, true);
         if (memberCheckoutBtn) memberCheckoutBtn.textContent = 'Unlock full dashboard';
+        toggleHidden(resultsDashboardLink, false);
         return;
       }
 
-      if (memberChip) memberChip.textContent = 'Signed in';
-      if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. The dashboard unlocks after membership.';
-      if (memberPromptText) memberPromptText.textContent = 'Your account is ready. Join membership below to unlock the full roadmap, saved dashboard, and accountability layer.';
-      if (memberCheckoutBtn) memberCheckoutBtn.textContent = 'Unlock full dashboard';
-      toggleHidden(memberCheckoutBtn, false);
-      toggleHidden(resultsDashboardLink, hasPaid);
+      if (!membershipState.discord?.connected) {
+        if (memberChip) memberChip.textContent = 'Dashboard locked';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. Step 1 is connecting Discord.';
+        if (memberPromptText) memberPromptText.textContent = statusMessage || 'Connect Discord to link your account and unlock membership checkout.';
+        toggleHidden(connectDiscordBtn, false);
+        toggleHidden(memberCheckoutBtn, true);
+        toggleHidden(memberSavedResultsBtn, true);
+        toggleHidden(memberRefreshBtn, false);
+        toggleHidden(billingPortalBtn, true);
+        toggleHidden(resultsDashboardLink, false);
+        return;
+      }
+
+      if (!hasPaid) {
+        if (memberChip) memberChip.textContent = 'Dashboard locked';
+        if (memberPromptTitle) memberPromptTitle.textContent = 'You are signed in. The dashboard unlocks after membership.';
+        if (memberPromptText) memberPromptText.textContent = statusMessage || 'Discord is connected. Start membership checkout to unlock full dashboard features.';
+        if (memberCheckoutBtn) memberCheckoutBtn.textContent = getMembershipOfferLabel(membershipState, 'Unlock full dashboard');
+        toggleHidden(connectDiscordBtn, true);
+        toggleHidden(memberCheckoutBtn, false);
+        toggleHidden(memberSavedResultsBtn, true);
+        toggleHidden(memberRefreshBtn, false);
+        toggleHidden(billingPortalBtn, true);
+        toggleHidden(resultsDashboardLink, false);
+        return;
+      }
+
+      if (memberChip) memberChip.textContent = 'Dashboard unlocked';
+      if (memberPromptTitle) memberPromptTitle.textContent = 'Your dashboard is ready.';
+      if (memberPromptText) memberPromptText.textContent = statusMessage || 'Membership is active. Open your dashboard to access the full member experience.';
+      toggleHidden(connectDiscordBtn, true);
+      toggleHidden(memberCheckoutBtn, true);
+      toggleHidden(memberSavedResultsBtn, true);
+      toggleHidden(memberRefreshBtn, false);
+      toggleHidden(billingPortalBtn, false);
+      toggleHidden(resultsDashboardLink, false);
     }
 
     function startQuiz() {
@@ -1572,7 +1664,57 @@
 
       document.getElementById('results').classList.add('active');
       renderMemberPrompt();
+      refreshMembershipStatus();
       window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    async function startDiscordConnect() {
+      try {
+        const data = await fetchJson(api('/api/discord/connect-url'), {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (!data?.url) throw new Error('Unable to start Discord connection.');
+        window.location.href = data.url;
+      } catch (error) {
+        if (memberPromptText) {
+          memberPromptText.textContent = error.message || 'Unable to start Discord connection.';
+        }
+      }
+    }
+
+    async function startMembershipCheckout() {
+      try {
+        const data = await fetchJson(api('/api/membership/create-checkout-session'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({})
+        });
+        if (!data?.url) throw new Error('Unable to start membership checkout.');
+        window.location.href = data.url;
+      } catch (error) {
+        if (memberPromptText) {
+          memberPromptText.textContent = error.message || 'Unable to start membership checkout.';
+        }
+      }
+    }
+
+    async function openBillingPortal() {
+      try {
+        const data = await fetchJson(api('/api/membership/billing-portal'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({})
+        });
+        if (!data?.url) throw new Error('Unable to open billing portal.');
+        window.location.href = data.url;
+      } catch (error) {
+        if (memberPromptText) {
+          memberPromptText.textContent = error.message || 'Unable to open billing portal.';
+        }
+      }
     }
 
     function scoreCareerPaths(answers) {
@@ -2150,6 +2292,11 @@
     function retakeQuiz() {
       location.reload();
     }
+
+    connectDiscordBtn?.addEventListener('click', startDiscordConnect);
+    memberCheckoutBtn?.addEventListener('click', startMembershipCheckout);
+    memberRefreshBtn?.addEventListener('click', () => refreshMembershipStatus('Refreshing account access...'));
+    billingPortalBtn?.addEventListener('click', openBillingPortal);
   </script>
 </body>
 </html>
