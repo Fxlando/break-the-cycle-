@@ -1684,6 +1684,10 @@
     }
 
     async function startMembershipCheckout() {
+      if (!currentUser || !membershipState?.authenticated) {
+        window.location.href = 'dashboard.html?membership=login_required';
+        return;
+      }
       try {
         const data = await fetchJson(api('/api/membership/create-checkout-session'), {
           method: 'POST',
@@ -1694,6 +1698,10 @@
         if (!data?.url) throw new Error('Unable to start membership checkout.');
         window.location.href = data.url;
       } catch (error) {
+        if (error?.status === 401) {
+          window.location.href = 'dashboard.html?membership=login_required';
+          return;
+        }
         if (memberPromptText) {
           memberPromptText.textContent = error.message || 'Unable to start membership checkout.';
         }
