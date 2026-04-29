@@ -151,6 +151,9 @@ Located at top of `styles.css`:
   - `MENTOR_PROVIDER=ollama`
   - `OLLAMA_BASE_URL=http://127.0.0.1:11434`
   - `OLLAMA_MODEL=llama3.2:3b`
+- In the Discord Developer Portal under `OAuth2`, register these redirect URIs exactly:
+  - `https://breakthecycle.network/api/discord/callback`
+  - `http://localhost:3000/api/discord/callback`
 - Install and prepare the local model:
   1. Install Ollama on the machine that will run the bot.
   2. Run `ollama pull llama3.2:3b`

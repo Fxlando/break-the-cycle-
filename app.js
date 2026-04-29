@@ -29,7 +29,8 @@ const {
   joinGuildMember,
   syncDiscordMemberRoles,
   buildDiscordAvatarUrl,
-  getDiscordConfig
+  getDiscordConfig,
+  getDiscordOAuthConfigStatus
 } = require('./discord-service');
 
 const prisma = new PrismaClient();
@@ -91,6 +92,10 @@ function buildApp() {
   };
   const DASHBOARD_RETURN = buildDashboardReturnUrl();
   const DASHBOARD_LOGIN_RETURN = buildDashboardReturnUrl({ login: 'success' });
+  const discordOAuthConfigStatus = getDiscordOAuthConfigStatus({ frontendUrl: FRONTEND_URL });
+  if (process.env.NODE_ENV === 'production' && !discordOAuthConfigStatus.ok) {
+    console.warn(`discord oauth config warning: ${discordOAuthConfigStatus.issues.join(' ')}`);
+  }
   const redactSecrets = (value) => String(value || '')
     .replace(/sk_(live|test)_[A-Za-z0-9]+/g, 'sk_$1_***')
     .replace(/rk_(live|test)_[A-Za-z0-9]+/g, 'rk_$1_***');
@@ -1524,8 +1529,16 @@ function buildApp() {
   });
 
   app.get('/api/discord/connect-url', requireAuth, async (req, res) => {
-    if (!hasDiscordOAuthConfig()) {
-      return res.status(503).json({ error: 'Discord OAuth is not configured yet.' });
+    const oauthStatus = getDiscordOAuthConfigStatus({ frontendUrl: FRONTEND_URL });
+    if (!oauthStatus.ok) {
+      const error = hasDiscordOAuthConfig()
+        ? `Discord OAuth is misconfigured. Expected callback ${oauthStatus.expectedRedirectUri}. Update the Discord app redirect URIs to match.`
+        : 'Discord OAuth is not configured yet.';
+      return res.status(503).json({
+        error,
+        expectedRedirectUri: oauthStatus.expectedRedirectUri || null,
+        actualRedirectUri: oauthStatus.actualRedirectUri || null
+      });
     }
 
     const state = randomToken();

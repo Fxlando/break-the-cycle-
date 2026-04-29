@@ -28,6 +28,60 @@ function getDiscordConfig() {
   };
 }
 
+function normalizeUrlForComparison(raw) {
+  try {
+    const url = new URL(String(raw || '').trim());
+    url.hash = '';
+    url.search = '';
+    url.pathname = url.pathname.replace(/\/+$/, '') || '/';
+    return url.toString();
+  } catch (_) {
+    return '';
+  }
+}
+
+function buildExpectedDiscordRedirectUri(frontendUrl) {
+  try {
+    const url = new URL(String(frontendUrl || '').trim());
+    url.hash = '';
+    url.search = '';
+    url.pathname = '/api/discord/callback';
+    return url.toString();
+  } catch (_) {
+    return '';
+  }
+}
+
+function getDiscordOAuthConfigStatus({ frontendUrl } = {}) {
+  const config = getDiscordConfig();
+  const missing = [];
+  if (!config.clientId) missing.push('DISCORD_CLIENT_ID');
+  if (!config.clientSecret) missing.push('DISCORD_CLIENT_SECRET');
+  if (!config.redirectUri) missing.push('DISCORD_REDIRECT_URI');
+
+  const expectedRedirectUri = buildExpectedDiscordRedirectUri(frontendUrl);
+  const actualRedirectUri = normalizeUrlForComparison(config.redirectUri);
+  const issues = [];
+
+  if (missing.length) {
+    issues.push(`Missing required Discord OAuth env: ${missing.join(', ')}`);
+  } else if (!actualRedirectUri) {
+    issues.push('DISCORD_REDIRECT_URI is invalid.');
+  }
+
+  if (expectedRedirectUri && actualRedirectUri && actualRedirectUri !== expectedRedirectUri) {
+    issues.push(`DISCORD_REDIRECT_URI should be ${expectedRedirectUri} but is ${actualRedirectUri}.`);
+  }
+
+  return {
+    ok: issues.length === 0,
+    issues,
+    missing,
+    expectedRedirectUri,
+    actualRedirectUri
+  };
+}
+
 function hasDiscordOAuthConfig() {
   const config = getDiscordConfig();
   return Boolean(config.clientId && config.clientSecret && config.redirectUri);
@@ -174,9 +228,11 @@ function buildDiscordAvatarUrl(identity) {
 
 module.exports = {
   getDiscordConfig,
+  getDiscordOAuthConfigStatus,
   hasDiscordOAuthConfig,
   hasDiscordGuildConfig,
   buildDiscordAuthUrl,
+  buildExpectedDiscordRedirectUri,
   exchangeDiscordCode,
   fetchDiscordIdentity,
   joinGuildMember,
