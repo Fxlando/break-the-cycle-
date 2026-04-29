@@ -707,6 +707,188 @@
         text-align: left;
       }
     }
+
+    /* Hopeful Momentum Reskin */
+    :root {
+      --bg: #f7f2e8;
+      --bg-panel: rgba(255, 255, 255, 0.9);
+      --bg-panel-strong: rgba(247, 251, 255, 0.98);
+      --bg-soft: rgba(35, 103, 242, 0.08);
+      --text: #17324a;
+      --text-secondary: #566c84;
+      --text-muted: #7a8ea2;
+      --border: rgba(22, 50, 74, 0.1);
+      --border-strong: rgba(22, 50, 74, 0.18);
+      --primary: #2367f2;
+      --primary-strong: #174fc7;
+      --accent: #ff8452;
+      --danger: #cf5c6d;
+      --success: #2da873;
+      --warning: #c9872f;
+      --shadow: 0 28px 72px rgba(39, 79, 119, 0.12);
+    }
+
+    html {
+      background:
+        radial-gradient(circle at top left, rgba(35, 103, 242, 0.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(255, 132, 82, 0.12), transparent 28%),
+        linear-gradient(180deg, #fbf7ef 0%, #eef6ff 52%, #f8f3ea 100%);
+    }
+
+    body {
+      color: var(--text);
+    }
+
+    .app-frame {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(247, 251, 255, 0.98) 100%);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .app-frame::before {
+      background:
+        radial-gradient(circle at 0% 0%, rgba(35, 103, 242, 0.12), transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(255, 132, 82, 0.1), transparent 24%);
+    }
+
+    .chip-link,
+    .status-pill {
+      background: rgba(255, 255, 255, 0.82);
+      border-color: rgba(22, 50, 74, 0.12);
+      color: var(--text-secondary);
+      box-shadow: 0 10px 24px rgba(39, 79, 119, 0.06);
+    }
+
+    .status-pill.active {
+      color: #226e49;
+      border-color: rgba(45, 168, 115, 0.22);
+      background: rgba(45, 168, 115, 0.1);
+    }
+
+    .status-pill.pending {
+      color: #9e6517;
+      border-color: rgba(201, 135, 47, 0.22);
+      background: rgba(255, 187, 112, 0.18);
+    }
+
+    .status-pill.off {
+      color: var(--text-muted);
+      border-color: rgba(22, 50, 74, 0.08);
+      background: rgba(234, 243, 251, 0.84);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 42%, var(--accent) 100%);
+      box-shadow: 0 16px 30px rgba(35, 103, 242, 0.18);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(22, 50, 74, 0.12);
+      box-shadow: 0 12px 24px rgba(39, 79, 119, 0.06);
+    }
+
+    .btn-ghost {
+      color: #38536f;
+      background: rgba(248, 251, 255, 0.78);
+      border: 1px dashed rgba(22, 50, 74, 0.16);
+    }
+
+    .status-banner {
+      background: rgba(255, 255, 255, 0.78);
+      border-color: rgba(22, 50, 74, 0.12);
+      color: var(--text-secondary);
+    }
+
+    .status-banner.success {
+      color: #226e49;
+      border-color: rgba(45, 168, 115, 0.22);
+      background: rgba(45, 168, 115, 0.1);
+    }
+
+    .status-banner.warning {
+      color: #9e6517;
+      border-color: rgba(201, 135, 47, 0.22);
+      background: rgba(255, 187, 112, 0.18);
+    }
+
+    .status-banner.error {
+      color: #b55464;
+      border-color: rgba(207, 92, 109, 0.22);
+      background: rgba(207, 92, 109, 0.1);
+    }
+
+    .auth-panel,
+    .panel,
+    .hero-card,
+    .summary-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 251, 255, 0.98) 100%);
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, rgba(232, 242, 255, 0.96) 0%, rgba(255, 247, 239, 0.96) 100%);
+    }
+
+    .hero-card::after {
+      background: radial-gradient(circle, rgba(255, 132, 82, 0.16) 0%, transparent 70%);
+    }
+
+    .auth-form input,
+    .form-field,
+    .form-textarea {
+      background: #ffffff;
+      border: 1px solid rgba(22, 50, 74, 0.14);
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .summary-row {
+      border-bottom: 1px solid rgba(22, 50, 74, 0.08);
+    }
+
+    .check-bullet {
+      border-color: rgba(22, 50, 74, 0.16);
+      background: #ffffff;
+    }
+
+    .check-item.done .check-bullet {
+      border-color: rgba(45, 168, 115, 0.24);
+      background: linear-gradient(135deg, rgba(45, 168, 115, 0.82), rgba(35, 103, 242, 0.7));
+    }
+
+    .result-card,
+    .locked-card,
+    .mini-card,
+    .list-item,
+    .stat,
+    .empty-state {
+      background: rgba(248, 251, 255, 0.88);
+      border: 1px solid rgba(22, 50, 74, 0.1);
+      box-shadow: 0 14px 28px rgba(39, 79, 119, 0.05);
+    }
+
+    .result-rank {
+      background: rgba(35, 103, 242, 0.1);
+      color: var(--primary-strong);
+    }
+
+    .stat {
+      background: #ffffff;
+    }
+
+    .empty-state {
+      border-style: dashed;
+      background: rgba(255, 249, 240, 0.84);
+    }
+
+    @media (max-width: 720px) {
+      .app-frame {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 251, 255, 0.98) 100%);
+      }
+    }
   </style>
 </head>
 <body>
