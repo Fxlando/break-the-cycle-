@@ -39,10 +39,10 @@
     </div>
     <div class="content container">
       <div class="hero-copy">
-        <p class="hero-kicker"><span>Feeling stuck?</span><span>Start here.</span></p>
+        <p class="hero-kicker"><span>Feeling stuck?</span><span>Start here</span></p>
         <h1 aria-label="Break The Cycle"><span aria-hidden="true">Break</span><span aria-hidden="true">The Cycle</span></h1>
         <p class="tagline">Take the quiz, find your lane, and turn your next move into something you can actually follow.</p>
-        <p class="hero-dashboard-hint">Already on the path? <a href="dashboard.html" class="hero-dashboard-link">Open your dashboard.</a></p>
+        <p class="hero-dashboard-hint">Already on the path? <a href="dashboard.html" class="hero-dashboard-link">Open your dashboard</a></p>
       </div>
       <div class="hero-actions">
         <a href="quiz.html" class="btn">Take the Quiz</a>
@@ -73,13 +73,13 @@
     <div class="steps">
       <div class="step">
         <div class="step-number">1</div>
-        <h3>Take the Quiz</h3>
+        <h3>Take The Quiz</h3>
         <p>Answer 25 simple questions to uncover your interests.</p>
       </div>
       <div class="step">
         <div class="step-number">2</div>
         <h3>See Your Signal</h3>
-        <p>Get a free teaser result based on your answers so you can see the strongest lane first.</p>
+        <p>Get a free teaser result based on your answers so you can see your potential lane first.</p>
       </div>
       <div class="step">
         <div class="step-number">3</div>
@@ -272,6 +272,83 @@
     });
   </script>
 
+  <!-- #region agent log -->
+  <script>
+    (function () {
+      var ENDPOINT = 'http://127.0.0.1:7289/ingest/ee4f95a4-ad99-4d46-acac-7ae7f786248e';
+      var SID = '28bee5';
+      function send(payload) {
+        var body = JSON.stringify(Object.assign({ sessionId: SID, timestamp: Date.now() }, payload));
+        var relay = (typeof location !== 'undefined' && location.origin)
+          ? fetch(location.origin + '/api/__debug/client-log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: body
+            }).catch(function () {})
+          : Promise.resolve();
+        relay.finally(function () {
+          fetch(ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': SID },
+            body: body
+          }).catch(function () {});
+        });
+      }
+      function snapshot(phase) {
+        var nodes = document.querySelectorAll('.hero-tagline');
+        var el = nodes[0];
+        if (!el) {
+          send({ hypothesisId: 'H2', location: 'index.html:heroTaglineDebug', message: 'no hero-tagline in DOM', data: { phase: phase, count: 0 } });
+          return;
+        }
+        var html = el.innerHTML;
+        var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        var darkWords = el.querySelectorAll('.dark-word');
+        var pseudo = [];
+        for (var i = 0; i < darkWords.length; i++) {
+          var d = darkWords[i];
+          pseudo.push({
+            index: i,
+            text: (d.textContent || '').trim(),
+            after: window.getComputedStyle(d, '::after').content,
+            before: window.getComputedStyle(d, '::before').content
+          });
+        }
+        var boringIdx = text.toLowerCase().indexOf('boring');
+        var afterBoringCodes = boringIdx >= 0 ? Array.prototype.slice.call(text, boringIdx, boringIdx + 12).map(function (ch) { return ch.charCodeAt(0); }) : [];
+        send({
+          hypothesisId: 'H1',
+          location: 'index.html:heroTaglineDebug',
+          message: 'hero-tagline DOM snapshot',
+          data: {
+            phase: phase,
+            pageHref: String(location.href || ''),
+            heroTaglineCount: nodes.length,
+            hasMobileCommaClass: html.indexOf('mobile-comma') !== -1,
+            hasAsciiCommaInHTML: html.indexOf(',') !== -1,
+            innerHTMLSnippet: html.slice(0, 500),
+            textContentNormalized: text,
+            literalCommaAfterBoringWord: /\bboring\s*,/i.test(text),
+            afterBoringCharCodes: afterBoringCodes,
+            darkWordPseudo: pseudo
+          }
+        });
+      }
+      function runBoth() {
+        snapshot('domcontentloaded');
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            snapshot('raf2');
+          });
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runBoth);
+      else runBoth();
+    })();
+  </script>
+  <!-- #endregion -->
+
 </body>
 </html>
+
 
