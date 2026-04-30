@@ -813,15 +813,16 @@ function buildApp() {
     <title>${escapeHtml(title)}</title>
     <style>
       :root {
-        color-scheme: dark;
-        --bg: #0b1020;
-        --panel: rgba(17, 24, 39, 0.92);
-        --panel-border: rgba(255, 255, 255, 0.08);
-        --text: #f8fafc;
-        --muted: #cbd5e1;
-        --button: #f8fafc;
-        --button-text: #111827;
-        --button-secondary: rgba(255, 255, 255, 0.08);
+        color-scheme: light;
+        --bg-page: #f7f2e8;
+        --panel: rgba(255, 255, 255, 0.94);
+        --panel-border: rgba(22, 50, 74, 0.12);
+        --text: #17324a;
+        --muted: #556c84;
+        --primary: #2367f2;
+        --primary-dark: #174fc7;
+        --accent: #ff8452;
+        --note-bg: rgba(35, 103, 242, 0.06);
       }
       * { box-sizing: border-box; }
       body {
@@ -832,10 +833,12 @@ function buildApp() {
         justify-content: center;
         padding: 24px;
         background:
-          radial-gradient(circle at top, rgba(99, 102, 241, 0.2), transparent 40%),
-          linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+          radial-gradient(circle at top left, rgba(35, 103, 242, 0.12), transparent 36%),
+          radial-gradient(circle at top right, rgba(255, 132, 82, 0.1), transparent 30%),
+          linear-gradient(180deg, #fbf7ef 0%, #eff7ff 48%, #f8f3ea 100%);
         color: var(--text);
-        font-family: Arial, sans-serif;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
       }
       .card {
         width: min(100%, 560px);
@@ -843,22 +846,25 @@ function buildApp() {
         border: 1px solid var(--panel-border);
         border-radius: 24px;
         padding: 32px 28px;
-        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.4);
+        box-shadow: 0 24px 60px rgba(39, 79, 119, 0.12);
       }
       .eyebrow {
         display: inline-block;
         padding: 8px 12px;
         border-radius: 999px;
-        border: 1px solid var(--panel-border);
-        color: var(--muted);
+        border: 1px solid rgba(22, 50, 74, 0.1);
+        color: var(--primary-dark);
+        background: rgba(35, 103, 242, 0.08);
         letter-spacing: 0.08em;
         text-transform: uppercase;
         font-size: 12px;
+        font-weight: 600;
       }
       h1 {
         margin: 18px 0 12px;
         font-size: clamp(28px, 4vw, 40px);
         line-height: 1.08;
+        color: var(--text);
       }
       p {
         margin: 0 0 16px;
@@ -882,21 +888,36 @@ function buildApp() {
         font-size: 15px;
         text-decoration: none;
         cursor: pointer;
+        display: inline-block;
+        text-align: center;
       }
       .btn {
-        background: var(--button);
-        color: var(--button-text);
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 45%, var(--accent) 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(35, 103, 242, 0.2);
+      }
+      .btn:hover {
+        filter: brightness(1.03);
       }
       .btn-secondary {
-        background: var(--button-secondary);
+        background: rgba(255, 255, 255, 0.85);
         color: var(--text);
+        border: 1px solid rgba(22, 50, 74, 0.14);
+        box-shadow: 0 8px 20px rgba(39, 79, 119, 0.06);
+      }
+      .btn-secondary:hover {
+        border-color: rgba(35, 103, 242, 0.28);
       }
       .note {
         margin-top: 20px;
         padding: 14px 16px;
         border-radius: 16px;
-        border: 1px solid var(--panel-border);
-        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(22, 50, 74, 0.1);
+        background: var(--note-bg);
+      }
+      .note p {
+        color: var(--muted);
+        font-size: 13px;
       }
     </style>
   </head>
