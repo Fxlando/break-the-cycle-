@@ -273,12 +273,13 @@ header .content {
   animation: none !important;
 }
 
-.hero-tagline .light-word {
-  animation: none !important;
+.hero-tagline .dark-word::before,
+.hero-tagline .dark-word::after {
+  content: none !important;
 }
 
-.hero-tagline .mobile-comma {
-  display: none;
+.hero-tagline .light-word {
+  animation: none !important;
 }
 
 @keyframes gradientShiftHorizontal {
@@ -904,10 +905,6 @@ footer p {
     display: none;
   }
   
-  .hero-tagline .mobile-comma {
-    display: inline;
-  }
-  
   section {
     padding: var(--spacing-md) var(--spacing-sm);
     margin-bottom: var(--spacing-md);
@@ -986,11 +983,8 @@ header .content::after {
 .hero-tagline .dot-separator {
   -webkit-text-fill-color: var(--text-primary) !important;
   color: var(--text-primary) !important;
-}
-
-.hero-tagline .mobile-comma {
-  -webkit-text-fill-color: var(--text-primary) !important;
-  color: var(--text-primary) !important;
+  margin-inline: 0.45em !important;
+  padding-inline: 0.2em !important;
 }
 
 h1 {
@@ -1334,6 +1328,14 @@ header .content::after {
   display: none !important;
 }
 
+.hero-tagline-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35em 0.55em;
+}
+
 .hero-tagline {
   top: clamp(14px, 3vh, 28px);
   left: 50%;
@@ -1384,7 +1386,8 @@ header .content::after {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  padding: 0 0.35em !important;
+  margin-inline: 0.55em !important;
   color: rgba(23, 65, 95, 0.62) !important;
 }
 
@@ -1473,10 +1476,6 @@ section.container {
 
   .hero-tagline .dot-separator {
     display: inline-flex;
-  }
-
-  .hero-tagline .mobile-comma {
-    display: none;
   }
 
   .hero-actions .btn {

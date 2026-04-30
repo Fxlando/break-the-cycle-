@@ -93,8 +93,26 @@
       pointer-events: none;
     }
 
+    .subscription-section-wrap {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 18px;
+    }
+
+    .subscription-callout {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(201, 135, 47, 0.35);
+      background: rgba(255, 249, 240, 0.95);
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
     .dashboard-header,
     .hero-grid,
+    .subscription-section-wrap,
     .dashboard-grid,
     .latest-panel-grid,
     .locked-preview-grid {
@@ -944,6 +962,8 @@
           </aside>
         </div>
 
+        <div id="subscriptionSection" class="subscription-section-wrap hidden" aria-hidden="true"></div>
+
         <div class="dashboard-grid">
           <section class="panel span-5">
             <div class="panel-title">
@@ -1028,6 +1048,7 @@
     const nextStepCopy = document.getElementById('nextStepCopy');
     const progressChecklist = document.getElementById('progressChecklist');
     const progressActions = document.getElementById('progressActions');
+    const subscriptionSection = document.getElementById('subscriptionSection');
     const membershipCopy = document.getElementById('membershipCopy');
     const membershipSummary = document.getElementById('membershipSummary');
     const membershipActions = document.getElementById('membershipActions');
@@ -1249,6 +1270,41 @@
       setSignedOutState();
     }
 
+    function renderSubscriptionSection(overview) {
+      if (!subscriptionSection) return;
+      const activeMember = Boolean(overview?.membership?.active);
+      if (!activeMember) {
+        subscriptionSection.innerHTML = '';
+        subscriptionSection.classList.add('hidden');
+        subscriptionSection.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      const membership = overview?.membership || {};
+      const cancelNote =
+        membership.cancelAtPeriodEnd && membership.currentPeriodEnd
+          ? `<div class="subscription-callout" role="status">Your plan is set to end on ${escapeHtml(formatDate(membership.currentPeriodEnd))}. You can change this in the billing portal.</div>`
+          : '';
+
+      subscriptionSection.innerHTML = `
+        <section class="panel subscription-panel">
+          <div class="panel-title">
+            <div>
+              <div class="panel-eyebrow">Subscription</div>
+              <h2>Manage your subscription</h2>
+            </div>
+          </div>
+          <p class="panel-copy">Update your payment method, view invoices, or cancel—handled securely through Stripe.</p>
+          ${cancelNote}
+          <div class="action-row" style="margin-top:18px;">
+            <button type="button" class="btn" id="subscriptionManageBtn">Manage subscription</button>
+          </div>
+        </section>
+      `;
+      subscriptionSection.classList.remove('hidden');
+      subscriptionSection.setAttribute('aria-hidden', 'false');
+      document.getElementById('subscriptionManageBtn')?.addEventListener('click', openBillingPortal);
+    }
+
     function renderHero(overview) {
       const activeMember = Boolean(overview?.membership?.active);
       const discordConnected = Boolean(overview?.discord?.connected);
@@ -1338,25 +1394,21 @@
         actions.push('<button type="button" class="btn" id="connectDiscordAction">Connect Discord</button>');
       } else if (!activeMember) {
         actions.push(`<button type="button" class="btn" id="joinMembershipAction">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock full dashboard'))}</button>`);
-      } else {
-        actions.push('<button type="button" class="btn-secondary" id="manageMembershipAction">Manage membership</button>');
-        if (overview?.discord?.inviteUrl) {
-          actions.push(`<a class="btn-ghost" href="${escapeHtml(overview.discord.inviteUrl)}" target="_blank" rel="noopener">Open Discord</a>`);
-        }
+      } else if (overview?.discord?.inviteUrl) {
+        actions.push(`<a class="btn-ghost" href="${escapeHtml(overview.discord.inviteUrl)}" target="_blank" rel="noopener">Open Discord</a>`);
       }
       actions.push('<a href="quiz.html" class="btn-ghost">Retake quiz</a>');
       progressActions.innerHTML = actions.join('');
 
       document.getElementById('connectDiscordAction')?.addEventListener('click', connectDiscord);
       document.getElementById('joinMembershipAction')?.addEventListener('click', startMembershipCheckout);
-      document.getElementById('manageMembershipAction')?.addEventListener('click', openBillingPortal);
     }
 
     function renderMembershipPanel(overview) {
       const membership = overview?.membership || {};
       const activeMember = Boolean(membership.active);
       membershipCopy.textContent = activeMember
-        ? 'Billing and access are active. You can manage your membership or head back into Discord from here.'
+        ? 'Billing and access are active. Use the Subscription section above to update payment or invoices; open Discord from here when you are ready.'
         : 'This dashboard preview is real, but the full planning and accountability tools stay locked until membership is active.';
 
       membershipSummary.innerHTML = `
@@ -1385,14 +1437,13 @@
         actions.push('<button type="button" class="btn" id="membershipDiscordBtn">Connect Discord first</button>');
       } else if (!activeMember) {
         actions.push(`<button type="button" class="btn" id="membershipCheckoutBtn">${escapeHtml(getMembershipOfferLabel(overview, 'Unlock full dashboard'))}</button>`);
-      } else {
-        actions.push('<button type="button" class="btn-secondary" id="membershipPortalBtn">Billing portal</button>');
+      } else if (overview?.discord?.inviteUrl) {
+        actions.push(`<a class="btn-ghost" href="${escapeHtml(overview.discord.inviteUrl)}" target="_blank" rel="noopener">Open Discord</a>`);
       }
       membershipActions.innerHTML = actions.join('');
 
       document.getElementById('membershipDiscordBtn')?.addEventListener('click', connectDiscord);
       document.getElementById('membershipCheckoutBtn')?.addEventListener('click', startMembershipCheckout);
-      document.getElementById('membershipPortalBtn')?.addEventListener('click', openBillingPortal);
     }
 
     function renderFullResultCard(match, type, rank) {
@@ -1675,6 +1726,7 @@
       setSignedInState();
       renderHero(overview);
       renderAccountSummary(overview);
+      renderSubscriptionSection(overview);
       renderChecklist(overview);
       renderMembershipPanel(overview);
       renderLatestResults(overview);
