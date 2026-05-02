@@ -9,8 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="quiz-paths.js"></script>
   <script>
-    // Save career paths before life-paths.js overwrites it
-    window.careerPaths = window.lifePaths;
+    // quiz-paths.js exports window.careerPaths directly.
   </script>
   <script src="life-paths.js"></script>
   <script>
@@ -326,15 +325,22 @@
     .results::-webkit-scrollbar-thumb { background: rgba(22, 50, 74, 0.2); border-radius: 10px; }
     .results::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     
-    .results h2 { 
-      font-size: 4rem; 
-      margin-bottom: 15px;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-      text-align: center;
+    .results-kicker {
+      display: table;
+      margin: 0 auto 12px;
+      padding: 8px 12px;
+      border: 1px solid rgba(22, 50, 74, 0.1);
+      border-radius: 999px;
+      background: rgba(35, 103, 242, 0.07);
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .section-divider {
-      margin: 40px 0 30px 0;
+      margin: 34px 0 20px 0;
       text-align: center;
       position: relative;
     }
@@ -355,134 +361,307 @@
       border-radius: 10px;
     }
 
+    .result-card-stack {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .result-support-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
     .career-path {
-      background: rgba(247, 242, 232, 0.5);
-      border: 2px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 25px;
-      margin-bottom: 25px;
+      isolation: isolate;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 255, 0.92) 100%);
+      border: 1px solid rgba(22, 50, 74, 0.1);
+      border-radius: 26px;
+      padding: 24px;
+      margin-bottom: 0;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 18px 42px rgba(39, 79, 119, 0.09);
     }
 
     .career-path::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      inset: 0;
+      z-index: -1;
+      height: auto;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(35, 103, 242, 0.13), transparent 34%),
+        radial-gradient(circle at 92% 8%, rgba(255, 132, 82, 0.12), transparent 32%);
+      pointer-events: none;
     }
 
     .career-path.rank-1 {
-      border-color: var(--primary);
-      box-shadow: 0 8px 32px rgba(35, 103, 242, 0.2);
+      border-color: rgba(35, 103, 242, 0.24);
+      padding: 28px;
+      box-shadow: 0 24px 56px rgba(35, 103, 242, 0.13);
     }
 
     .career-path.rank-2 {
-      border-color: var(--accent-light);
-      opacity: 0.95;
+      border-color: rgba(255, 132, 82, 0.18);
     }
 
-    .career-path.rank-3 { opacity: 0.9; }
+    .career-path.rank-3 {
+      border-color: rgba(22, 50, 74, 0.11);
+    }
 
-    .career-header {
+    .result-card-topline {
       display: flex;
       align-items: center;
-      margin-bottom: 15px;
-      gap: 15px;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .result-rank-badge,
+    .result-lock-state {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .result-rank-badge {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--primary) 0%, #5c92ff 46%, var(--accent) 100%);
+      box-shadow: 0 10px 24px rgba(35, 103, 242, 0.18);
+    }
+
+    .result-lock-state {
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(22, 50, 74, 0.1);
+    }
+
+    .result-lock-state.unlocked {
+      color: #226e49;
+      background: rgba(45, 168, 115, 0.1);
+      border-color: rgba(45, 168, 115, 0.2);
+    }
+
+    .career-header {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
     }
 
     .career-emoji {
-      font-size: 3rem;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      width: 64px;
+      height: 64px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(35, 103, 242, 0.14), rgba(255, 132, 82, 0.18)),
+        rgba(255, 255, 255, 0.7);
+      color: var(--primary-dark);
+      border: 1px solid rgba(22, 50, 74, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 12px 26px rgba(39, 79, 119, 0.08);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
     }
 
     .career-title { flex: 1; }
 
     .career-name {
-      font-size: 1.8rem;
-      background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--text-primary);
+      font-size: clamp(1.45rem, 4vw, 2.2rem);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 5px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      margin-bottom: 7px;
     }
 
     .career-category {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
     }
 
     .match-score {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 0.95rem;
+      min-width: 88px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: rgba(35, 103, 242, 0.08);
+      border: 1px solid rgba(35, 103, 242, 0.13);
+      color: var(--primary-dark);
+      font-weight: 900;
+      font-size: 1.2rem;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .match-score span {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-muted);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .career-description {
       color: var(--text-secondary);
       font-size: 1.05rem;
       line-height: 1.7;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .career-stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .stat-box {
-      background: rgba(255, 255, 255, 0.7);
-      padding: 15px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.76);
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(22, 50, 74, 0.09);
     }
 
     .stat-label {
       color: var(--text-muted);
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.68rem;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.07em;
       margin-bottom: 5px;
     }
 
     .stat-value {
       color: var(--text-primary);
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: 0.98rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .career-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .career-details {
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(22, 50, 74, 0.09);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 0;
     }
 
     .career-details h4 {
-      color: var(--accent-light);
-      font-size: 1.1rem;
-      margin-bottom: 12px;
-      font-weight: 700;
+      color: var(--primary-dark);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .career-details p {
       color: var(--text-secondary);
-      line-height: 1.7;
-      font-size: 0.98rem;
+      line-height: 1.6;
+      font-size: 0.94rem;
+    }
+
+    .locked-details {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(35, 103, 242, 0.24);
+      background:
+        linear-gradient(135deg, rgba(35, 103, 242, 0.07), rgba(255, 132, 82, 0.08)),
+        rgba(255, 255, 255, 0.68);
+    }
+
+    .locked-details strong {
+      color: var(--text-primary);
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .locked-details p {
+      color: var(--text-secondary);
+      font-size: 0.94rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .locked-detail-link {
+      width: fit-content;
+      color: var(--primary-dark);
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-decoration: underline;
+      text-decoration-color: rgba(35, 103, 242, 0.34);
+      text-underline-offset: 3px;
+    }
+
+    .result-card-support {
+      padding: 20px;
+    }
+
+    .result-card-support .result-card-topline {
+      margin-bottom: 14px;
+    }
+
+    .result-card-support .career-header {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .result-card-support .career-emoji {
+      width: 52px;
+      height: 52px;
+      border-radius: 17px;
+      font-size: 0.88rem;
+    }
+
+    .result-card-support .career-name {
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
+    }
+
+    .result-card-support .match-score {
+      grid-column: 1 / -1;
+      width: fit-content;
+      min-width: 0;
+      font-size: 0.95rem;
+      padding: 8px 11px;
+    }
+
+    .result-card-support .career-description {
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .result-card-support .career-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .result-card-support .career-details-grid {
+      grid-template-columns: 1fr;
     }
 
     .back-btn {
@@ -505,10 +684,11 @@
     }
 
     @media (max-width: 768px) {
+      .result-support-grid { grid-template-columns: 1fr; }
       .career-stats { grid-template-columns: 1fr 1fr; }
-      .career-emoji { font-size: 2.5rem; }
+      .career-details-grid { grid-template-columns: 1fr; }
       .career-name { font-size: 1.5rem; }
-      .match-score { font-size: 0.85rem; padding: 6px 12px; }
+      .match-score { font-size: 1rem; padding: 9px 11px; }
     }
 
     @media (max-width: 600px) {
@@ -526,8 +706,11 @@
       .option label { padding: 12px 42px 12px 14px; font-size: 0.9rem; line-height: 1.3; min-height: 44px; display: flex; align-items: center; }
       .btn { padding: 14px; font-size: 0.95rem; min-height: 48px; }
       .results { padding-right: 0; max-height: none; overflow: visible; }
-      .career-path { padding: 20px 15px; }
-      .career-header { flex-direction: column; align-items: flex-start; }
+      .career-path,
+      .career-path.rank-1 { padding: 18px; border-radius: 22px; }
+      .career-header,
+      .result-card-support .career-header { grid-template-columns: 1fr; align-items: flex-start; gap: 12px; }
+      .career-emoji { width: 54px; height: 54px; border-radius: 18px; }
       .career-stats { grid-template-columns: 1fr; gap: 10px; }
     }
     
@@ -1325,9 +1508,12 @@
     </form>
 
     <div class="results" id="results">
-      <h2>🎯</h2>
-      <h1 style="text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem;">Your Perfect Matches</h1>
-      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 40px; font-size: 1.05rem;" id="resultsSubtitle">Based on your answers, here are your top paths</p>
+      <div class="results-kicker">Your reset signal</div>
+      <h1 style="text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem;">Your Top Matches</h1>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 32px; font-size: 1.05rem;" id="resultsSubtitle">Start with the strongest signal, then compare the next two paths worth exploring.</p>
+
+      <div id="careerResults"></div>
+      <div id="lifeResults"></div>
       
       <div id="memberPrompt" class="member-panel">
         <div class="member-panel-copy">
@@ -1344,9 +1530,6 @@
           <button type="button" id="billingPortalBtn" class="btn-ghost hidden">Manage membership</button>
         </div>
       </div>
-
-      <div id="careerResults"></div>
-      <div id="lifeResults"></div>
 
       <div class="results-actions">
         <a href="dashboard.html" id="resultsDashboardLink" class="btn hidden">Open Dashboard</a>
@@ -1372,6 +1555,10 @@
       membershipOffer: { available: false }
     };
     let hasPaid = false;
+    let latestResultGroups = {
+      career: [],
+      life: []
+    };
 
     // Get DOM elements
     const memberPrompt = document.getElementById('memberPrompt');
@@ -1393,6 +1580,15 @@
     function api(path) {
       if (!path.startsWith('/')) return path;
       return path;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     async function fetchJson(url, options = {}) {
@@ -1418,6 +1614,9 @@
 
     function getMembershipOfferLabel(source, fallback = 'Unlock full dashboard') {
       const offer = source?.membershipOffer;
+      if (Number(offer?.amount) === 0 || /^free\b/i.test(String(offer?.displayText || ''))) {
+        return 'Join free';
+      }
       if (offer?.available && offer.displayText) {
         return `Join for ${offer.displayText}`;
       }
@@ -1445,6 +1644,7 @@
         });
         applyMembershipStatus(status);
         renderMemberPrompt(message || '');
+        renderResultGroups();
       } catch (error) {
         renderMemberPrompt(error.message || 'Unable to refresh account access right now.');
       }
@@ -1630,38 +1830,39 @@
       document.getElementById('quizForm').style.display = 'none';
       document.getElementById('progressContainer').style.display = 'none';
 
+      const headerTitle = document.getElementById('headerTitle');
+      const headerSubtitle = document.getElementById('headerSubtitle');
+      if (headerTitle) {
+        headerTitle.textContent = 'Your Results Are Ready';
+      }
+      if (headerSubtitle) {
+        headerSubtitle.textContent = 'Review your strongest matches, then unlock the full roadmap when you are ready.';
+      }
+
       const careerResultsDiv = document.getElementById('careerResults');
       const lifeResultsDiv = document.getElementById('lifeResults');
       careerResultsDiv.innerHTML = '';
       lifeResultsDiv.innerHTML = '';
+      latestResultGroups = {
+        career: [],
+        life: []
+      };
 
       // Score career paths if applicable
       if (quizMode === 'career' || quizMode === 'both') {
         const careerScores = scoreCareerPaths(careerAnswers);
         const top3Career = careerScores.slice(0, 3);
-        
-        if (quizMode === 'both') {
-          careerResultsDiv.innerHTML = '<div class="section-divider"><h3>🎯 Your Career Matches</h3></div>';
-        }
-        
-        top3Career.forEach((result, index) => {
-          careerResultsDiv.innerHTML += createPathHTML(result, index + 1, true);
-        });
+        latestResultGroups.career = top3Career;
       }
 
       // Score life paths if applicable
       if (quizMode === 'life' || quizMode === 'both') {
         const lifeScores = scoreLifePaths(lifeAnswers);
         const top3Life = lifeScores.slice(0, 3);
-        
-        if (quizMode === 'both') {
-          lifeResultsDiv.innerHTML = '<div class="section-divider"><h3>🌟 Your Life Fulfillment Paths</h3></div>';
-        }
-        
-        top3Life.forEach((result, index) => {
-          lifeResultsDiv.innerHTML += createPathHTML(result, index + 1, false);
-        });
+        latestResultGroups.life = top3Life;
       }
+
+      renderResultGroups();
 
       document.getElementById('results').classList.add('active');
       renderMemberPrompt();
@@ -2262,39 +2463,126 @@
       return scores;
     }
 
-    function createPathHTML(result, rank, isCareer) {
-      const path = result.path;
-      const stats = isCareer ? 
-        `<div class="stat-box"><div class="stat-label">Income Range</div><div class="stat-value">$${Math.floor(path.incomeRange[0]/1000)}-${Math.floor(path.incomeRange[1]/1000)}k/yr</div></div>
-         <div class="stat-box"><div class="stat-label">Time to Profit</div><div class="stat-value">${path.timeToProfit}</div></div>
-         <div class="stat-box"><div class="stat-label">Startup Cost</div><div class="stat-value">$${path.startupCost[0]}-${path.startupCost[1]}</div></div>
-         <div class="stat-box"><div class="stat-label">Risk Level</div><div class="stat-value">${path.riskLevel}</div></div>` :
-        `<div class="stat-box"><div class="stat-label">Time Commitment</div><div class="stat-value">${path.timeCommitment}</div></div>
-         <div class="stat-box"><div class="stat-label">Startup Cost</div><div class="stat-value">$${path.startupCost[0]}-${path.startupCost[1]}</div></div>
-         <div class="stat-box"><div class="stat-label">Social Level</div><div class="stat-value">${path.socialLevel}</div></div>
-         <div class="stat-box"><div class="stat-label">Fulfillment</div><div class="stat-value">${path.fulfillmentLevel}</div></div>`;
+    function renderResultGroups() {
+      const careerResultsDiv = document.getElementById('careerResults');
+      const lifeResultsDiv = document.getElementById('lifeResults');
+      if (!careerResultsDiv || !lifeResultsDiv) return;
+
+      careerResultsDiv.innerHTML = renderResultSection(latestResultGroups.career, true, 'Career Matches');
+      lifeResultsDiv.innerHTML = renderResultSection(latestResultGroups.life, false, 'Life Fulfillment Paths');
+    }
+
+    function renderResultSection(results, isCareer, title) {
+      if (!Array.isArray(results) || !results.length) return '';
+      const divider = quizMode === 'both'
+        ? `<div class="section-divider"><h3>${escapeHtml(title)}</h3></div>`
+        : '';
+      const [primaryResult, ...supportResults] = results;
+      const supportHtml = supportResults.length
+        ? `<div class="result-support-grid">${supportResults.map((result, index) => createPathHTML(result, index + 2, isCareer)).join('')}</div>`
+        : '';
 
       return `
-        <div class="career-path rank-${rank}">
-          <div class="career-header">
-            <div class="career-emoji">${path.emoji}</div>
-            <div class="career-title">
-              <div class="career-name">#${rank} ${path.name}</div>
-              <div class="career-category">${path.category}</div>
-            </div>
-            <div class="match-score">${result.percentage}% Match</div>
-          </div>
-          <div class="career-description">${path.description}</div>
-          <div class="career-stats">${stats}</div>
-          <div class="career-details">
-            <h4>Who You Are</h4>
-            <p>${path.detailed.whoYouAre}</p>
-          </div>
-          <div class="career-details">
-            <h4>What To Do</h4>
-            <p>${path.detailed.whatToDo}</p>
-          </div>
+        ${divider}
+        <div class="result-card-stack">
+          ${createPathHTML(primaryResult, 1, isCareer)}
+          ${supportHtml}
         </div>
+      `;
+    }
+
+    function formatMoneyRange(range) {
+      if (!Array.isArray(range) || range.length < 2) return 'Not set';
+      const [min, max] = range;
+      if (Number(min) === 0 && Number(max) === 0) return '$0';
+      return `$${Number(min || 0).toLocaleString()}-${Number(max || 0).toLocaleString()}`;
+    }
+
+    function formatIncomeRange(range) {
+      if (!Array.isArray(range) || range.length < 2) return 'Not set';
+      return `$${Math.floor(Number(range[0] || 0) / 1000)}k-$${Math.floor(Number(range[1] || 0) / 1000)}k`;
+    }
+
+    function getCategoryMark(category) {
+      const words = String(category || 'BT')
+        .split(/[\s/&+-]+/)
+        .filter(Boolean);
+      return words.slice(0, 2).map((word) => word.charAt(0).toUpperCase()).join('') || 'BT';
+    }
+
+    function getRankLabel(rank) {
+      if (rank === 1) return 'Best Match';
+      if (rank === 2) return 'Strong Option';
+      return 'Worth Exploring';
+    }
+
+    function createMetricHTML(label, value) {
+      return `
+        <div class="stat-box">
+          <div class="stat-label">${escapeHtml(label)}</div>
+          <div class="stat-value">${escapeHtml(value)}</div>
+        </div>
+      `;
+    }
+
+    function createPathHTML(result, rank, isCareer) {
+      const path = result.path;
+      const metrics = isCareer
+        ? [
+            ['Income', formatIncomeRange(path.incomeRange)],
+            ['Timeline', path.timeToProfit],
+            ['Startup', formatMoneyRange(path.startupCost)],
+            ['Risk', path.riskLevel]
+          ]
+        : [
+            ['Time', path.timeCommitment],
+            ['Startup', formatMoneyRange(path.startupCost)],
+            ['Social', path.socialLevel],
+            ['Fulfillment', path.fulfillmentLevel]
+          ];
+      const stats = metrics.map(([label, value]) => createMetricHTML(label, value)).join('');
+      const unlocked = Boolean(hasPaid);
+      const cardRole = rank === 1 ? 'result-card-primary' : 'result-card-support';
+      const details = path.detailed || {};
+      const detailHtml = unlocked
+        ? `
+          <div class="career-details-grid">
+            <div class="career-details">
+              <h4>Who You Are</h4>
+              <p>${escapeHtml(details.whoYouAre || 'Your full fit breakdown is ready in membership.')}</p>
+            </div>
+            <div class="career-details">
+              <h4>What To Do</h4>
+              <p>${escapeHtml(details.whatToDo || 'Your next-step roadmap is ready in membership.')}</p>
+            </div>
+          </div>
+        `
+        : `
+          <div class="locked-details">
+            <strong>Full roadmap locked</strong>
+            <p>Unlock membership to see why this fits you, what to do first, and how to turn this match into a real plan.</p>
+            <a class="locked-detail-link" href="#memberPrompt">Unlock the full breakdown</a>
+          </div>
+        `;
+
+      return `
+        <article class="career-path ${cardRole} rank-${rank} ${unlocked ? 'is-unlocked' : 'is-locked'}">
+          <div class="result-card-topline">
+            <div class="result-rank-badge">${escapeHtml(getRankLabel(rank))}</div>
+            <div class="result-lock-state ${unlocked ? 'unlocked' : ''}">${unlocked ? 'Unlocked' : 'Teaser'}</div>
+          </div>
+          <div class="career-header">
+            <div class="career-emoji" aria-hidden="true">${escapeHtml(getCategoryMark(path.category))}</div>
+            <div class="career-title">
+              <div class="career-name">${escapeHtml(path.name)}</div>
+              <div class="career-category">${escapeHtml(path.category)}</div>
+            </div>
+            <div class="match-score">${escapeHtml(result.percentage)}%<span>Match</span></div>
+          </div>
+          <div class="career-description">${escapeHtml(path.description)}</div>
+          <div class="career-stats">${stats}</div>
+          ${detailHtml}
+        </article>
       `;
     }
 
