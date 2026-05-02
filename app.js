@@ -802,7 +802,6 @@ function buildApp() {
     bodyHtml = '',
     submitLabel = '',
     token = '',
-    statusCode = 200,
     secondaryLabel = 'Back to Break The Cycle',
     secondaryHref = DASHBOARD_RETURN
   }) => `<!DOCTYPE html>
@@ -822,7 +821,6 @@ function buildApp() {
         --primary: #2367f2;
         --primary-dark: #174fc7;
         --accent: #ff8452;
-        --note-bg: rgba(35, 103, 242, 0.06);
       }
       * { box-sizing: border-box; }
       body {
@@ -908,17 +906,6 @@ function buildApp() {
       .btn-secondary:hover {
         border-color: rgba(35, 103, 242, 0.28);
       }
-      .note {
-        margin-top: 20px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        border: 1px solid rgba(22, 50, 74, 0.1);
-        background: var(--note-bg);
-      }
-      .note p {
-        color: var(--muted);
-        font-size: 13px;
-      }
     </style>
   </head>
   <body>
@@ -935,9 +922,6 @@ function buildApp() {
           </form>
         ` : ''}
         <a class="btn-secondary" href="${escapeHtml(secondaryHref)}">${escapeHtml(secondaryLabel)}</a>
-      </div>
-      <div class="note">
-        <p style="margin:0;">Status: ${escapeHtml(String(statusCode))}</p>
       </div>
     </main>
   </body>
