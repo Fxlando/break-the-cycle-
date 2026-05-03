@@ -1326,41 +1326,6 @@ header .content::after {
   z-index: 12;
 }
 
-header .content .hero-actions .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: clamp(240px, 22vw, 300px);
-  min-height: 64px;
-  padding: 1.05rem 2.4rem;
-  border-radius: 999px;
-  font-family: 'Space Grotesk', 'Inter Tight', sans-serif;
-  font-size: clamp(1.05rem, 1.5vw, 1.22rem);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  background: linear-gradient(140deg, #1d5fe6 0%, #4281ff 36%, #7887ec 66%, #ff895c 100%);
-  box-shadow:
-    0 18px 42px rgba(35, 103, 242, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  text-shadow: 0 1px 10px rgba(18, 42, 63, 0.24);
-}
-
-header .content .hero-actions .btn:hover,
-header .content .hero-actions .btn:focus-visible {
-  background: linear-gradient(140deg, #174fc9 0%, #3e74f3 34%, #6d7fe3 62%, #ff8352 100%);
-  box-shadow:
-    0 20px 44px rgba(35, 103, 242, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-header .content .hero-actions .btn:active {
-  background: linear-gradient(140deg, #1647b9 0%, #3368dc 34%, #636fd4 60%, #f07949 100%);
-  box-shadow:
-    0 12px 28px rgba(35, 103, 242, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}
-
 #watchVideoBtn[hidden] {
   display: none !important;
 }
@@ -1523,18 +1488,32 @@ section.container {
     display: inline-flex;
   }
 
-  header .content .hero-actions .btn {
-    width: min(100%, 304px);
-    min-width: 0;
-    min-height: 66px;
-    padding: 1.08rem 1.5rem;
-    border-radius: 30px;
+  .hero-actions .btn {
+    width: min(100%, 330px);
     touch-action: manipulation;
     position: relative;
     z-index: 1;
+    background: linear-gradient(140deg, #1e5fe6 0%, #3f7fff 38%, #6f84ee 64%, #ff8c5f 100%);
     box-shadow:
-      0 18px 38px rgba(35, 103, 242, 0.24),
+      0 16px 34px rgba(35, 103, 242, 0.24),
       inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    text-shadow: 0 1px 10px rgba(18, 42, 63, 0.24);
+  }
+
+  .hero-actions .btn:hover,
+  .hero-actions .btn:focus-visible {
+    background: linear-gradient(140deg, #184fc9 0%, #3a74ee 36%, #6f7de3 62%, #ff8452 100%);
+    box-shadow:
+      0 18px 38px rgba(35, 103, 242, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  .hero-actions .btn:active {
+    background: linear-gradient(140deg, #1748b8 0%, #3269db 34%, #636fd4 60%, #f17b49 100%);
+    box-shadow:
+      0 10px 24px rgba(35, 103, 242, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
   }
 
   section.container {
