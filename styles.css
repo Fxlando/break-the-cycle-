@@ -1294,7 +1294,7 @@ header .content::after {
 }
 
 .hero-dashboard-hint {
-  margin: 0.9rem auto 0;
+  margin: 1.6rem auto 0;
   max-width: 610px;
   text-align: center;
   font-size: clamp(0.88rem, 1.35vw, 1rem);
@@ -1453,7 +1453,7 @@ section.container {
   }
 
   .hero-dashboard-hint {
-    margin-top: 0.85rem;
+    margin-top: 1.35rem;
     width: min(100%, 340px);
     padding: 0 6px;
     font-size: 0.88rem;
