@@ -1205,7 +1205,7 @@ header .content::after {
   position: relative;
   isolation: isolate;
   width: min(900px, 94vw);
-  padding: clamp(24px, 3.6vw, 34px) 0;
+  padding: clamp(28px, 4vw, 40px) 0;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -1233,7 +1233,7 @@ header .content::after {
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.42rem;
-  margin: 0 0 0.85rem;
+  margin: 0 0 1.15rem;
   padding: 0.5rem 0.8rem;
   color: #174fc7;
   font: 800 clamp(0.78rem, 1.5vw, 0.95rem) 'Inter Tight', sans-serif;
@@ -1280,7 +1280,7 @@ header .content::after {
 
 .hero-copy .tagline {
   max-width: 610px;
-  margin: 1.45rem auto 0;
+  margin: 1.75rem auto 0;
   padding: 0.82rem 1.1rem;
   color: #244d6c;
   font-size: clamp(1rem, 1.8vw, 1.22rem);
@@ -1427,7 +1427,7 @@ section.container {
 
   .hero-copy {
     width: 100%;
-    padding: 18px 0 12px;
+    padding: 22px 0 16px;
   }
 
   .hero-copy::before {
@@ -1443,7 +1443,7 @@ section.container {
 
   .hero-copy .tagline {
     width: min(100%, 340px);
-    margin-top: 1.2rem;
+    margin-top: 1.35rem;
     padding: 0.76rem 0.88rem;
     font-size: 0.96rem;
     line-height: 1.45;
@@ -1459,7 +1459,7 @@ section.container {
 
   .hero-kicker {
     max-width: 96%;
-    margin-bottom: 0.78rem;
+    margin-bottom: 0.95rem;
     padding: 0.46rem 0.62rem;
     font-size: 0.72rem;
     letter-spacing: 0.08em;
