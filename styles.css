@@ -1189,7 +1189,7 @@ header {
 header .content {
   min-height: clamp(500px, 64vh, 660px);
   padding-top: clamp(68px, 10vh, 96px);
-  gap: 22px;
+  gap: 28px;
 }
 
 header::after {
@@ -1205,7 +1205,7 @@ header .content::after {
   position: relative;
   isolation: isolate;
   width: min(900px, 94vw);
-  padding: clamp(18px, 3vw, 28px) 0;
+  padding: clamp(24px, 3.6vw, 34px) 0;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -1233,7 +1233,7 @@ header .content::after {
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.42rem;
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.85rem;
   padding: 0.5rem 0.8rem;
   color: #174fc7;
   font: 800 clamp(0.78rem, 1.5vw, 0.95rem) 'Inter Tight', sans-serif;
@@ -1280,7 +1280,7 @@ header .content::after {
 
 .hero-copy .tagline {
   max-width: 610px;
-  margin: 1.15rem auto 0;
+  margin: 1.45rem auto 0;
   padding: 0.82rem 1.1rem;
   color: #244d6c;
   font-size: clamp(1rem, 1.8vw, 1.22rem);
@@ -1293,7 +1293,7 @@ header .content::after {
 }
 
 .hero-dashboard-hint {
-  margin: 0.65rem auto 0;
+  margin: 0.9rem auto 0;
   max-width: 610px;
   text-align: center;
   font-size: clamp(0.88rem, 1.35vw, 1rem);
@@ -1319,6 +1319,7 @@ header .content::after {
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 0.35rem;
   width: 100%;
   position: relative;
   z-index: 12;
@@ -1414,19 +1415,19 @@ section.container {
 @media (max-width: 768px) {
   header {
     min-height: auto;
-    padding: 78px 16px 44px;
+    padding: 86px 16px 52px;
     margin-bottom: 28px;
   }
 
   header .content {
     min-height: auto;
     padding-top: 0;
-    gap: 18px;
+    gap: 24px;
   }
 
   .hero-copy {
     width: 100%;
-    padding: 14px 0 8px;
+    padding: 18px 0 12px;
   }
 
   .hero-copy::before {
@@ -1442,6 +1443,7 @@ section.container {
 
   .hero-copy .tagline {
     width: min(100%, 340px);
+    margin-top: 1.2rem;
     padding: 0.76rem 0.88rem;
     font-size: 0.96rem;
     line-height: 1.45;
@@ -1449,6 +1451,7 @@ section.container {
   }
 
   .hero-dashboard-hint {
+    margin-top: 0.85rem;
     width: min(100%, 340px);
     padding: 0 6px;
     font-size: 0.88rem;
@@ -1456,9 +1459,14 @@ section.container {
 
   .hero-kicker {
     max-width: 96%;
+    margin-bottom: 0.78rem;
     padding: 0.46rem 0.62rem;
     font-size: 0.72rem;
     letter-spacing: 0.08em;
+  }
+
+  .hero-actions {
+    margin-top: 0.45rem;
   }
 
   .hero-tagline {
