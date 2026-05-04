@@ -342,19 +342,24 @@
 
     .mode-option-title::before {
       content: '';
-      width: 15px;
-      height: 15px;
-      flex: 0 0 15px;
-      border: 1.5px solid rgba(22, 50, 74, 0.22);
-      background: linear-gradient(135deg, rgba(35, 103, 242, 0.16), rgba(255, 132, 82, 0.12));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-      transform-origin: center;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      border: 1px solid rgba(22, 50, 74, 0.16);
+      border-radius: 6px;
+      background:
+        linear-gradient(135deg, rgba(35, 103, 242, 0.12), rgba(255, 132, 82, 0.08)),
+        var(--mode-symbol);
+      background-repeat: no-repeat, no-repeat;
+      background-position: center, center;
+      background-size: 100% 100%, 12px 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
     }
 
     .mode-option-detail {
       display: block;
       margin-top: 6px;
-      padding-left: 25px;
+      padding-left: 28px;
       max-width: 31ch;
       color: rgba(22, 50, 74, 0.72);
       font-size: 0.88rem;
@@ -372,17 +377,15 @@
     }
 
     #mode_career + label .mode-option-title::before {
-      border-radius: 4px;
+      --mode-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4.5 11.5L11.5 4.5M8.5 4.5h3v3' stroke='%2323466d' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
 
     #mode_life + label .mode-option-title::before {
-      border-radius: 999px;
-      background: radial-gradient(circle at center, rgba(35, 103, 242, 0.26) 0 32%, rgba(255, 132, 82, 0.1) 33% 100%);
+      --mode-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 10.5a4 4 0 118 0M3 12.5h10M8 4.5v2M5.5 7L6.5 8M10.5 7L9.5 8' stroke='%2323466d' stroke-width='1.45' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
 
     #mode_both + label .mode-option-title::before {
-      border-radius: 4px;
-      transform: rotate(45deg);
+      --mode-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4.5 3.75v8.5M4.5 8h4M8.5 8l3-3M8.5 8l3 3' stroke='%2323466d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
 
     .option label::before {
@@ -430,14 +433,15 @@
     }
 
     #mode_career:checked + label .mode-option-title::before,
+    #mode_life:checked + label .mode-option-title::before,
     #mode_both:checked + label .mode-option-title::before {
-      border-color: rgba(35, 103, 242, 0.26);
-      background: linear-gradient(135deg, rgba(35, 103, 242, 0.28), rgba(255, 132, 82, 0.2));
-    }
-
-    #mode_life:checked + label .mode-option-title::before {
-      border-color: rgba(35, 103, 242, 0.26);
-      background: radial-gradient(circle at center, rgba(35, 103, 242, 0.42) 0 30%, rgba(255, 132, 82, 0.18) 31% 100%);
+      border-color: rgba(35, 103, 242, 0.24);
+      background:
+        linear-gradient(135deg, rgba(35, 103, 242, 0.24), rgba(255, 132, 82, 0.18)),
+        var(--mode-symbol);
+      background-repeat: no-repeat, no-repeat;
+      background-position: center, center;
+      background-size: 100% 100%, 12px 12px;
     }
 
     .option input[type="radio"]:focus-visible + label {
