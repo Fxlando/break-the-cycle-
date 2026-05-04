@@ -434,9 +434,11 @@
     }
 
     .option input[type="radio"]:checked + label::after {
-      background: conic-gradient(from 220deg, var(--primary) 0deg, #6d7ef5 140deg, var(--accent) 315deg, var(--primary) 360deg);
-      border-color: transparent;
-      box-shadow: 0 0 0 5px rgba(35, 103, 242, 0.12);
+      background: var(--primary);
+      border-color: rgba(255, 132, 82, 0.72);
+      box-shadow:
+        0 0 0 5px rgba(35, 103, 242, 0.12),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.7);
     }
 
     .option input[type="radio"]:checked + label {
