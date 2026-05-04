@@ -163,9 +163,122 @@
       animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
     }
 
+    .results-loading {
+      display: none;
+      min-height: 380px;
+      place-items: center;
+      animation: fadeInUp 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .results-loading.active {
+      display: grid;
+    }
+
+    .results-loading-card {
+      width: min(100%, 560px);
+      padding: clamp(26px, 5vw, 42px);
+      border: 1px solid rgba(22, 50, 74, 0.1);
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92)),
+        radial-gradient(circle at top left, rgba(35, 103, 242, 0.12), transparent 36%),
+        radial-gradient(circle at bottom right, rgba(255, 132, 82, 0.14), transparent 38%);
+      box-shadow: 0 24px 58px rgba(39, 79, 119, 0.12);
+      text-align: center;
+    }
+
+    .results-loading-kicker {
+      display: inline-flex;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      border: 1px solid rgba(35, 103, 242, 0.14);
+      border-radius: 999px;
+      background: rgba(35, 103, 242, 0.07);
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .results-loading h2 {
+      margin: 0 0 12px;
+      color: var(--text-primary);
+      font-size: clamp(1.75rem, 5vw, 2.35rem);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+
+    .results-loading p {
+      margin: 0 auto;
+      max-width: 430px;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .loading-progress {
+      position: relative;
+      width: min(100%, 360px);
+      height: 10px;
+      margin: 28px auto 16px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(22, 50, 74, 0.08);
+    }
+
+    .loading-progress::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 42%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      animation: loadingSweep 1.1s ease-in-out infinite;
+    }
+
+    .loading-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .loading-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      animation: loadingPulse 1.1s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: 0.14s;
+    }
+
+    .loading-dot:nth-child(3) {
+      animation-delay: 0.28s;
+    }
+
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes loadingSweep {
+      0% { transform: translateX(-115%); }
+      50% { transform: translateX(72%); }
+      100% { transform: translateX(240%); }
+    }
+
+    @keyframes loadingPulse {
+      0%, 100% { transform: scale(0.75); opacity: 0.45; }
+      50% { transform: scale(1); opacity: 1; }
     }
     
     @keyframes gradientShift {
@@ -1507,6 +1620,21 @@
       </div>
     </form>
 
+    <div class="results-loading" id="resultsLoading" aria-live="polite" aria-busy="true">
+      <div class="results-loading-card">
+        <div class="results-loading-kicker">Matching in progress</div>
+        <h2>Finding your strongest matches</h2>
+        <p>Comparing your answers across the paths that fit your next move.</p>
+        <div class="loading-progress" aria-hidden="true"></div>
+        <div class="loading-status">
+          <span>Building your top three...</span>
+          <span class="loading-dot" aria-hidden="true"></span>
+          <span class="loading-dot" aria-hidden="true"></span>
+          <span class="loading-dot" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="results" id="results">
       <div class="results-kicker">Your reset path</div>
       <h1 style="text-align: center; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2rem;">Your Top Matches</h1>
@@ -1571,6 +1699,8 @@
     const memberRefreshBtn = document.getElementById('memberRefreshBtn');
     const billingPortalBtn = document.getElementById('billingPortalBtn');
     const resultsDashboardLink = document.getElementById('resultsDashboardLink');
+    const resultsLoading = document.getElementById('resultsLoading');
+    let resultsLoadingTimer = null;
 
     function toggleHidden(element, hidden) {
       if (!element) return;
@@ -1803,6 +1933,7 @@
 
     function submitQuiz(event) {
       if (event) event.preventDefault();
+      if (resultsLoadingTimer) return;
 
       // Collect answers based on mode
       let careerAnswers = {};
@@ -1822,13 +1953,31 @@
         }
       }
 
-      // Score and display results
-      displayResults(careerAnswers, lifeAnswers);
+      document.getElementById('quizForm').style.display = 'none';
+      document.getElementById('progressContainer').style.display = 'none';
+      document.getElementById('results').classList.remove('active');
+      resultsLoading?.classList.add('active');
+
+      const headerTitle = document.getElementById('headerTitle');
+      const headerSubtitle = document.getElementById('headerSubtitle');
+      if (headerTitle) {
+        headerTitle.textContent = 'Finding Your Matches';
+      }
+      if (headerSubtitle) {
+        headerSubtitle.textContent = 'We are comparing your answers and building your top three.';
+      }
+
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      resultsLoadingTimer = window.setTimeout(() => {
+        resultsLoadingTimer = null;
+        displayResults(careerAnswers, lifeAnswers);
+      }, 1100);
     }
 
     function displayResults(careerAnswers, lifeAnswers) {
       document.getElementById('quizForm').style.display = 'none';
       document.getElementById('progressContainer').style.display = 'none';
+      resultsLoading?.classList.remove('active');
 
       const headerTitle = document.getElementById('headerTitle');
       const headerSubtitle = document.getElementById('headerSubtitle');
