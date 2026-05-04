@@ -953,6 +953,28 @@
       margin-top: 30px;
     }
 
+    .results-dashboard-hint {
+      margin: 8px auto 18px;
+      max-width: 610px;
+      text-align: center;
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .results-dashboard-link {
+      color: var(--primary-dark);
+      text-decoration: underline;
+      text-decoration-color: rgba(35, 103, 242, 0.35);
+      text-underline-offset: 3px;
+    }
+
+    .results-dashboard-link:hover {
+      color: var(--primary);
+      text-decoration-color: rgba(35, 103, 242, 0.55);
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
       color: #ffffff;
@@ -1659,8 +1681,9 @@
         </div>
       </div>
 
+      <p id="resultsDashboardLink" class="results-dashboard-hint hidden">Already on the path? <a href="dashboard.html" class="results-dashboard-link">Open your dashboard</a></p>
+
       <div class="results-actions">
-        <a href="dashboard.html" id="resultsDashboardLink" class="btn hidden">Open Dashboard</a>
         <a href="index.html" class="btn back-btn">← Back to Home</a>
         <button class="btn" onclick="retakeQuiz()">Retake Quiz</button>
       </div>
