@@ -703,7 +703,7 @@ function buildApp() {
                   <td>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                       <tr>
-                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#ffffff;border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
+                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#fcfaf5;background-image:linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(247,250,255,0.92) 52%, rgba(255,246,238,0.9) 100%);border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
                               <td style="height:6px;line-height:6px;font-size:0;background-color:#2367f2;background-image:linear-gradient(90deg, #2367f2 0%, #5c92ff 45%, #ff8452 100%);">&nbsp;</td>
@@ -741,7 +741,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:30px 28px 0;background-color:#ffffff;">
+                                    <td style="padding:30px 28px 0;background-color:#fcfaf5;background-image:linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(242,248,255,0.88) 58%, rgba(255,244,235,0.84) 100%);">
                                       <div style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#17324a;">
                             ${bodyHtml}
                                       </div>
@@ -779,7 +779,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:0 28px 28px;background-color:#ffffff;">
+                                    <td style="padding:0 28px 28px;background-color:#fbf8f2;background-image:linear-gradient(180deg, rgba(244,249,255,0.72) 0%, rgba(255,244,236,0.8) 100%);">
                                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid rgba(22,50,74,0.09);border-collapse:collapse;">
                                         <tr>
                                           <td style="padding-top:20px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.8;color:#7b8ea1;">
