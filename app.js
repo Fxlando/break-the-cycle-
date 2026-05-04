@@ -685,101 +685,124 @@ function buildApp() {
     const safeFooterNote = escapeHtml(footerNote);
     const safeSupportLabel = escapeHtml(supportLabel);
     const safeSiteUrl = escapeHtml(FRONTEND_URL);
+    const safeSiteHost = escapeHtml(new URL(FRONTEND_URL).hostname);
     const safeCtaUrl = ctaUrl ? escapeHtml(ctaUrl) : '';
     const safeCtaLabel = ctaLabel ? escapeHtml(ctaLabel) : '';
     const safeCtaNote = ctaNote ? escapeHtml(ctaNote) : '';
 
     return `
-      <div style="margin:0;padding:0;background-color:#f2ede4;">
+      <div style="margin:0;padding:0;background-color:#f7f2e8;">
         <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
           ${safePreheader}
         </div>
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;background-color:#f2ede4;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;background-color:#f7f2e8;background-image:linear-gradient(180deg, #fbf7ef 0%, #eff7ff 48%, #f8f3ea 100%);">
           <tr>
             <td align="center" style="padding:32px 16px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;border-collapse:collapse;">
                 <tr>
-                  <td style="padding-bottom:16px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;background-color:#111827;border-radius:28px 28px 0 0;">
-                      <tr>
-                        <td style="padding:18px 28px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                            <tr>
-                              <td align="left" style="font-family:Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:2px;text-transform:uppercase;color:#d1d5db;">
-                                ${safeEyebrow}
-                              </td>
-                              <td align="right" style="font-family:Arial,sans-serif;font-size:12px;line-height:1.4;color:#9ca3af;">
-                                ${escapeHtml(new URL(FRONTEND_URL).hostname)}
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:40px 32px 32px;">
-                          <div style="display:inline-block;padding:8px 14px;border:1px solid rgba(255,255,255,0.16);border-radius:999px;font-family:Arial,sans-serif;font-size:12px;line-height:1.2;letter-spacing:1.6px;text-transform:uppercase;color:#f9fafb;">
-                            Private Access
-                          </div>
-                          <h1 style="margin:18px 0 14px;font-family:Arial,sans-serif;font-size:34px;line-height:1.15;font-weight:700;color:#ffffff;">
-                            ${safeTitle}
-                          </h1>
-                          <p style="margin:0;font-family:Arial,sans-serif;font-size:16px;line-height:1.7;color:#d1d5db;">
-                            ${safeIntro}
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color:#ffffff;border-radius:0 0 28px 28px;box-shadow:0 20px 50px rgba(17,24,39,0.08);">
+                  <td>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                       <tr>
-                        <td style="padding:32px;">
-                          <div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.75;color:#1f2937;">
-                            ${bodyHtml}
-                          </div>
-                          ${ctaUrl ? `
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;margin-bottom:18px;">
-                              <tr>
-                                <td align="center" style="border-radius:999px;background-color:#111827;">
-                                  <a href="${safeCtaUrl}" style="display:inline-block;padding:15px 28px;font-family:Arial,sans-serif;font-size:15px;line-height:1;font-weight:700;color:#ffffff;text-decoration:none;">
-                                    ${safeCtaLabel}
-                                  </a>
-                                </td>
-                              </tr>
-                            </table>
-                          ` : ''}
-                          ${ctaUrl ? `
-                            <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;color:#6b7280;">
-                              ${safeCtaNote || 'If the button does not work, use the secure link below.'}
-                            </p>
-                            <p style="margin:0 0 26px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;word-break:break-all;">
-                              <a href="${safeCtaUrl}" style="color:#111827;text-decoration:underline;">${safeCtaUrl}</a>
-                            </p>
-                          ` : ''}
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:8px;">
+                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#ffffff;border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
-                              <td style="padding:18px 20px;border:1px solid #e5e7eb;border-radius:18px;background-color:#f9fafb;">
-                                <p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:1.2px;text-transform:uppercase;color:#6b7280;">
-                                  What Happens Next
-                                </p>
-                                <p style="margin:0;font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#374151;">
-                                  ${safeFooterNote}
-                                </p>
+                              <td style="height:6px;line-height:6px;font-size:0;background-color:#2367f2;background-image:linear-gradient(90deg, #2367f2 0%, #5c92ff 45%, #ff8452 100%);">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:0;background-color:#fbf7ef;background-image:linear-gradient(140deg, #fef8ef 0%, #eff7ff 46%, #fff3e6 100%);">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                  <tr>
+                                    <td style="padding:28px 28px 30px;border-bottom:1px solid rgba(22,50,74,0.08);">
+                                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                                        <tr>
+                                          <td align="left" style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:0.12em;text-transform:uppercase;color:#174fc7;">
+                                            <div style="display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid rgba(22,50,74,0.1);background-color:rgba(255,255,255,0.72);">
+                                              ${safeEyebrow}
+                                            </div>
+                                          </td>
+                                          <td align="right" style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;color:#7b8ea1;">
+                                            ${safeSiteHost}
+                                          </td>
+                                        </tr>
+                                      </table>
+                                      <div style="margin-top:20px;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-size:24px;line-height:1;letter-spacing:0.06em;text-transform:uppercase;color:#17324a;">
+                                        <span style="color:#7b8ea1;">Life gets</span>
+                                        <span style="color:#17324a;"> boring </span>
+                                        <span style="color:#ff8452;">&middot;</span>
+                                        <span style="color:#17324a;"> learn how to </span>
+                                        <span style="color:#7b8ea1;">live it</span>
+                                      </div>
+                                      <h1 style="margin:22px 0 14px;font-family:'Space Grotesk','Inter Tight','Segoe UI',Arial,sans-serif;font-size:34px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#17324a;">
+                                        ${safeTitle}
+                                      </h1>
+                                      <p style="margin:0;max-width:470px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#556c84;">
+                                        ${safeIntro}
+                                      </p>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding:30px 28px 0;background-color:#ffffff;">
+                                      <div style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#17324a;">
+                            ${bodyHtml}
+                                      </div>
+                                      ${ctaUrl ? `
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:28px;margin-bottom:18px;">
+                                          <tr>
+                                            <td align="center" style="border-radius:999px;background-color:#2367f2;background-image:linear-gradient(135deg, #174fc7 0%, #2367f2 46%, #ff8452 100%);box-shadow:0 14px 30px rgba(35,103,242,0.2);">
+                                              <a href="${safeCtaUrl}" style="display:inline-block;padding:15px 28px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:15px;line-height:1;font-weight:700;color:#ffffff;text-decoration:none;">
+                                                ${safeCtaLabel}
+                                              </a>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      ` : ''}
+                                      ${ctaUrl ? `
+                                        <p style="margin:0 0 12px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.7;color:#7b8ea1;">
+                                          ${safeCtaNote || 'If the button does not work, use the secure link below.'}
+                                        </p>
+                                        <p style="margin:0 0 26px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.7;word-break:break-all;">
+                                          <a href="${safeCtaUrl}" style="color:#174fc7;text-decoration:underline;text-decoration-color:rgba(35,103,242,0.35);">${safeCtaUrl}</a>
+                                        </p>
+                                      ` : ''}
+                                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:8px;">
+                                        <tr>
+                                          <td style="padding:18px 20px;border:1px solid rgba(22,50,74,0.09);border-radius:20px;background-color:#f8fbff;background-image:linear-gradient(135deg, rgba(35,103,242,0.06), rgba(255,132,82,0.08));">
+                                            <p style="margin:0 0 8px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:0.12em;text-transform:uppercase;color:#174fc7;">
+                                              What Happens Next
+                                            </p>
+                                            <p style="margin:0;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.7;color:#556c84;">
+                                              ${safeFooterNote}
+                                            </p>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding:0 28px 28px;background-color:#ffffff;">
+                                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid rgba(22,50,74,0.09);border-collapse:collapse;">
+                                        <tr>
+                                          <td style="padding-top:20px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.8;color:#7b8ea1;">
+                                            <div style="margin-bottom:6px;font-family:'Space Grotesk','Inter Tight','Segoe UI',Arial,sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.01em;color:#17324a;">Break The Cycle</div>
+                                            <div style="margin-bottom:6px;">${safeSupportLabel}</div>
+                                            <div><a href="${safeSiteUrl}" style="color:#174fc7;text-decoration:underline;text-decoration-color:rgba(35,103,242,0.35);">${safeSiteUrl}</a></div>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
                               </td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:0 32px 32px;">
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #e5e7eb;border-collapse:collapse;">
+                        <td style="padding:0;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
-                              <td style="padding-top:20px;font-family:Arial,sans-serif;font-size:12px;line-height:1.8;color:#6b7280;">
-                                <div style="margin-bottom:6px;font-weight:700;color:#111827;">Break The Cycle</div>
-                                <div style="margin-bottom:6px;">${safeSupportLabel}</div>
-                                <div><a href="${safeSiteUrl}" style="color:#111827;text-decoration:underline;">${safeSiteUrl}</a></div>
+                              <td style="padding-top:14px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:11px;line-height:1.7;color:#90a0b0;text-align:center;">
+                                Sent by Break The Cycle
                               </td>
                             </tr>
                           </table>
