@@ -331,19 +331,22 @@
     }
 
     .mode-option-title {
-      display: block;
-      margin-bottom: 0;
+      display: inline;
       color: var(--text-primary);
-      font-size: 1rem;
+      font-size: 0.98rem;
       font-weight: 700;
-      line-height: 1.35;
+      line-height: 1.5;
+    }
+
+    .mode-option-title::after {
+      content: ' - ';
+      color: var(--text-secondary);
     }
 
     .mode-option-detail {
-      display: block;
-      max-width: none;
+      display: inline;
       color: var(--text-secondary);
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       font-weight: 500;
       line-height: 1.5;
     }
@@ -351,10 +354,7 @@
     #mode_career + label,
     #mode_life + label,
     #mode_both + label {
-      display: grid;
-      grid-template-columns: minmax(104px, 118px) minmax(0, 1fr);
-      align-items: start;
-      gap: 0 16px;
+      display: block;
       text-align: left;
     }
 
@@ -399,6 +399,10 @@
     }
 
     .option input[type="radio"]:checked + label .mode-option-detail {
+      color: var(--text-primary);
+    }
+
+    .option input[type="radio"]:checked + label .mode-option-title::after {
       color: var(--text-primary);
     }
 
