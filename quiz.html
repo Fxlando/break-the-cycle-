@@ -642,10 +642,12 @@
 
     .career-header {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: 1fr;
+      justify-items: center;
       align-items: center;
-      margin-bottom: 18px;
-      gap: 16px;
+      margin-bottom: 16px;
+      gap: 12px;
+      text-align: center;
     }
 
     .career-emoji {
@@ -666,7 +668,13 @@
       letter-spacing: -0.03em;
     }
 
-    .career-title { flex: 1; }
+    .career-title {
+      width: 100%;
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      text-align: center;
+    }
 
     .career-name {
       color: var(--text-primary);
@@ -674,7 +682,7 @@
       font-weight: 800;
       line-height: 1.05;
       letter-spacing: -0.04em;
-      margin-bottom: 7px;
+      margin-bottom: 0;
     }
 
     .career-category {
@@ -696,6 +704,8 @@
       font-size: 1.2rem;
       line-height: 1;
       text-align: center;
+      width: fit-content;
+      justify-self: center;
     }
 
     .match-score span {
@@ -712,7 +722,9 @@
       color: var(--text-secondary);
       font-size: 1.05rem;
       line-height: 1.7;
-      margin-bottom: 18px;
+      max-width: 56ch;
+      margin: 0 auto 18px;
+      text-align: center;
     }
 
     .career-stats {
@@ -817,7 +829,7 @@
     }
 
     .result-card-support .career-header {
-      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
     }
 
     .result-card-support .career-emoji {
@@ -833,16 +845,17 @@
     }
 
     .result-card-support .match-score {
-      grid-column: 1 / -1;
       width: fit-content;
       min-width: 0;
       font-size: 0.95rem;
       padding: 8px 11px;
+      justify-self: center;
     }
 
     .result-card-support .career-description {
       font-size: 0.94rem;
       line-height: 1.6;
+      max-width: 42ch;
     }
 
     .result-card-support .career-stats {
@@ -900,7 +913,7 @@
       .career-path,
       .career-path.rank-1 { padding: 18px; border-radius: 22px; }
       .career-header,
-      .result-card-support .career-header { grid-template-columns: 1fr; align-items: flex-start; gap: 12px; }
+      .result-card-support .career-header { grid-template-columns: 1fr; justify-items: center; align-items: center; gap: 12px; }
       .career-emoji { width: 54px; height: 54px; border-radius: 18px; }
       .career-stats { grid-template-columns: 1fr; gap: 10px; }
     }
