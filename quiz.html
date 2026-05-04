@@ -337,7 +337,7 @@
       color: var(--text-primary);
       font-size: 0.98rem;
       font-weight: 700;
-      line-height: 1.5;
+      line-height: 1.35;
     }
 
     .mode-option-title::before {
@@ -351,17 +351,17 @@
       transform-origin: center;
     }
 
-    .mode-option-title::after {
-      content: ' - ';
-      color: var(--text-secondary);
-    }
-
     .mode-option-detail {
-      display: inline;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
+      display: block;
+      margin-top: 6px;
+      padding-left: 25px;
+      max-width: 31ch;
+      color: rgba(22, 50, 74, 0.72);
+      font-size: 0.88rem;
       font-weight: 500;
-      line-height: 1.5;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      text-wrap: pretty;
     }
 
     #mode_career + label,
@@ -426,11 +426,7 @@
     }
 
     .option input[type="radio"]:checked + label .mode-option-detail {
-      color: var(--text-primary);
-    }
-
-    .option input[type="radio"]:checked + label .mode-option-title::after {
-      color: var(--text-primary);
+      color: rgba(22, 50, 74, 0.86);
     }
 
     #mode_career:checked + label .mode-option-title::before,
@@ -1109,9 +1105,9 @@
           <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life">🌟 Finding myself - I have a job but feel lost, need hobbies & passions</label></div>
           <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both">🚀 Both - Exploring career AND personal growth</label></div>
           -->
-          <div class="option"><input type="radio" name="mode" value="career" id="mode_career"><label for="mode_career"><span class="mode-option-title">Career direction</span><span class="mode-option-detail">I need direction on what to do for work.</span></label></div>
-          <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life"><span class="mode-option-title">Personal reset</span><span class="mode-option-detail">I have a job but feel lost and want hobbies or passions.</span></label></div>
-          <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both"><span class="mode-option-title">Complete discovery</span><span class="mode-option-detail">Explore career direction and personal growth together.</span></label></div>
+          <div class="option"><input type="radio" name="mode" value="career" id="mode_career"><label for="mode_career"><span class="mode-option-title">Career direction</span><span class="mode-option-detail">Clarify the kind of work that fits you.</span></label></div>
+          <div class="option"><input type="radio" name="mode" value="life" id="mode_life"><label for="mode_life"><span class="mode-option-title">Personal reset</span><span class="mode-option-detail">Find hobbies, interests, and a clearer sense of self.</span></label></div>
+          <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both"><span class="mode-option-title">Complete discovery</span><span class="mode-option-detail">Shape both your career path and personal direction.</span></label></div>
         </div>
         <button type="button" class="btn" onclick="startQuiz()">Let's Go!</button>
       </div>
