@@ -331,11 +331,24 @@
     }
 
     .mode-option-title {
-      display: inline;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       color: var(--text-primary);
       font-size: 0.98rem;
       font-weight: 700;
       line-height: 1.5;
+    }
+
+    .mode-option-title::before {
+      content: '';
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+      border: 1.5px solid rgba(22, 50, 74, 0.22);
+      background: linear-gradient(135deg, rgba(35, 103, 242, 0.16), rgba(255, 132, 82, 0.12));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      transform-origin: center;
     }
 
     .mode-option-title::after {
@@ -356,6 +369,20 @@
     #mode_both + label {
       display: block;
       text-align: left;
+    }
+
+    #mode_career + label .mode-option-title::before {
+      border-radius: 4px;
+    }
+
+    #mode_life + label .mode-option-title::before {
+      border-radius: 999px;
+      background: radial-gradient(circle at center, rgba(35, 103, 242, 0.26) 0 32%, rgba(255, 132, 82, 0.1) 33% 100%);
+    }
+
+    #mode_both + label .mode-option-title::before {
+      border-radius: 4px;
+      transform: rotate(45deg);
     }
 
     .option label::before {
@@ -404,6 +431,17 @@
 
     .option input[type="radio"]:checked + label .mode-option-title::after {
       color: var(--text-primary);
+    }
+
+    #mode_career:checked + label .mode-option-title::before,
+    #mode_both:checked + label .mode-option-title::before {
+      border-color: rgba(35, 103, 242, 0.26);
+      background: linear-gradient(135deg, rgba(35, 103, 242, 0.28), rgba(255, 132, 82, 0.2));
+    }
+
+    #mode_life:checked + label .mode-option-title::before {
+      border-color: rgba(35, 103, 242, 0.26);
+      background: radial-gradient(circle at center, rgba(35, 103, 242, 0.42) 0 30%, rgba(255, 132, 82, 0.18) 31% 100%);
     }
 
     .option input[type="radio"]:focus-visible + label {
