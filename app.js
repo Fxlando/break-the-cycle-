@@ -703,13 +703,13 @@ function buildApp() {
                   <td>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                       <tr>
-                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#fdf8f1;background-image:linear-gradient(180deg, #fffaf2 0%, #f7fbff 62%, #fff4e9 100%);border:1px solid rgba(22,50,74,0.12);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
+                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#ffffff;border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
                               <td style="height:6px;line-height:6px;font-size:0;background-color:#2367f2;background-image:linear-gradient(90deg, #2367f2 0%, #5c92ff 45%, #ff8452 100%);">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td style="padding:0;background-color:#fbf7ef;background-image:linear-gradient(140deg, #fef8ef 0%, #eff7ff 46%, #fff3e6 100%);">
+                              <td style="padding:0;background-color:#faf2e6;background-image:linear-gradient(140deg, #fff6e7 0%, #e9f4ff 46%, #ffefe1 100%);">
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                                   <tr>
                                     <td style="padding:28px 28px 30px;border-bottom:1px solid rgba(22,50,74,0.08);">
@@ -741,7 +741,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:30px 28px 0;background-color:#fdfaf4;background-image:linear-gradient(180deg, #fffaf3 0%, #f8fbff 70%, #fff5eb 100%);">
+                                    <td style="padding:30px 28px 0;background-color:#ffffff;">
                                       <div style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#17324a;">
                             ${bodyHtml}
                                       </div>
@@ -766,7 +766,7 @@ function buildApp() {
                                       ` : ''}
                                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:8px;">
                                         <tr>
-                                          <td style="padding:18px 20px;border:1px solid rgba(22,50,74,0.1);border-radius:20px;background-color:#f6f9ff;background-image:linear-gradient(135deg, rgba(35,103,242,0.1), rgba(255,132,82,0.12));">
+                                          <td style="padding:18px 20px;border:1px solid rgba(22,50,74,0.09);border-radius:20px;background-color:#f8fbff;background-image:linear-gradient(135deg, rgba(35,103,242,0.06), rgba(255,132,82,0.08));">
                                             <p style="margin:0 0 8px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;letter-spacing:0.12em;text-transform:uppercase;color:#174fc7;">
                                               What Happens Next
                                             </p>
@@ -779,7 +779,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:0 28px 28px;background-color:#fcf9f3;background-image:linear-gradient(180deg, #fff9f1 0%, #f6fbff 100%);">
+                                    <td style="padding:0 28px 28px;background-color:#ffffff;">
                                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid rgba(22,50,74,0.09);border-collapse:collapse;">
                                         <tr>
                                           <td style="padding-top:20px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.8;color:#7b8ea1;">
