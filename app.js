@@ -720,22 +720,22 @@ function buildApp() {
                                               ${safeEyebrow}
                                             </div>
                                           </td>
-                                          <td align="right" style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;color:#7b8ea1;">
+                                          <td align="right" style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.4;color:#5a7089;">
                                             ${safeSiteHost}
                                           </td>
                                         </tr>
                                       </table>
-                                      <div style="margin-top:20px;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-size:24px;line-height:1;letter-spacing:0.06em;text-transform:uppercase;color:#17324a;">
-                                        <span style="color:#7b8ea1;">Life gets</span>
-                                        <span style="color:#17324a;"> boring </span>
+                                      <div style="margin-top:20px;font-family:'Bebas Neue',Impact,'Arial Narrow',sans-serif;font-size:24px;line-height:1;letter-spacing:0.06em;text-transform:uppercase;color:#12293f;">
+                                        <span style="color:#4f6781;">Life gets</span>
+                                        <span style="color:#12293f;"> boring </span>
                                         <span style="color:#ff8452;">&middot;</span>
-                                        <span style="color:#17324a;"> learn how to </span>
-                                        <span style="color:#7b8ea1;">live it</span>
+                                        <span style="color:#12293f;"> learn how to </span>
+                                        <span style="color:#4f6781;">live it</span>
                                       </div>
-                                      <h1 style="margin:22px 0 14px;font-family:'Space Grotesk','Inter Tight','Segoe UI',Arial,sans-serif;font-size:34px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#17324a;">
+                                      <h1 style="margin:22px 0 14px;font-family:'Space Grotesk','Inter Tight','Segoe UI',Arial,sans-serif;font-size:34px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#12293f;">
                                         ${safeTitle}
                                       </h1>
-                                      <p style="margin:0;max-width:470px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#556c84;">
+                                      <p style="margin:0;max-width:470px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#435b73;">
                                         ${safeIntro}
                                       </p>
                                     </td>
