@@ -690,12 +690,21 @@ function buildApp() {
     const safeCtaLabel = ctaLabel ? escapeHtml(ctaLabel) : '';
     const safeCtaNote = ctaNote ? escapeHtml(ctaNote) : '';
 
-    return `
+    return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>${safeTitle}</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#f7f2e8;" bgcolor="#f7f2e8">
       <div style="margin:0;padding:0;background-color:#f7f2e8;">
         <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
           ${safePreheader}
         </div>
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;background-color:#f7f2e8;background-image:linear-gradient(180deg, #fbf7ef 0%, #eff7ff 48%, #f8f3ea 100%);">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f7f2e8" style="width:100%;border-collapse:collapse;background-color:#f7f2e8;background-image:linear-gradient(180deg, #fbf7ef 0%, #eff7ff 48%, #f8f3ea 100%);">
           <tr>
             <td align="center" style="padding:32px 16px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;border-collapse:collapse;">
@@ -703,13 +712,13 @@ function buildApp() {
                   <td>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                       <tr>
-                        <td style="padding:0;border-radius:32px;overflow:hidden;background-color:#ffffff;border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
+                        <td bgcolor="#ffffff" style="padding:0;border-radius:32px;overflow:hidden;background-color:#ffffff;border:1px solid rgba(22,50,74,0.1);box-shadow:0 28px 72px rgba(39,79,119,0.12);">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                             <tr>
                               <td style="height:6px;line-height:6px;font-size:0;background-color:#2367f2;background-image:linear-gradient(90deg, #2367f2 0%, #5c92ff 45%, #ff8452 100%);">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td style="padding:0;background-color:#f6e7d3;background-image:linear-gradient(140deg, #ffe9c3 0%, #d8ebff 46%, #ffdcbc 100%);">
+                              <td bgcolor="#f6e7d3" style="padding:0;background-color:#f6e7d3;background-image:linear-gradient(140deg, #ffe9c3 0%, #d8ebff 46%, #ffdcbc 100%);">
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                                   <tr>
                                     <td style="padding:28px 28px 30px;border-bottom:1px solid rgba(22,50,74,0.08);">
@@ -741,7 +750,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:30px 28px 0;background-color:#ffffff;">
+                                    <td bgcolor="#ffffff" style="padding:30px 28px 0;background-color:#ffffff;">
                                       <div style="font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:16px;line-height:1.75;color:#17324a;">
                             ${bodyHtml}
                                       </div>
@@ -779,7 +788,7 @@ function buildApp() {
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td style="padding:0 28px 28px;background-color:#ffffff;">
+                                    <td bgcolor="#ffffff" style="padding:0 28px 28px;background-color:#ffffff;">
                                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid rgba(22,50,74,0.09);border-collapse:collapse;">
                                         <tr>
                                           <td style="padding-top:20px;font-family:'Inter Tight','Segoe UI',Arial,sans-serif;font-size:12px;line-height:1.8;color:#7b8ea1;">
@@ -816,7 +825,8 @@ function buildApp() {
           </tr>
         </table>
       </div>
-    `;
+  </body>
+</html>`;
   };
 
   const renderMagicLinkPage = ({
