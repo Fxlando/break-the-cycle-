@@ -709,7 +709,7 @@ function buildApp() {
                               <td style="height:6px;line-height:6px;font-size:0;background-color:#2367f2;background-image:linear-gradient(90deg, #2367f2 0%, #5c92ff 45%, #ff8452 100%);">&nbsp;</td>
                             </tr>
                             <tr>
-                              <td style="padding:0;background-color:#faf2e6;background-image:linear-gradient(140deg, #fff6e7 0%, #e9f4ff 46%, #ffefe1 100%);">
+                              <td style="padding:0;background-color:#f6e7d3;background-image:linear-gradient(140deg, #ffe9c3 0%, #d8ebff 46%, #ffdcbc 100%);">
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
                                   <tr>
                                     <td style="padding:28px 28px 30px;border-bottom:1px solid rgba(22,50,74,0.08);">
