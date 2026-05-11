@@ -1585,12 +1585,30 @@ function buildApp() {
     return entries.slice(0, limit).map((entry, index) => ({
       rank: index + 1,
       key: entry?.key || null,
+      familyKey: entry?.familyKey || entry?.path?.familyKey || null,
       percentage: typeof entry?.percentage === 'number' ? entry.percentage : null,
+      exampleRoles: Array.isArray(entry?.exampleRoles)
+        ? entry.exampleRoles.slice(0, 3)
+        : Array.isArray(entry?.path?.exampleRoles)
+          ? entry.path.exampleRoles.slice(0, 3)
+          : [],
+      exampleHobbies: Array.isArray(entry?.exampleHobbies)
+        ? entry.exampleHobbies.slice(0, 4)
+        : Array.isArray(entry?.path?.exampleHobbies)
+          ? entry.path.exampleHobbies.slice(0, 4)
+          : [],
+      fitReasons: Array.isArray(entry?.fitReasons) ? entry.fitReasons.slice(0, 2) : [],
+      fitTags: Array.isArray(entry?.fitTags) ? entry.fitTags.slice(0, 4) : [],
       path: {
         name: entry?.path?.name || null,
         emoji: entry?.path?.emoji || null,
         category: entry?.path?.category || null,
-        description: entry?.path?.description || null
+        description: entry?.path?.description || null,
+        familyKey: entry?.path?.familyKey || entry?.familyKey || null,
+        exampleRoles: Array.isArray(entry?.path?.exampleRoles) ? entry.path.exampleRoles.slice(0, 3) : [],
+        exampleHobbies: Array.isArray(entry?.path?.exampleHobbies) ? entry.path.exampleHobbies.slice(0, 4) : [],
+        timeToEnjoyment: entry?.path?.timeToEnjoyment || null,
+        energyType: entry?.path?.energyType || null
       }
     }));
   };

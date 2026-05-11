@@ -1,4 +1,4 @@
-// LIFE PATHS DATABASE - 53 Ways to Find Yourself Beyond Your Job
+// LIFE PATHS DATABASE - broad hobby and personal reset example bank
 // For people who have a career but feel lost and need hobbies, passions, and personal fulfillment
 
 const lifePaths = {

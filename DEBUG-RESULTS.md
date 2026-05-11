@@ -29,9 +29,8 @@ quizMode: both (or career/life)
 careerAnswers: {c1: "...", c2: "..."}
 window.careerPaths exists: true/false
 window.lifePaths exists: true/false
-Scoring career paths...
-Career scores: 53 paths scored
-Top 3 career: [...]
+Scoring family matches...
+Top 3 career/hobby families: [...]
 About to show results...
 Results shown
 ```

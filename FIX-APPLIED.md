@@ -14,9 +14,10 @@ window.lifePaths = lifePaths;
 1. quiz-paths.js loads → exports to `window.lifePaths` (career paths)
 2. Quiz saves it: `window.careerPaths = window.lifePaths`
 3. life-paths.js loads → overwrites with life paths
-4. Now both are accessible:
-   - `window.careerPaths` = 53 career options
-   - `window.lifePaths` = 53 life/hobby paths
+4. Now the quiz datasets are accessible:
+   - `window.careerPaths` = career option bank
+   - `window.lifePaths` = hobby example bank
+   - `window.careerFamilies` / `window.hobbyFamilies` = family-first scoring data
 
 ## Test The Fix:
 1. Open **quiz.html** in your browser

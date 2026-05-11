@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Break the Cycle - Find Your Path</title>
+  <meta name="theme-color" content="#2367f2">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Break The Cycle">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <script src="/pwa.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,9 +20,17 @@
   <script>
     // quiz-paths.js exports window.careerPaths directly.
   </script>
+  <script src="career-families.js"></script>
+  <script>
+    // career-families.js exports window.careerFamilies directly.
+  </script>
   <script src="life-paths.js"></script>
   <script>
     // Now window.lifePaths contains life paths, window.careerPaths contains career paths
+  </script>
+  <script src="hobby-families.js"></script>
+  <script>
+    // hobby-families.js exports window.hobbyFamilies using lifePaths as its example bank.
   </script>
   <style>
     :root {
@@ -734,6 +751,72 @@
       margin-bottom: 18px;
     }
 
+    .career-insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .career-insight-card {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(22, 50, 74, 0.09);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .career-insight-card h4 {
+      color: var(--primary-dark);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .career-role-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .career-role-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(35, 103, 242, 0.08);
+      border: 1px solid rgba(35, 103, 242, 0.14);
+      color: var(--primary-dark);
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .career-fit-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .career-fit-item {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .career-fit-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+    }
+
     .stat-box {
       background: rgba(255, 255, 255, 0.76);
       padding: 12px;
@@ -862,6 +945,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .result-card-support .career-insight-grid {
+      grid-template-columns: 1fr;
+    }
+
     .result-card-support .career-details-grid {
       grid-template-columns: 1fr;
     }
@@ -888,6 +975,7 @@
     @media (max-width: 768px) {
       .result-support-grid { grid-template-columns: 1fr; }
       .career-stats { grid-template-columns: 1fr 1fr; }
+      .career-insight-grid { grid-template-columns: 1fr; }
       .career-details-grid { grid-template-columns: 1fr; }
       .career-name { font-size: 1.5rem; }
       .match-score { font-size: 1rem; padding: 9px 11px; }
@@ -1136,301 +1224,277 @@
 
       <!-- CAREER QUESTIONS (1-25) - Only shown if career or both mode -->
       <div class="career-questions">
-        <!-- Career Q1 -->
         <div class="step" data-step="1" data-track="career">
-          <h3>How much risk are you comfortable with?</h3>
+          <h3>How much income pressure are you under right now?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c1" value="risk_low" id="c1a"><label for="c1a">Very low - I need stability and predictable income</label></div>
-            <div class="option"><input type="radio" name="c1" value="risk_medium" id="c1b"><label for="c1b">Low-medium - Some risk is okay if upside is good</label></div>
-            <div class="option"><input type="radio" name="c1" value="risk_high" id="c1c"><label for="c1c">Medium-high - I'll take calculated risks</label></div>
-            <div class="option"><input type="radio" name="c1" value="risk_very_high" id="c1d"><label for="c1d">Very high - Willing to bet it all for big payoff</label></div>
+            <div class="option"><input type="radio" name="c1" value="pressure_now" id="c1a"><label for="c1a">Very high - I need a path that can start paying as soon as possible</label></div>
+            <div class="option"><input type="radio" name="c1" value="pressure_soon" id="c1b"><label for="c1b">Moderate - I can give this a few months, but not forever</label></div>
+            <div class="option"><input type="radio" name="c1" value="pressure_stable" id="c1c"><label for="c1c">Manageable - I can plan carefully if the fit is strong</label></div>
+            <div class="option"><input type="radio" name="c1" value="pressure_explore" id="c1d"><label for="c1d">Low - I am exploring, not in immediate money pressure</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(1)">Next</button>
         </div>
 
-        <!-- Career Q2 -->
         <div class="step" data-step="2" data-track="career">
-          <h3>What's your income goal in 3-5 years?</h3>
+          <h3>Which matters more in your next move?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c2" value="income_40_70" id="c2a"><label for="c2a">$40-70k/year - Comfortable living</label></div>
-            <div class="option"><input type="radio" name="c2" value="income_70_120" id="c2b"><label for="c2b">$70-120k/year - Upper middle class</label></div>
-            <div class="option"><input type="radio" name="c2" value="income_120_250" id="c2c"><label for="c2c">$120-250k/year - Six figures+</label></div>
-            <div class="option"><input type="radio" name="c2" value="income_250_plus" id="c2d"><label for="c2d">$250k+/year - High earner</label></div>
+            <div class="option"><input type="radio" name="c2" value="income_floor" id="c2a"><label for="c2a">A steady income floor and predictability</label></div>
+            <div class="option"><input type="radio" name="c2" value="income_balanced" id="c2b"><label for="c2b">A healthy balance of stability and growth</label></div>
+            <div class="option"><input type="radio" name="c2" value="income_upside" id="c2c"><label for="c2c">More upside, even if it is less predictable at first</label></div>
+            <div class="option"><input type="radio" name="c2" value="income_open" id="c2d"><label for="c2d">I am open if the work fits my life well</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(2)">Next</button>
         </div>
 
-        <!-- Career Q3 -->
         <div class="step" data-step="3" data-track="career">
-          <h3>How do you feel about more school/training?</h3>
+          <h3>How much training are you realistically open to?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c3" value="edu_none" id="c3a"><label for="c3a">No more school - I'm done with education</label></div>
-            <div class="option"><input type="radio" name="c3" value="edu_short" id="c3b"><label for="c3b">Quick training (3-12 months) is fine</label></div>
-            <div class="option"><input type="radio" name="c3" value="edu_degree" id="c3c"><label for="c3c">2-4 year degree is doable</label></div>
-            <div class="option"><input type="radio" name="c3" value="edu_long" id="c3d"><label for="c3d">I'll do whatever it takes - even 7+ years</label></div>
+            <div class="option"><input type="radio" name="c3" value="train_none" id="c3a"><label for="c3a">Very little - I need something I can step into quickly</label></div>
+            <div class="option"><input type="radio" name="c3" value="train_short" id="c3b"><label for="c3b">Short training is fine - weeks or a few months</label></div>
+            <div class="option"><input type="radio" name="c3" value="train_medium" id="c3c"><label for="c3c">I can handle a longer skill ramp if the path makes sense</label></div>
+            <div class="option"><input type="radio" name="c3" value="train_long" id="c3d"><label for="c3d">I am willing to invest in a more demanding preparation path</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(3)">Next</button>
         </div>
 
-        <!-- Career Q4 -->
         <div class="step" data-step="4" data-track="career">
-          <h3>How much startup capital do you have access to?</h3>
+          <h3>What is your comfort level with taking on education debt?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c4" value="capital_0_1k" id="c4a"><label for="c4a">Under $1k - basically nothing</label></div>
-            <div class="option"><input type="radio" name="c4" value="capital_1_10k" id="c4b"><label for="c4b">$1-10k - some savings</label></div>
-            <div class="option"><input type="radio" name="c4" value="capital_10_50k" id="c4c"><label for="c4c">$10-50k - decent amount saved/borrowed</label></div>
-            <div class="option"><input type="radio" name="c4" value="capital_50k_plus" id="c4d"><label for="c4d">$50k+ - significant capital</label></div>
+            <div class="option"><input type="radio" name="c4" value="debt_none" id="c4a"><label for="c4a">No debt - I need a lower-cost path</label></div>
+            <div class="option"><input type="radio" name="c4" value="debt_small" id="c4b"><label for="c4b">A small amount is okay if it stays practical</label></div>
+            <div class="option"><input type="radio" name="c4" value="debt_moderate" id="c4c"><label for="c4c">Moderate investment is okay for a strong fit</label></div>
+            <div class="option"><input type="radio" name="c4" value="debt_open" id="c4d"><label for="c4d">I am open to a heavier training investment if the long-term fit is right</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(4)">Next</button>
         </div>
 
-        <!-- Career Q5 -->
         <div class="step" data-step="5" data-track="career">
-          <h3>How do you feel about being on camera/social media?</h3>
+          <h3>How much money can you put toward this transition right now?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c5" value="camera_love" id="c5a"><label for="c5a">Love it - I'm comfortable creating content</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_okay" id="c5b"><label for="c5b">I could do it - not my first choice but okay</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_no" id="c5c"><label for="c5c">Prefer not - would rather stay behind the scenes</label></div>
-            <div class="option"><input type="radio" name="c5" value="camera_never" id="c5d"><label for="c5d">Absolutely not - I value privacy</label></div>
+            <div class="option"><input type="radio" name="c5" value="budget_0_500" id="c5a"><label for="c5a">$0-500 - I need a low-cost starting point</label></div>
+            <div class="option"><input type="radio" name="c5" value="budget_500_5k" id="c5b"><label for="c5b">$500-5k - some room, but still careful</label></div>
+            <div class="option"><input type="radio" name="c5" value="budget_5k_20k" id="c5c"><label for="c5c">$5k-20k - I can invest if the plan is clear</label></div>
+            <div class="option"><input type="radio" name="c5" value="budget_open" id="c5d"><label for="c5d">Cost matters less than the long-term outcome</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(5)">Next</button>
         </div>
 
-        <!-- Career Q6 -->
         <div class="step" data-step="6" data-track="career">
-          <h3>How are your sales/persuasion skills?</h3>
+          <h3>What kind of schedule control do you need?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c6" value="sales_high" id="c6a"><label for="c6a">Natural - I can sell anything</label></div>
-            <div class="option"><input type="radio" name="c6" value="sales_medium" id="c6b"><label for="c6b">Pretty good - I can convince people</label></div>
-            <div class="option"><input type="radio" name="c6" value="sales_low" id="c6c"><label for="c6c">Average - not my strength</label></div>
-            <div class="option"><input type="radio" name="c6" value="sales_none" id="c6d"><label for="c6d">Bad - I hate selling</label></div>
+            <div class="option"><input type="radio" name="c6" value="schedule_predictable" id="c6a"><label for="c6a">Predictable hours matter most to me</label></div>
+            <div class="option"><input type="radio" name="c6" value="schedule_some_flex" id="c6b"><label for="c6b">Some flexibility would help a lot</label></div>
+            <div class="option"><input type="radio" name="c6" value="schedule_self_directed" id="c6c"><label for="c6c">I want meaningful control over my time</label></div>
+            <div class="option"><input type="radio" name="c6" value="schedule_open" id="c6d"><label for="c6d">I can handle shifts, unusual schedules, or changing hours</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(6)">Next</button>
         </div>
 
-        <!-- Career Q7 -->
         <div class="step" data-step="7" data-track="career">
-          <h3>How technical/analytical are you?</h3>
+          <h3>What kind of work location fits you best?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c7" value="tech_high" id="c7a"><label for="c7a">Very - I love data, systems, tech</label></div>
-            <div class="option"><input type="radio" name="c7" value="tech_medium" id="c7b"><label for="c7b">Somewhat - I can learn technical stuff</label></div>
-            <div class="option"><input type="radio" name="c7" value="tech_low" id="c7c"><label for="c7c">Not really - prefer creative/people work</label></div>
-            <div class="option"><input type="radio" name="c7" value="tech_none" id="c7d"><label for="c7d">Not at all - tech confuses me</label></div>
+            <div class="option"><input type="radio" name="c7" value="location_remote" id="c7a"><label for="c7a">Mostly remote - I need location flexibility</label></div>
+            <div class="option"><input type="radio" name="c7" value="location_hybrid" id="c7b"><label for="c7b">Hybrid - some time at home, some in person</label></div>
+            <div class="option"><input type="radio" name="c7" value="location_onsite" id="c7c"><label for="c7c">Mostly onsite is fine if the environment is good</label></div>
+            <div class="option"><input type="radio" name="c7" value="location_field" id="c7d"><label for="c7d">Out and about - field work or travel between places is okay</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(7)">Next</button>
         </div>
 
-        <!-- Career Q8 -->
         <div class="step" data-step="8" data-track="career">
-          <h3>How creative/artistic are you?</h3>
+          <h3>What level of physical demand feels realistic for you?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c8" value="creative_high" id="c8a"><label for="c8a">Very - design, art, content creation is my thing</label></div>
-            <div class="option"><input type="radio" name="c8" value="creative_medium" id="c8b"><label for="c8b">Somewhat - I have creative ideas</label></div>
-            <div class="option"><input type="radio" name="c8" value="creative_low" id="c8c"><label for="c8c">Not really - I'm more logical</label></div>
-            <div class="option"><input type="radio" name="c8" value="creative_none" id="c8d"><label for="c8d">Not at all - creativity isn't my strength</label></div>
+            <div class="option"><input type="radio" name="c8" value="physical_low" id="c8a"><label for="c8a">Low - I need a lighter physical workload</label></div>
+            <div class="option"><input type="radio" name="c8" value="physical_some" id="c8b"><label for="c8b">Some movement is fine, but not heavy labor</label></div>
+            <div class="option"><input type="radio" name="c8" value="physical_active" id="c8c"><label for="c8c">I am okay with active, on-my-feet work</label></div>
+            <div class="option"><input type="radio" name="c8" value="physical_high" id="c8d"><label for="c8d">High - I can handle physically demanding workdays</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(8)">Next</button>
         </div>
 
-        <!-- Career Q9 -->
         <div class="step" data-step="9" data-track="career">
-          <h3>Do you prefer working with people or alone?</h3>
+          <h3>How much people energy do you want in your workday?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c9" value="people_love" id="c9a"><label for="c9a">Love people - social interaction energizes me</label></div>
-            <div class="option"><input type="radio" name="c9" value="people_medium" id="c9b"><label for="c9b">Some interaction is good</label></div>
-            <div class="option"><input type="radio" name="c9" value="people_low" id="c9c"><label for="c9c">Prefer solo work</label></div>
-            <div class="option"><input type="radio" name="c9" value="people_none" id="c9d"><label for="c9d">Alone 100% - people drain me</label></div>
+            <div class="option"><input type="radio" name="c9" value="people_low" id="c9a"><label for="c9a">Low - I want minimal interaction and more solo focus</label></div>
+            <div class="option"><input type="radio" name="c9" value="people_some" id="c9b"><label for="c9b">Some - collaboration is fine, but not nonstop</label></div>
+            <div class="option"><input type="radio" name="c9" value="people_high" id="c9c"><label for="c9c">High - I like helping, coordinating, or talking with people</label></div>
+            <div class="option"><input type="radio" name="c9" value="people_all_day" id="c9d"><label for="c9d">Very high - I do well when people are a big part of the day</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(9)">Next</button>
         </div>
 
-        <!-- Career Q10 -->
         <div class="step" data-step="10" data-track="career">
-          <h3>How physically capable/fit are you?</h3>
+          <h3>How much client-facing work are you comfortable with?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c10" value="physical_high" id="c10a"><label for="c10a">Very fit - physical work doesn't bother me</label></div>
-            <div class="option"><input type="radio" name="c10" value="physical_medium" id="c10b"><label for="c10b">Average fitness - can handle some physical work</label></div>
-            <div class="option"><input type="radio" name="c10" value="physical_low" id="c10c"><label for="c10c">Prefer low physical demand</label></div>
-            <div class="option"><input type="radio" name="c10" value="physical_none" id="c10d"><label for="c10d">Need desk work - physical labor isn't for me</label></div>
+            <div class="option"><input type="radio" name="c10" value="clients_minimal" id="c10a"><label for="c10a">Minimal - I would rather work on tasks, systems, or production</label></div>
+            <div class="option"><input type="radio" name="c10" value="clients_some" id="c10b"><label for="c10b">Some is fine if it is not constant</label></div>
+            <div class="option"><input type="radio" name="c10" value="clients_regular" id="c10c"><label for="c10c">Regular client contact is okay</label></div>
+            <div class="option"><input type="radio" name="c10" value="clients_heavy" id="c10d"><label for="c10d">A lot - advising, supporting, or selling to people is fine</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(10)">Next</button>
         </div>
 
-        <!-- Career Q11 -->
         <div class="step" data-step="11" data-track="career">
-          <h3>What work schedule appeals to you?</h3>
+          <h3>How do you feel about sales, persuasion, or commission?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c11" value="schedule_flexible" id="c11a"><label for="c11a">Flexible/remote - work from anywhere, my hours</label></div>
-            <div class="option"><input type="radio" name="c11" value="schedule_structured" id="c11b"><label for="c11b">Structured but good hours - 9-5 type</label></div>
-            <div class="option"><input type="radio" name="c11" value="schedule_intense" id="c11c"><label for="c11c">Intense but lucrative - long hours, high pay</label></div>
-            <div class="option"><input type="radio" name="c11" value="schedule_unique" id="c11d"><label for="c11d">Unique schedule - 24-hour shifts then days off</label></div>
+            <div class="option"><input type="radio" name="c11" value="sales_no" id="c11a"><label for="c11a">Not for me - I want a path that does not rely on selling</label></div>
+            <div class="option"><input type="radio" name="c11" value="sales_light" id="c11b"><label for="c11b">Light selling is okay if it is part of the role</label></div>
+            <div class="option"><input type="radio" name="c11" value="sales_open" id="c11c"><label for="c11c">I am open to commission or growth tied to performance</label></div>
+            <div class="option"><input type="radio" name="c11" value="sales_enjoy" id="c11d"><label for="c11d">I actually like persuasion, relationships, and growth targets</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(11)">Next</button>
         </div>
 
-        <!-- Career Q12 -->
         <div class="step" data-step="12" data-track="career">
-          <h3>How soon do you need to start earning money?</h3>
+          <h3>Do you prefer independence or team structure?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c12" value="time_fast" id="c12a"><label for="c12a">Need money ASAP - within 1-3 months</label></div>
-            <div class="option"><input type="radio" name="c12" value="time_medium" id="c12b"><label for="c12b">6-12 months is fine</label></div>
-            <div class="option"><input type="radio" name="c12" value="time_long" id="c12c"><label for="c12c">1-3 years okay - playing long game</label></div>
-            <div class="option"><input type="radio" name="c12" value="time_very_long" id="c12d"><label for="c12d">5+ years is fine - this is a career</label></div>
+            <div class="option"><input type="radio" name="c12" value="work_team" id="c12a"><label for="c12a">Team structure - I do best when the work is coordinated</label></div>
+            <div class="option"><input type="radio" name="c12" value="work_blend" id="c12b"><label for="c12b">A blend - some independence, some team support</label></div>
+            <div class="option"><input type="radio" name="c12" value="work_independent" id="c12c"><label for="c12c">Mostly independent - I like owning my lane</label></div>
+            <div class="option"><input type="radio" name="c12" value="work_solo" id="c12d"><label for="c12d">Very independent - I want as little dependency on others as possible</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(12)">Next</button>
         </div>
 
-        <!-- Career Q13 -->
         <div class="step" data-step="13" data-track="career">
-          <h3>How do you feel about taking on college debt?</h3>
+          <h3>What feels better: routine or variety?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c13" value="debt_existing" id="c13a"><label for="c13a">Already have it - doesn't matter</label></div>
-            <div class="option"><input type="radio" name="c13" value="debt_okay" id="c13b"><label for="c13b">Worth it for the right career</label></div>
-            <div class="option"><input type="radio" name="c13" value="debt_some" id="c13c"><label for="c13c">Some debt okay but not $100k+</label></div>
-            <div class="option"><input type="radio" name="c13" value="debt_none" id="c13d"><label for="c13d">Absolutely no debt - won't do it</label></div>
+            <div class="option"><input type="radio" name="c13" value="routine_yes" id="c13a"><label for="c13a">Routine - I like clear patterns and repeatable work</label></div>
+            <div class="option"><input type="radio" name="c13" value="routine_mix" id="c13b"><label for="c13b">A mix - enough structure with some change</label></div>
+            <div class="option"><input type="radio" name="c13" value="routine_variety" id="c13c"><label for="c13c">Variety - I want different problems or situations</label></div>
+            <div class="option"><input type="radio" name="c13" value="routine_change" id="c13d"><label for="c13d">A lot of change - I get restless when every day looks the same</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(13)">Next</button>
         </div>
 
-        <!-- Career Q14 -->
         <div class="step" data-step="14" data-track="career">
-          <h3>How do you feel about client-facing work?</h3>
+          <h3>How important is mission or impact in your next move?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c14" value="clients_love" id="c14a"><label for="c14a">Love clients - customer service is my thing</label></div>
-            <div class="option"><input type="radio" name="c14" value="clients_okay" id="c14b"><label for="c14b">Some client work is fine</label></div>
-            <div class="option"><input type="radio" name="c14" value="clients_minimal" id="c14c"><label for="c14c">Minimal client interaction preferred</label></div>
-            <div class="option"><input type="radio" name="c14" value="clients_none" id="c14d"><label for="c14d">No clients - I want to work on systems/products</label></div>
+            <div class="option"><input type="radio" name="c14" value="impact_core" id="c14a"><label for="c14a">Core - I want the work to clearly help or protect people</label></div>
+            <div class="option"><input type="radio" name="c14" value="impact_matters" id="c14b"><label for="c14b">It matters, even if it is not the only factor</label></div>
+            <div class="option"><input type="radio" name="c14" value="impact_neutral" id="c14c"><label for="c14c">Neutral - fit and practicality matter more</label></div>
+            <div class="option"><input type="radio" name="c14" value="impact_not_focus" id="c14d"><label for="c14d">Not a major factor - I care more about stability or upside</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(14)">Next</button>
         </div>
 
-        <!-- Career Q15 -->
         <div class="step" data-step="15" data-track="career">
-          <h3>Do you want to lead teams or work independently?</h3>
+          <h3>How much travel or time away from home works for you?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c15" value="leader_yes" id="c15a"><label for="c15a">Want to lead teams - management appeals to me</label></div>
-            <div class="option"><input type="radio" name="c15" value="leader_maybe" id="c15b"><label for="c15b">Maybe eventually but not required</label></div>
-            <div class="option"><input type="radio" name="c15" value="leader_no" id="c15c"><label for="c15c">Prefer to work independently</label></div>
-            <div class="option"><input type="radio" name="c15" value="leader_never" id="c15d"><label for="c15d">Definitely no management - just want to do the work</label></div>
+            <div class="option"><input type="radio" name="c15" value="travel_none" id="c15a"><label for="c15a">Very little - I want to stay local and close to home</label></div>
+            <div class="option"><input type="radio" name="c15" value="travel_local" id="c15b"><label for="c15b">Local travel is okay, but I do not want to be gone often</label></div>
+            <div class="option"><input type="radio" name="c15" value="travel_occasional" id="c15c"><label for="c15c">Occasional travel is fine</label></div>
+            <div class="option"><input type="radio" name="c15" value="travel_open" id="c15d"><label for="c15d">I am open if travel is part of the job or lifestyle</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(15)">Next</button>
         </div>
 
-        <!-- Career Q16 -->
         <div class="step" data-step="16" data-track="career">
-          <h3>Do you prefer repetitive work or always different?</h3>
+          <h3>What kind of stress level can you realistically handle?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c16" value="variety_high" id="c16a"><label for="c16a">Love variety - every day different</label></div>
-            <div class="option"><input type="radio" name="c16" value="variety_medium" id="c16b"><label for="c16b">Some variety is good</label></div>
-            <div class="option"><input type="radio" name="c16" value="variety_low" id="c16c"><label for="c16c">Repetitive is fine if it pays well</label></div>
-            <div class="option"><input type="radio" name="c16" value="variety_none" id="c16d"><label for="c16d">Actually prefer routine</label></div>
+            <div class="option"><input type="radio" name="c16" value="stress_low" id="c16a"><label for="c16a">Lower stress - I need a steadier pace</label></div>
+            <div class="option"><input type="radio" name="c16" value="stress_moderate" id="c16b"><label for="c16b">Moderate - some pressure is fine if it is worth it</label></div>
+            <div class="option"><input type="radio" name="c16" value="stress_dynamic" id="c16c"><label for="c16c">Fast-moving is okay if the work is meaningful or rewarding</label></div>
+            <div class="option"><input type="radio" name="c16" value="stress_intense" id="c16d"><label for="c16d">I can handle intense environments if the path fits</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(16)">Next</button>
         </div>
 
-        <!-- Career Q17 -->
         <div class="step" data-step="17" data-track="career">
-          <h3>How important is "making a difference" to you?</h3>
+          <h3>When you are at your best, what kind of work are you doing?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c17" value="impact_critical" id="c17a"><label for="c17a">Critical - need to help people/make impact</label></div>
-            <div class="option"><input type="radio" name="c17" value="impact_important" id="c17b"><label for="c17b">Important - would be nice</label></div>
-            <div class="option"><input type="radio" name="c17" value="impact_some" id="c17c"><label for="c17c">Somewhat - not main priority</label></div>
-            <div class="option"><input type="radio" name="c17" value="impact_none" id="c17d"><label for="c17d">Don't care - just want money</label></div>
+            <div class="option"><input type="radio" name="c17" value="task_support" id="c17a"><label for="c17a">Organizing, supporting, and keeping things moving behind the scenes</label></div>
+            <div class="option"><input type="radio" name="c17" value="task_help" id="c17b"><label for="c17b">Helping, coaching, or guiding people directly</label></div>
+            <div class="option"><input type="radio" name="c17" value="task_systems" id="c17c"><label for="c17c">Solving systems, technical, or process problems</label></div>
+            <div class="option"><input type="radio" name="c17" value="task_hands" id="c17d"><label for="c17d">Building, fixing, making, or working with my hands</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(17)">Next</button>
         </div>
 
-        <!-- Career Q18 -->
         <div class="step" data-step="18" data-track="career">
-          <h3>How do you feel about traveling for work?</h3>
+          <h3>Which work environment sounds best right now?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c18" value="travel_love" id="c18a"><label for="c18a">Love it - travel appeals to me</label></div>
-            <div class="option"><input type="radio" name="c18" value="travel_some" id="c18b"><label for="c18b">Occasional travel is fine</label></div>
-            <div class="option"><input type="radio" name="c18" value="travel_minimal" id="c18c"><label for="c18c">Prefer to stay local</label></div>
-            <div class="option"><input type="radio" name="c18" value="travel_none" id="c18d"><label for="c18d">No travel - want to be home</label></div>
+            <div class="option"><input type="radio" name="c18" value="env_desk" id="c18a"><label for="c18a">A calm desk setup with clear tools and expectations</label></div>
+            <div class="option"><input type="radio" name="c18" value="env_mix" id="c18b"><label for="c18b">A mix of desk time, movement, and real-world problem solving</label></div>
+            <div class="option"><input type="radio" name="c18" value="env_field" id="c18c"><label for="c18c">On the move, in the field, or handling things in person</label></div>
+            <div class="option"><input type="radio" name="c18" value="env_digital" id="c18d"><label for="c18d">A flexible digital workspace where I can focus independently</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(18)">Next</button>
         </div>
 
-        <!-- Career Q19 -->
         <div class="step" data-step="19" data-track="career">
-          <h3>Job security or unlimited upside?</h3>
+          <h3>How comfortable are you with technology and digital tools?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c19" value="security_high" id="c19a"><label for="c19a">Security 100% - need stability</label></div>
-            <div class="option"><input type="radio" name="c19" value="security_medium" id="c19b"><label for="c19b">Security preferred but some upside</label></div>
-            <div class="option"><input type="radio" name="c19" value="security_balanced" id="c19c"><label for="c19c">Balanced - okay with some risk</label></div>
-            <div class="option"><input type="radio" name="c19" value="security_low" id="c19d"><label for="c19d">Upside potential - willing to sacrifice security</label></div>
+            <div class="option"><input type="radio" name="c19" value="tech_low" id="c19a"><label for="c19a">Basic only - I prefer simpler tools and clearer workflows</label></div>
+            <div class="option"><input type="radio" name="c19" value="tech_working" id="c19b"><label for="c19b">Comfortable enough to learn what I need for work</label></div>
+            <div class="option"><input type="radio" name="c19" value="tech_good" id="c19c"><label for="c19c">Strong - I like digital systems and problem solving</label></div>
+            <div class="option"><input type="radio" name="c19" value="tech_deep" id="c19d"><label for="c19d">Very strong - I could go deep in a technical path</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(19)">Next</button>
         </div>
 
-        <!-- Career Q20 -->
         <div class="step" data-step="20" data-track="career">
-          <h3>What sounds most appealing to you?</h3>
+          <h3>How much leadership responsibility do you want?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c20" value="path_entrepreneur" id="c20a"><label for="c20a">Build something from scratch - own business</label></div>
-            <div class="option"><input type="radio" name="c20" value="path_corporate" id="c20b"><label for="c20b">Climb corporate ladder - structured career</label></div>
-            <div class="option"><input type="radio" name="c20" value="path_trade" id="c20c"><label for="c20c">Skilled trade - master a craft</label></div>
-            <div class="option"><input type="radio" name="c20" value="path_creative" id="c20d"><label for="c20d">Creative work - make art/content</label></div>
+            <div class="option"><input type="radio" name="c20" value="lead_contributor" id="c20a"><label for="c20a">Mostly individual contributor work - I want to do strong work first</label></div>
+            <div class="option"><input type="radio" name="c20" value="lead_maybe" id="c20b"><label for="c20b">Maybe later - I am open to growing into more responsibility</label></div>
+            <div class="option"><input type="radio" name="c20" value="lead_yes" id="c20c"><label for="c20c">Yes - I want a path that can lead to managing people or projects</label></div>
+            <div class="option"><input type="radio" name="c20" value="lead_build" id="c20d"><label for="c20d">I want to build or lead something of my own</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(20)">Next</button>
         </div>
 
-        <!-- Career Q21 -->
         <div class="step" data-step="21" data-track="career">
-          <h3>How disciplined are you without structure?</h3>
+          <h3>How much do caregiving or life constraints shape what you can do?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c21" value="discipline_high" id="c21a"><label for="c21a">Very - I create my own structure</label></div>
-            <div class="option"><input type="radio" name="c21" value="discipline_medium" id="c21b"><label for="c21b">Pretty good - can work independently</label></div>
-            <div class="option"><input type="radio" name="c21" value="discipline_low" id="c21c"><label for="c21c">Need some structure</label></div>
-            <div class="option"><input type="radio" name="c21" value="discipline_none" id="c21d"><label for="c21d">Need lots of structure/boss telling me what to do</label></div>
+            <div class="option"><input type="radio" name="c21" value="care_high" id="c21a"><label for="c21a">A lot - I need real flexibility around life outside work</label></div>
+            <div class="option"><input type="radio" name="c21" value="care_some" id="c21b"><label for="c21b">Some - schedule flexibility would make a big difference</label></div>
+            <div class="option"><input type="radio" name="c21" value="care_low" id="c21c"><label for="c21c">A little - I can work within some structure</label></div>
+            <div class="option"><input type="radio" name="c21" value="care_open" id="c21d"><label for="c21d">Not much right now - I am fairly open</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(21)">Next</button>
         </div>
 
-        <!-- Career Q22 -->
         <div class="step" data-step="22" data-track="career">
-          <h3>How do you handle emergencies and unpredictability?</h3>
+          <h3>What does a sustainable workday need to respect?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c22" value="chaos_thrive" id="c22a"><label for="c22a">I thrive in chaos - bring it on</label></div>
-            <div class="option"><input type="radio" name="c22" value="chaos_okay" id="c22b"><label for="c22b">Can handle it</label></div>
-            <div class="option"><input type="radio" name="c22" value="chaos_no" id="c22c"><label for="c22c">Prefer predictability</label></div>
-            <div class="option"><input type="radio" name="c22" value="chaos_hate" id="c22d"><label for="c22d">Hate unpredictability - need routine</label></div>
+            <div class="option"><input type="radio" name="c22" value="energy_sustainable" id="c22a"><label for="c22a">Low drain - I need a workday that is easier on my energy or body</label></div>
+            <div class="option"><input type="radio" name="c22" value="energy_variable" id="c22b"><label for="c22b">Recovery room - my energy can vary, so flexibility helps</label></div>
+            <div class="option"><input type="radio" name="c22" value="energy_steady" id="c22c"><label for="c22c">Consistency - I can handle a normal pace most days</label></div>
+            <div class="option"><input type="radio" name="c22" value="energy_active" id="c22d"><label for="c22d">Active engagement - I feel better when the work keeps me moving</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(22)">Next</button>
         </div>
 
-        <!-- Career Q23 -->
         <div class="step" data-step="23" data-track="career">
-          <h3>How important is prestige/status to you?</h3>
+          <h3>If you have to choose, which tradeoff fits you best?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c23" value="prestige_high" id="c23a"><label for="c23a">Very - I want a respected career</label></div>
-            <div class="option"><input type="radio" name="c23" value="prestige_medium" id="c23b"><label for="c23b">Somewhat important</label></div>
-            <div class="option"><input type="radio" name="c23" value="prestige_low" id="c23c"><label for="c23c">Don't really care</label></div>
-            <div class="option"><input type="radio" name="c23" value="prestige_none" id="c23d"><label for="c23d">Not at all - I do my own thing</label></div>
+            <div class="option"><input type="radio" name="c23" value="tradeoff_stability" id="c23a"><label for="c23a">More stability, even if the upside is lower</label></div>
+            <div class="option"><input type="radio" name="c23" value="tradeoff_balanced" id="c23b"><label for="c23b">A balanced path with room to grow</label></div>
+            <div class="option"><input type="radio" name="c23" value="tradeoff_upside" id="c23c"><label for="c23c">More upside, even if it takes pressure or uncertainty</label></div>
+            <div class="option"><input type="radio" name="c23" value="tradeoff_ownership" id="c23d"><label for="c23d">Ownership and autonomy matter enough that I accept more risk</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(23)">Next</button>
         </div>
 
-        <!-- Career Q24 -->
         <div class="step" data-step="24" data-track="career">
-          <h3>Do you prefer working with your hands or your brain?</h3>
+          <h3>How quickly do you need your first paycheck from a new direction?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c24" value="work_hands" id="c24a"><label for="c24a">Hands - I love physical/craft work</label></div>
-            <div class="option"><input type="radio" name="c24" value="work_both" id="c24b"><label for="c24b">Both - mix of physical and mental</label></div>
-            <div class="option"><input type="radio" name="c24" value="work_brain" id="c24c"><label for="c24c">Brain - I prefer mental work</label></div>
-            <div class="option"><input type="radio" name="c24" value="work_desk" id="c24d"><label for="c24d">Computer - I want desk work only</label></div>
+            <div class="option"><input type="radio" name="c24" value="paycheck_immediate" id="c24a"><label for="c24a">As fast as possible - I need a quick on-ramp</label></div>
+            <div class="option"><input type="radio" name="c24" value="paycheck_months" id="c24b"><label for="c24b">Within a few months is okay</label></div>
+            <div class="option"><input type="radio" name="c24" value="paycheck_year" id="c24c"><label for="c24c">I can invest a year or so if the path is strong</label></div>
+            <div class="option"><input type="radio" name="c24" value="paycheck_long" id="c24d"><label for="c24d">I am okay with a longer runway for the right long-term fit</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(24)">Next</button>
         </div>
         
         <div class="step" data-step="25" data-track="career">
-          <h3>What's your tolerance for slow growth?</h3>
+          <h3>How patient are you with long-term growth?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="c25" value="patience_high" id="c25a"><label for="c25a">High - I'm patient, playing long game</label></div>
-            <div class="option"><input type="radio" name="c25" value="patience_medium" id="c25b"><label for="c25b">Medium - okay with some slow build</label></div>
-            <div class="option"><input type="radio" name="c25" value="patience_low" id="c25c"><label for="c25c">Low - need to see results within a year</label></div>
-            <div class="option"><input type="radio" name="c25" value="patience_none" id="c25d"><label for="c25d">Very low - need fast wins</label></div>
+            <div class="option"><input type="radio" name="c25" value="patience_low" id="c25a"><label for="c25a">Low - I need momentum and visible progress within this year</label></div>
+            <div class="option"><input type="radio" name="c25" value="patience_some" id="c25b"><label for="c25b">Some - I can build for a while if I see steady movement</label></div>
+            <div class="option"><input type="radio" name="c25" value="patience_high" id="c25c"><label for="c25c">High - I can stay patient for a stronger long-term path</label></div>
+            <div class="option"><input type="radio" name="c25" value="patience_very" id="c25d"><label for="c25d">Very high - I am willing to build slowly if the payoff is meaningful</label></div>
           </div>
           <button type="submit" class="btn" onclick="submitQuiz(event)">See My Results</button>
         </div>
@@ -1438,301 +1502,277 @@
 
       <!-- LIFE QUESTIONS (1-25) - Only shown if life or both mode -->
       <div class="life-questions">
-        <!-- Life Q1 -->
         <div class="step" data-step="1" data-track="life">
-          <h3>What feels missing in your life right now?</h3>
+          <h3>What do you most want a hobby to give you right now?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l1" value="missing_creativity" id="l1a"><label for="l1a">Creativity and self-expression</label></div>
-            <div class="option"><input type="radio" name="l1" value="missing_physical" id="l1b"><label for="l1b">Physical activity and adventure</label></div>
-            <div class="option"><input type="radio" name="l1" value="missing_social" id="l1c"><label for="l1c">Social connection and community</label></div>
-            <div class="option"><input type="radio" name="l1" value="missing_peace" id="l1d"><label for="l1d">Peace and inner calm</label></div>
+            <div class="option"><input type="radio" name="l1" value="need_restore" id="l1a"><label for="l1a">Rest, calm, and a softer way to reset</label></div>
+            <div class="option"><input type="radio" name="l1" value="need_create" id="l1b"><label for="l1b">Creative expression and a way to make things</label></div>
+            <div class="option"><input type="radio" name="l1" value="need_connect" id="l1c"><label for="l1c">Connection, community, or shared time with people</label></div>
+            <div class="option"><input type="radio" name="l1" value="need_energy" id="l1d"><label for="l1d">Energy, movement, adventure, or play</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(1)">Next</button>
         </div>
 
-        <!-- Life Q2 -->
         <div class="step" data-step="2" data-track="life">
-          <h3>How much free time do you realistically have per week?</h3>
+          <h3>How much time can you realistically give this most weeks?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l2" value="time_2_5" id="l2a"><label for="l2a">2-5 hours (very busy)</label></div>
-            <div class="option"><input type="radio" name="l2" value="time_5_10" id="l2b"><label for="l2b">5-10 hours (moderate)</label></div>
-            <div class="option"><input type="radio" name="l2" value="time_10_20" id="l2c"><label for="l2c">10-20 hours (decent amount)</label></div>
-            <div class="option"><input type="radio" name="l2" value="time_20_plus" id="l2d"><label for="l2d">20+ hours (plenty of time)</label></div>
+            <div class="option"><input type="radio" name="l2" value="time_tiny" id="l2a"><label for="l2a">Tiny pockets - 10 to 30 minutes here and there</label></div>
+            <div class="option"><input type="radio" name="l2" value="time_low" id="l2b"><label for="l2b">A little - 1 to 3 hours a week</label></div>
+            <div class="option"><input type="radio" name="l2" value="time_medium" id="l2c"><label for="l2c">A steady rhythm - 3 to 8 hours a week</label></div>
+            <div class="option"><input type="radio" name="l2" value="time_deep" id="l2d"><label for="l2d">Plenty - I can make this a real weekly focus</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(2)">Next</button>
         </div>
 
-        <!-- Life Q3 -->
         <div class="step" data-step="3" data-track="life">
-          <h3>After work, what's your energy level like?</h3>
+          <h3>What is your real energy level after responsibilities are handled?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l3" value="energy_drained" id="l3a"><label for="l3a">Drained - need low-energy activities</label></div>
-            <div class="option"><input type="radio" name="l3" value="energy_moderate" id="l3b"><label for="l3b">Moderate - can do some things</label></div>
-            <div class="option"><input type="radio" name="l3" value="energy_high" id="l3c"><label for="l3c">Energized - ready for intense activities</label></div>
-            <div class="option"><input type="radio" name="l3" value="energy_variable" id="l3d"><label for="l3d">Variable - depends on the day</label></div>
+            <div class="option"><input type="radio" name="l3" value="energy_low" id="l3a"><label for="l3a">Low - I need something gentle and forgiving</label></div>
+            <div class="option"><input type="radio" name="l3" value="energy_variable" id="l3b"><label for="l3b">Variable - some days are good, some days are not</label></div>
+            <div class="option"><input type="radio" name="l3" value="energy_balanced" id="l3c"><label for="l3c">Balanced - I can usually show up if it feels worth it</label></div>
+            <div class="option"><input type="radio" name="l3" value="energy_high" id="l3d"><label for="l3d">High - I want something active, lively, or challenging</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(3)">Next</button>
         </div>
 
-        <!-- Life Q4 -->
         <div class="step" data-step="4" data-track="life">
-          <h3>What kind of social interaction do you crave?</h3>
+          <h3>What budget feels comfortable for starting?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l4" value="social_solo" id="l4a"><label for="l4a">Solo time - I'm around people all day at work</label></div>
-            <div class="option"><input type="radio" name="l4" value="social_small" id="l4b"><label for="l4b">Small group - close friends doing activities</label></div>
-            <div class="option"><input type="radio" name="l4" value="social_large" id="l4c"><label for="l4c">Large social scenes - meeting new people</label></div>
-            <div class="option"><input type="radio" name="l4" value="social_flexible" id="l4d"><label for="l4d">Flexible - both solo and social appeal</label></div>
+            <div class="option"><input type="radio" name="l4" value="budget_free" id="l4a"><label for="l4a">$0-50 - I want something very low cost</label></div>
+            <div class="option"><input type="radio" name="l4" value="budget_light" id="l4b"><label for="l4b">$50-300 - a small starter setup is okay</label></div>
+            <div class="option"><input type="radio" name="l4" value="budget_moderate" id="l4c"><label for="l4c">$300-1000 - I can invest if it is the right fit</label></div>
+            <div class="option"><input type="radio" name="l4" value="budget_open" id="l4d"><label for="l4d">Open - gear or classes are fine if I will use them</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(4)">Next</button>
         </div>
 
-        <!-- Life Q5 -->
         <div class="step" data-step="5" data-track="life">
-          <h3>Do you sit at a desk all day?</h3>
+          <h3>What kind of physical demand fits your life right now?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l5" value="desk_need_move" id="l5a"><label for="l5a">Yes, and I need to MOVE</label></div>
-            <div class="option"><input type="radio" name="l5" value="desk_mental" id="l5b"><label for="l5b">Yes, but I like mental hobbies</label></div>
-            <div class="option"><input type="radio" name="l5" value="desk_physical" id="l5c"><label for="l5c">No, I'm physical at work and want rest</label></div>
-            <div class="option"><input type="radio" name="l5" value="desk_mix" id="l5d"><label for="l5d">Mix of both</label></div>
+            <div class="option"><input type="radio" name="l5" value="physical_low" id="l5a"><label for="l5a">Very low - I need low-strain options</label></div>
+            <div class="option"><input type="radio" name="l5" value="physical_gentle" id="l5b"><label for="l5b">Gentle movement is good</label></div>
+            <div class="option"><input type="radio" name="l5" value="physical_moderate" id="l5c"><label for="l5c">Moderate activity sounds healthy</label></div>
+            <div class="option"><input type="radio" name="l5" value="physical_high" id="l5d"><label for="l5d">High activity - I want to move, sweat, or train</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(5)">Next</button>
         </div>
 
-        <!-- Life Q6 -->
         <div class="step" data-step="6" data-track="life">
-          <h3>Do you feel creatively stifled?</h3>
+          <h3>How social should this hobby be?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l6" value="creative_badly" id="l6a"><label for="l6a">Yes! I need creative expression badly</label></div>
-            <div class="option"><input type="radio" name="l6" value="creative_somewhat" id="l6b"><label for="l6b">Somewhat - would be nice</label></div>
-            <div class="option"><input type="radio" name="l6" value="creative_not" id="l6c"><label for="l6c">Not really - I'm satisfied</label></div>
-            <div class="option"><input type="radio" name="l6" value="creative_work" id="l6d"><label for="l6d">I'm creative at work already</label></div>
+            <div class="option"><input type="radio" name="l6" value="social_solo" id="l6a"><label for="l6a">Mostly solo - I need recharge time</label></div>
+            <div class="option"><input type="radio" name="l6" value="social_small" id="l6b"><label for="l6b">Small group - one or a few people feels best</label></div>
+            <div class="option"><input type="radio" name="l6" value="social_community" id="l6c"><label for="l6c">Community - I want recurring connection</label></div>
+            <div class="option"><input type="radio" name="l6" value="social_flexible" id="l6d"><label for="l6d">Flexible - solo or social could both work</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(6)">Next</button>
         </div>
 
-        <!-- Life Q7 -->
         <div class="step" data-step="7" data-track="life">
-          <h3>How adventurous are you feeling?</h3>
+          <h3>How do you feel about screens for hobbies?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l7" value="adventure_very" id="l7a"><label for="l7a">Very - I want adrenaline and exploration</label></div>
-            <div class="option"><input type="radio" name="l7" value="adventure_moderate" id="l7b"><label for="l7b">Moderately - some adventure appeals</label></div>
-            <div class="option"><input type="radio" name="l7" value="adventure_low" id="l7c"><label for="l7c">Low - prefer calm, familiar activities</label></div>
-            <div class="option"><input type="radio" name="l7" value="adventure_none" id="l7d"><label for="l7d">Not at all - want peace and routine</label></div>
+            <div class="option"><input type="radio" name="l7" value="screen_free" id="l7a"><label for="l7a">I want a real break from screens</label></div>
+            <div class="option"><input type="radio" name="l7" value="screen_light" id="l7b"><label for="l7b">A little screen time is okay</label></div>
+            <div class="option"><input type="radio" name="l7" value="screen_ok" id="l7c"><label for="l7c">Screens are fine if the hobby is engaging</label></div>
+            <div class="option"><input type="radio" name="l7" value="screen_prefer" id="l7d"><label for="l7d">I actually like digital or screen-based hobbies</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(7)">Next</button>
         </div>
 
-        <!-- Life Q8 -->
         <div class="step" data-step="8" data-track="life">
-          <h3>Do you want to learn something new?</h3>
+          <h3>Which setting sounds most sustainable?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l8" value="learn_yes" id="l8a"><label for="l8a">Yes - I love learning and growth</label></div>
-            <div class="option"><input type="radio" name="l8" value="learn_open" id="l8b"><label for="l8b">Open to it if interesting</label></div>
-            <div class="option"><input type="radio" name="l8" value="learn_immediate" id="l8c"><label for="l8c">Prefer activities I can start immediately</label></div>
-            <div class="option"><input type="radio" name="l8" value="learn_no" id="l8d"><label for="l8d">No - I'm tired of learning</label></div>
+            <div class="option"><input type="radio" name="l8" value="place_home" id="l8a"><label for="l8a">Home-based - easy to start without leaving</label></div>
+            <div class="option"><input type="radio" name="l8" value="place_indoor" id="l8b"><label for="l8b">Indoor spaces, classes, studios, or libraries</label></div>
+            <div class="option"><input type="radio" name="l8" value="place_outdoor" id="l8c"><label for="l8c">Outdoors, fresh air, trails, parks, or water</label></div>
+            <div class="option"><input type="radio" name="l8" value="place_mixed" id="l8d"><label for="l8d">A mix - I like options</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(8)">Next</button>
         </div>
 
-        <!-- Life Q9 -->
         <div class="step" data-step="9" data-track="life">
-          <h3>How do you feel about competition?</h3>
+          <h3>What kind of creativity do you want, if any?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l9" value="compete_love" id="l9a"><label for="l9a">Love it - I want to compete and win</label></div>
-            <div class="option"><input type="radio" name="l9" value="compete_motivating" id="l9b"><label for="l9b">It's motivating - casual competition is fun</label></div>
-            <div class="option"><input type="radio" name="l9" value="compete_neutral" id="l9c"><label for="l9c">Neutral - don't need it</label></div>
-            <div class="option"><input type="radio" name="l9" value="compete_no" id="l9d"><label for="l9d">Dislike - prefer non-competitive activities</label></div>
+            <div class="option"><input type="radio" name="l9" value="creative_visual" id="l9a"><label for="l9a">Visual or hands-on creativity</label></div>
+            <div class="option"><input type="radio" name="l9" value="creative_words_sound" id="l9b"><label for="l9b">Words, sound, performance, or storytelling</label></div>
+            <div class="option"><input type="radio" name="l9" value="creative_practical" id="l9c"><label for="l9c">Practical creativity like food, home, or projects</label></div>
+            <div class="option"><input type="radio" name="l9" value="creative_not_focus" id="l9d"><label for="l9d">Creativity is not the main thing I need</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(9)">Next</button>
         </div>
 
-        <!-- Life Q10 -->
         <div class="step" data-step="10" data-track="life">
-          <h3>Do you need structure or freedom?</h3>
+          <h3>Do you want to make something tangible?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l10" value="structure_yes" id="l10a"><label for="l10a">Structure - classes, schedules, commitments</label></div>
-            <div class="option"><input type="radio" name="l10" value="structure_some" id="l10b"><label for="l10b">Some structure - regular but flexible</label></div>
-            <div class="option"><input type="radio" name="l10" value="structure_freedom" id="l10c"><label for="l10c">Freedom - totally on my own schedule</label></div>
-            <div class="option"><input type="radio" name="l10" value="structure_either" id="l10d"><label for="l10d">Don't care - either works</label></div>
+            <div class="option"><input type="radio" name="l10" value="make_yes" id="l10a"><label for="l10a">Yes - making things sounds satisfying</label></div>
+            <div class="option"><input type="radio" name="l10" value="make_maybe" id="l10b"><label for="l10b">Maybe - if the process is relaxing</label></div>
+            <div class="option"><input type="radio" name="l10" value="make_digital" id="l10c"><label for="l10c">I would rather make digital things</label></div>
+            <div class="option"><input type="radio" name="l10" value="make_no" id="l10d"><label for="l10d">No - I prefer experiences, ideas, or connection</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(10)">Next</button>
         </div>
 
-        <!-- Life Q11 -->
         <div class="step" data-step="11" data-track="life">
-          <h3>Do you prefer indoor or outdoor activities?</h3>
+          <h3>What kind of structure helps you actually stick with something?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l11" value="location_outdoor" id="l11a"><label for="l11a">Outdoor - I need nature and fresh air</label></div>
-            <div class="option"><input type="radio" name="l11" value="location_mostly_outdoor" id="l11b"><label for="l11b">Mostly outdoor but some indoor</label></div>
-            <div class="option"><input type="radio" name="l11" value="location_mostly_indoor" id="l11c"><label for="l11c">Mostly indoor but some outdoor</label></div>
-            <div class="option"><input type="radio" name="l11" value="location_indoor" id="l11d"><label for="l11d">Indoor - climate control is key</label></div>
+            <div class="option"><input type="radio" name="l11" value="structure_routine" id="l11a"><label for="l11a">A steady routine or class time</label></div>
+            <div class="option"><input type="radio" name="l11" value="structure_weekly" id="l11b"><label for="l11b">A weekly rhythm with some flexibility</label></div>
+            <div class="option"><input type="radio" name="l11" value="structure_dropin" id="l11c"><label for="l11c">Drop-in flexibility with no pressure</label></div>
+            <div class="option"><input type="radio" name="l11" value="structure_spontaneous" id="l11d"><label for="l11d">Spontaneous - I want it to fit my mood</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(11)">Next</button>
         </div>
 
-        <!-- Life Q12 -->
         <div class="step" data-step="12" data-track="life">
-          <h3>Do you want solo or social hobbies?</h3>
+          <h3>How much learning curve are you up for?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l12" value="hobby_solo" id="l12a"><label for="l12a">Solo - I need alone time to recharge</label></div>
-            <div class="option"><input type="radio" name="l12" value="hobby_mostly_solo" id="l12b"><label for="l12b">Mostly solo but occasional social</label></div>
-            <div class="option"><input type="radio" name="l12" value="hobby_balanced" id="l12c"><label for="l12c">Balanced mix</label></div>
-            <div class="option"><input type="radio" name="l12" value="hobby_social" id="l12d"><label for="l12d">Social - I want community and connection</label></div>
+            <div class="option"><input type="radio" name="l12" value="learn_easy" id="l12a"><label for="l12a">Easy start - I need quick enjoyment</label></div>
+            <div class="option"><input type="radio" name="l12" value="learn_some" id="l12b"><label for="l12b">Some learning is fine if it is interesting</label></div>
+            <div class="option"><input type="radio" name="l12" value="learn_mastery" id="l12c"><label for="l12c">I want a skill I can get better at over time</label></div>
+            <div class="option"><input type="radio" name="l12" value="learn_many" id="l12d"><label for="l12d">I like sampling lots of new things</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(12)">Next</button>
         </div>
 
-        <!-- Life Q13 -->
         <div class="step" data-step="13" data-track="life">
-          <h3>How much more screen time can you handle?</h3>
+          <h3>What kind of stress relief sounds most useful?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l13" value="screen_none" id="l13a"><label for="l13a">None - I'm on screens all day</label></div>
-            <div class="option"><input type="radio" name="l13" value="screen_little" id="l13b"><label for="l13b">A little - if it's engaging</label></div>
-            <div class="option"><input type="radio" name="l13" value="screen_ok" id="l13c"><label for="l13c">Doesn't matter - fine with screens</label></div>
-            <div class="option"><input type="radio" name="l13" value="screen_want" id="l13d"><label for="l13d">Actually want screen-based hobbies</label></div>
+            <div class="option"><input type="radio" name="l13" value="stress_calm" id="l13a"><label for="l13a">Calm my nervous system down</label></div>
+            <div class="option"><input type="radio" name="l13" value="stress_move" id="l13b"><label for="l13b">Move my body and release pressure</label></div>
+            <div class="option"><input type="radio" name="l13" value="stress_create" id="l13c"><label for="l13c">Turn feelings into something creative</label></div>
+            <div class="option"><input type="radio" name="l13" value="stress_people_play" id="l13d"><label for="l13d">Get out of my head through people, play, or laughter</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(13)">Next</button>
         </div>
 
-        <!-- Life Q14 -->
         <div class="step" data-step="14" data-track="life">
-          <h3>Quick results or long-term growth?</h3>
+          <h3>How important is deeper meaning or reflection?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l14" value="results_instant" id="l14a"><label for="l14a">Instant gratification - immediate results</label></div>
-            <div class="option"><input type="radio" name="l14" value="results_short" id="l14b"><label for="l14b">Short-term - see progress in weeks</label></div>
-            <div class="option"><input type="radio" name="l14" value="results_long" id="l14c"><label for="l14c">Long-term - willing to invest months/years</label></div>
-            <div class="option"><input type="radio" name="l14" value="results_process" id="l14d"><label for="l14d">Don't care - process matters more</label></div>
+            <div class="option"><input type="radio" name="l14" value="meaning_core" id="l14a"><label for="l14a">Very important - I need depth or inner clarity</label></div>
+            <div class="option"><input type="radio" name="l14" value="meaning_some" id="l14b"><label for="l14b">Somewhat - I want it to feel meaningful</label></div>
+            <div class="option"><input type="radio" name="l14" value="meaning_light" id="l14c"><label for="l14c">A little - but fun matters too</label></div>
+            <div class="option"><input type="radio" name="l14" value="meaning_not_focus" id="l14d"><label for="l14d">Not the focus - I mostly want enjoyment</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(14)">Next</button>
         </div>
 
-        <!-- Life Q15 -->
         <div class="step" data-step="15" data-track="life">
-          <h3>How much can you spend on this hobby/activity?</h3>
+          <h3>How much do family, caregiving, or home responsibilities shape your free time?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l15" value="budget_0_100" id="l15a"><label for="l15a">$0-100 (minimal)</label></div>
-            <div class="option"><input type="radio" name="l15" value="budget_100_500" id="l15b"><label for="l15b">$100-500 (moderate)</label></div>
-            <div class="option"><input type="radio" name="l15" value="budget_500_2000" id="l15c"><label for="l15c">$500-2000 (significant)</label></div>
-            <div class="option"><input type="radio" name="l15" value="budget_2000_plus" id="l15d"><label for="l15d">$2000+ (no budget concerns)</label></div>
+            <div class="option"><input type="radio" name="l15" value="family_high" id="l15a"><label for="l15a">A lot - this needs to fit around real responsibilities</label></div>
+            <div class="option"><input type="radio" name="l15" value="family_include" id="l15b"><label for="l15b">I would like hobbies that can include family or close people</label></div>
+            <div class="option"><input type="radio" name="l15" value="family_some" id="l15c"><label for="l15c">Somewhat - flexibility helps</label></div>
+            <div class="option"><input type="radio" name="l15" value="family_low" id="l15d"><label for="l15d">Not much - I can choose mainly for myself</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(15)">Next</button>
         </div>
 
-        <!-- Life Q16 -->
         <div class="step" data-step="16" data-track="life">
-          <h3>How physically intense do you want this?</h3>
+          <h3>Do you want this hobby to help other people?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l16" value="intensity_very" id="l16a"><label for="l16a">Very intense - I want to sweat</label></div>
-            <div class="option"><input type="radio" name="l16" value="intensity_moderate" id="l16b"><label for="l16b">Moderate - some physical challenge</label></div>
-            <div class="option"><input type="radio" name="l16" value="intensity_light" id="l16c"><label for="l16c">Light - gentle movement</label></div>
-            <div class="option"><input type="radio" name="l16" value="intensity_none" id="l16d"><label for="l16d">None - sedentary is fine</label></div>
+            <div class="option"><input type="radio" name="l16" value="service_yes" id="l16a"><label for="l16a">Yes - helping or mentoring would feel meaningful</label></div>
+            <div class="option"><input type="radio" name="l16" value="service_some" id="l16b"><label for="l16b">Maybe - connection and contribution sound good</label></div>
+            <div class="option"><input type="radio" name="l16" value="service_personal" id="l16c"><label for="l16c">Not mainly - I need this to refill me first</label></div>
+            <div class="option"><input type="radio" name="l16" value="service_no" id="l16d"><label for="l16d">No - I want this to stay light and personal</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(16)">Next</button>
         </div>
 
-        <!-- Life Q17 -->
         <div class="step" data-step="17" data-track="life">
-          <h3>Do you want an audience or keep it private?</h3>
+          <h3>How do you feel about sharing, performing, or being seen?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l17" value="audience_love" id="l17a"><label for="l17a">Love performing/sharing - need audience</label></div>
-            <div class="option"><input type="radio" name="l17" value="audience_eventually" id="l17b"><label for="l17b">Okay with sharing eventually</label></div>
-            <div class="option"><input type="radio" name="l17" value="audience_friends" id="l17c"><label for="l17c">Maybe share with close friends</label></div>
-            <div class="option"><input type="radio" name="l17" value="audience_private" id="l17d"><label for="l17d">Private - just for me</label></div>
+            <div class="option"><input type="radio" name="l17" value="share_love" id="l17a"><label for="l17a">I would enjoy sharing, performing, or presenting</label></div>
+            <div class="option"><input type="radio" name="l17" value="share_maybe" id="l17b"><label for="l17b">Maybe eventually, once I feel comfortable</label></div>
+            <div class="option"><input type="radio" name="l17" value="share_private" id="l17c"><label for="l17c">Mostly private or with trusted people</label></div>
+            <div class="option"><input type="radio" name="l17" value="share_no" id="l17d"><label for="l17d">No audience - I want this for myself</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(17)">Next</button>
         </div>
 
-        <!-- Life Q18 -->
         <div class="step" data-step="18" data-track="life">
-          <h3>Do you want to MAKE things?</h3>
+          <h3>How much does competition or play motivate you?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l18" value="making_yes" id="l18a"><label for="l18a">Yes! Tangible creations are satisfying</label></div>
-            <div class="option"><input type="radio" name="l18" value="making_maybe" id="l18b"><label for="l18b">Maybe - depends what it is</label></div>
-            <div class="option"><input type="radio" name="l18" value="making_not" id="l18c"><label for="l18c">Not really - prefer experiences</label></div>
-            <div class="option"><input type="radio" name="l18" value="making_no" id="l18d"><label for="l18d">No - I don't care about creating objects</label></div>
+            <div class="option"><input type="radio" name="l18" value="play_compete" id="l18a"><label for="l18a">A lot - games, goals, or competition keep me engaged</label></div>
+            <div class="option"><input type="radio" name="l18" value="play_casual" id="l18b"><label for="l18b">Casual play sounds fun</label></div>
+            <div class="option"><input type="radio" name="l18" value="play_neutral" id="l18c"><label for="l18c">Neutral - I do not need it</label></div>
+            <div class="option"><input type="radio" name="l18" value="play_avoid" id="l18d"><label for="l18d">I prefer non-competitive hobbies</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(18)">Next</button>
         </div>
 
-        <!-- Life Q19 -->
         <div class="step" data-step="19" data-track="life">
-          <h3>Are you seeking deeper meaning or purpose?</h3>
+          <h3>How much novelty or exploration do you want?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l19" value="meaning_yes" id="l19a"><label for="l19a">Yes - I need spiritual/philosophical depth</label></div>
-            <div class="option"><input type="radio" name="l19" value="meaning_somewhat" id="l19b"><label for="l19b">Somewhat - wouldn't hurt</label></div>
-            <div class="option"><input type="radio" name="l19" value="meaning_not" id="l19c"><label for="l19c">Not really - just want fun</label></div>
-            <div class="option"><input type="radio" name="l19" value="meaning_fulfilled" id="l19d"><label for="l19d">No - I'm fulfilled in that area</label></div>
+            <div class="option"><input type="radio" name="l19" value="novelty_high" id="l19a"><label for="l19a">A lot - I want to discover new places, scenes, or interests</label></div>
+            <div class="option"><input type="radio" name="l19" value="novelty_some" id="l19b"><label for="l19b">Some - occasional variety helps</label></div>
+            <div class="option"><input type="radio" name="l19" value="novelty_low" id="l19c"><label for="l19c">Low - I prefer familiar, repeatable hobbies</label></div>
+            <div class="option"><input type="radio" name="l19" value="novelty_calm" id="l19d"><label for="l19d">I mostly want calm, not novelty</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(19)">Next</button>
         </div>
 
-        <!-- Life Q20 -->
         <div class="step" data-step="20" data-track="life">
-          <h3>What kind of stress relief do you need?</h3>
+          <h3>Would you rather master one thing or rotate through many?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l20" value="stress_physical" id="l20a"><label for="l20a">Intense physical release</label></div>
-            <div class="option"><input type="radio" name="l20" value="stress_calm" id="l20b"><label for="l20b">Calm meditative activities</label></div>
-            <div class="option"><input type="radio" name="l20" value="stress_social" id="l20c"><label for="l20c">Social distraction</label></div>
-            <div class="option"><input type="radio" name="l20" value="stress_creative" id="l20d"><label for="l20d">Creative expression</label></div>
+            <div class="option"><input type="radio" name="l20" value="depth_mastery" id="l20a"><label for="l20a">Master one thing and get genuinely better</label></div>
+            <div class="option"><input type="radio" name="l20" value="depth_two" id="l20b"><label for="l20b">Have one main hobby with a few side interests</label></div>
+            <div class="option"><input type="radio" name="l20" value="depth_sampler" id="l20c"><label for="l20c">Sample a lot until something sticks</label></div>
+            <div class="option"><input type="radio" name="l20" value="depth_light" id="l20d"><label for="l20d">Keep it light - I do not need mastery</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(20)">Next</button>
         </div>
 
-        <!-- Life Q21 -->
         <div class="step" data-step="21" data-track="life">
-          <h3>Do you want to meet new people?</h3>
+          <h3>What would make you most likely to keep going?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l21" value="people_yes" id="l21a"><label for="l21a">Yes - I need new friends/community</label></div>
-            <div class="option"><input type="radio" name="l21" value="people_open" id="l21b"><label for="l21b">Open to it - bonus but not main goal</label></div>
-            <div class="option"><input type="radio" name="l21" value="people_neutral" id="l21c"><label for="l21c">Neutral - doesn't matter</label></div>
-            <div class="option"><input type="radio" name="l21" value="people_no" id="l21d"><label for="l21d">No - I have enough people</label></div>
+            <div class="option"><input type="radio" name="l21" value="keep_progress" id="l21a"><label for="l21a">Visible progress or a skill getting better</label></div>
+            <div class="option"><input type="radio" name="l21" value="keep_people" id="l21b"><label for="l21b">People expecting me or doing it with me</label></div>
+            <div class="option"><input type="radio" name="l21" value="keep_peace" id="l21c"><label for="l21c">It reliably makes me feel calmer</label></div>
+            <div class="option"><input type="radio" name="l21" value="keep_fun" id="l21d"><label for="l21d">It is fun enough that I want to come back</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(21)">Next</button>
         </div>
 
-        <!-- Life Q22 -->
         <div class="step" data-step="22" data-track="life">
-          <h3>Build a skill or collect experiences?</h3>
+          <h3>How accessible does the setup need to be?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l22" value="goal_mastery" id="l22a"><label for="l22a">Build mastery in one thing</label></div>
-            <div class="option"><input type="radio" name="l22" value="goal_multiple" id="l22b"><label for="l22b">Develop multiple skills</label></div>
-            <div class="option"><input type="radio" name="l22" value="goal_experiences" id="l22c"><label for="l22c">Collect diverse experiences</label></div>
-            <div class="option"><input type="radio" name="l22" value="goal_whatever" id="l22d"><label for="l22d">Don't care - whatever comes</label></div>
+            <div class="option"><input type="radio" name="l22" value="access_easy" id="l22a"><label for="l22a">Very easy - low setup, low travel, low strain</label></div>
+            <div class="option"><input type="radio" name="l22" value="access_home" id="l22b"><label for="l22b">Home-friendly matters most</label></div>
+            <div class="option"><input type="radio" name="l22" value="access_local" id="l22c"><label for="l22c">Local classes, parks, or groups are fine</label></div>
+            <div class="option"><input type="radio" name="l22" value="access_gear" id="l22d"><label for="l22d">I am okay with gear, travel, or setup if it is worth it</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(22)">Next</button>
         </div>
 
-        <!-- Life Q23 -->
         <div class="step" data-step="23" data-track="life">
-          <h3>Can you commit to a regular schedule?</h3>
+          <h3>What kind of people would you want around this hobby, if any?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l23" value="commit_yes" id="l23a"><label for="l23a">Yes - I want routine and structure</label></div>
-            <div class="option"><input type="radio" name="l23" value="commit_weekly" id="l23b"><label for="l23b">Weekly is fine</label></div>
-            <div class="option"><input type="radio" name="l23" value="commit_flexible" id="l23c"><label for="l23c">Flexible - when I feel like it</label></div>
-            <div class="option"><input type="radio" name="l23" value="commit_no" id="l23d"><label for="l23d">No - completely spontaneous</label></div>
+            <div class="option"><input type="radio" name="l23" value="people_none" id="l23a"><label for="l23a">No one needed - solo is the point</label></div>
+            <div class="option"><input type="radio" name="l23" value="people_close" id="l23b"><label for="l23b">Close friends, partner, or family</label></div>
+            <div class="option"><input type="radio" name="l23" value="people_group" id="l23c"><label for="l23c">A group, class, team, or local community</label></div>
+            <div class="option"><input type="radio" name="l23" value="people_online" id="l23d"><label for="l23d">Online community is enough</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(23)">Next</button>
         </div>
 
-        <!-- Life Q24 -->
         <div class="step" data-step="24" data-track="life">
-          <h3>Do you want this to involve travel?</h3>
+          <h3>How much travel or leaving home should this involve?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l24" value="travel_yes" id="l24a"><label for="l24a">Yes - I want adventure and travel</label></div>
-            <div class="option"><input type="radio" name="l24" value="travel_occasional" id="l24b"><label for="l24b">Occasional trips would be great</label></div>
-            <div class="option"><input type="radio" name="l24" value="travel_local" id="l24c"><label for="l24c">Local only - no travel time</label></div>
-            <div class="option"><input type="radio" name="l24" value="travel_no" id="l24d"><label for="l24d">Actively avoid travel</label></div>
+            <div class="option"><input type="radio" name="l24" value="travel_none" id="l24a"><label for="l24a">None or almost none - keep it close to home</label></div>
+            <div class="option"><input type="radio" name="l24" value="travel_local" id="l24b"><label for="l24b">Local outings are great</label></div>
+            <div class="option"><input type="radio" name="l24" value="travel_occasional" id="l24c"><label for="l24c">Occasional day trips or weekend plans sound good</label></div>
+            <div class="option"><input type="radio" name="l24" value="travel_adventure" id="l24d"><label for="l24d">I want this to pull me into adventure and new places</label></div>
           </div>
           <button type="button" class="btn" onclick="nextQuestion(24)">Next</button>
         </div>
         
         <div class="step" data-step="25" data-track="life">
-          <h3>What matters more to you?</h3>
+          <h3>Which ending would feel like a win after one month?</h3>
           <div class="options">
-            <div class="option"><input type="radio" name="l25" value="purpose_helping" id="l25a"><label for="l25a">Making a difference - helping others</label></div>
-            <div class="option"><input type="radio" name="l25" value="purpose_growth" id="l25b"><label for="l25b">Personal growth and challenge</label></div>
-            <div class="option"><input type="radio" name="l25" value="purpose_fun" id="l25c"><label for="l25c">Pure enjoyment and fun</label></div>
-            <div class="option"><input type="radio" name="l25" value="purpose_all" id="l25d"><label for="l25d">All of the above</label></div>
+            <div class="option"><input type="radio" name="l25" value="win_restored" id="l25a"><label for="l25a">I feel more rested and steady</label></div>
+            <div class="option"><input type="radio" name="l25" value="win_created" id="l25b"><label for="l25b">I made something or expressed myself</label></div>
+            <div class="option"><input type="radio" name="l25" value="win_connected" id="l25c"><label for="l25c">I found connection or a place to belong</label></div>
+            <div class="option"><input type="radio" name="l25" value="win_alive" id="l25d"><label for="l25d">I feel more alive, playful, or adventurous</label></div>
           </div>
           <button type="submit" class="btn" onclick="submitQuiz(event)">See My Results</button>
         </div>
@@ -1800,6 +1840,7 @@
       membershipOffer: { available: false }
     };
     let hasPaid = false;
+    let latestSavedRunId = null;
     let latestResultGroups = {
       career: [],
       life: []
@@ -1899,6 +1940,7 @@
 
     function renderMemberPrompt(statusMessage = '') {
       if (!memberPrompt) return;
+      const canShowSavedResults = Boolean(currentUser && latestSavedRunId);
 
       if (!currentUser) {
         if (memberChip) memberChip.textContent = 'Free teaser';
@@ -1920,7 +1962,7 @@
         if (memberPromptText) memberPromptText.textContent = statusMessage || 'Connect Discord to link your account and unlock membership checkout.';
         toggleHidden(connectDiscordBtn, false);
         toggleHidden(memberCheckoutBtn, true);
-        toggleHidden(memberSavedResultsBtn, true);
+        toggleHidden(memberSavedResultsBtn, !canShowSavedResults);
         toggleHidden(memberRefreshBtn, false);
         toggleHidden(billingPortalBtn, true);
         toggleHidden(resultsDashboardLink, false);
@@ -1934,7 +1976,7 @@
         if (memberCheckoutBtn) memberCheckoutBtn.textContent = getMembershipOfferLabel(membershipState, 'Unlock full dashboard');
         toggleHidden(connectDiscordBtn, true);
         toggleHidden(memberCheckoutBtn, false);
-        toggleHidden(memberSavedResultsBtn, true);
+        toggleHidden(memberSavedResultsBtn, !canShowSavedResults);
         toggleHidden(memberRefreshBtn, false);
         toggleHidden(billingPortalBtn, true);
         toggleHidden(resultsDashboardLink, false);
@@ -1946,7 +1988,7 @@
       if (memberPromptText) memberPromptText.textContent = statusMessage || 'Membership is active. Open your dashboard to access the full member experience.';
       toggleHidden(connectDiscordBtn, true);
       toggleHidden(memberCheckoutBtn, true);
-      toggleHidden(memberSavedResultsBtn, true);
+      toggleHidden(memberSavedResultsBtn, !canShowSavedResults);
       toggleHidden(memberRefreshBtn, false);
       toggleHidden(billingPortalBtn, false);
       toggleHidden(resultsDashboardLink, false);
@@ -1964,13 +2006,13 @@
       // Update header
       if (quizMode === 'career') {
         document.getElementById('headerTitle').textContent = 'Career Path Finder';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover your ideal career from 53 options';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to find the kind of work that fits your life, energy, and goals.';
       } else if (quizMode === 'life') {
         document.getElementById('headerTitle').textContent = 'Find Yourself';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies & passions from 53 life paths';
+        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies, interests, and a better personal reset.';
       } else {
         document.getElementById('headerTitle').textContent = 'Complete Discovery';
-        document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to find your career + life paths';
+        document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to explore both career direction and personal reset.';
       }
 
       // Hide mode selection
@@ -2114,16 +2156,16 @@
         life: []
       };
 
-      // Score career paths if applicable
+      // Score career families if applicable
       if (quizMode === 'career' || quizMode === 'both') {
-        const careerScores = scoreCareerPaths(careerAnswers);
+        const careerScores = scoreCareerFamilies(careerAnswers);
         const top3Career = careerScores.slice(0, 3);
         latestResultGroups.career = top3Career;
       }
 
-      // Score life paths if applicable
+      // Score hobby families if applicable
       if (quizMode === 'life' || quizMode === 'both') {
-        const lifeScores = scoreLifePaths(lifeAnswers);
+        const lifeScores = scoreHobbyFamilies(lifeAnswers);
         const top3Life = lifeScores.slice(0, 3);
         latestResultGroups.life = top3Life;
       }
@@ -2133,7 +2175,56 @@
       document.getElementById('results').classList.add('active');
       renderMemberPrompt();
       refreshMembershipStatus();
+      persistQuizResults({
+        mode: quizMode,
+        answers: { ...careerAnswers, ...lifeAnswers },
+        results: latestResultGroups
+      });
       window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function getResultArchetypeKeys(results) {
+      return uniqueStrings(
+        [
+          ...(results?.career || []),
+          ...(results?.life || [])
+        ]
+          .map((result) => result?.familyKey || result?.key || result?.path?.familyKey)
+          .filter(Boolean)
+      );
+    }
+
+    function getQuizFeatureVariant(mode) {
+      if (mode === 'life') return 'life_family_v1';
+      if (mode === 'both') return 'career_hobby_family_v1';
+      return 'career_family_v1';
+    }
+
+    async function persistQuizResults(payload) {
+      try {
+        const response = await fetchJson(api('/api/quiz/submit'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            mode: payload.mode,
+            answers: payload.answers,
+            results: payload.results,
+            featureVariant: getQuizFeatureVariant(payload.mode),
+            archetypeKeys: getResultArchetypeKeys(payload.results)
+          })
+        });
+
+        latestSavedRunId = response?.id || 'saved';
+        currentUser = currentUser || { id: 'session', email: '' };
+        await refreshMembershipStatus('Your results were saved to your account.');
+      } catch (error) {
+        if (error?.status === 401 || error?.status === 403) return;
+        console.warn('quiz save skipped', error);
+        if (currentUser) {
+          renderMemberPrompt('Your results are ready, but we could not save them right now.');
+        }
+      }
     }
 
     async function startDiscordConnect() {
@@ -2193,286 +2284,767 @@
       }
     }
 
-    function scoreCareerPaths(answers) {
+    const CAREER_WEIGHT_VALUES = {
+      high: 12,
+      medium: 8,
+      low: 5
+    };
+
+    const CAREER_TAG_REASON_DEFAULTS = {
+      fast_entry: 'You asked for something that can get moving without a long wait.',
+      low_cost: 'Keeping the upfront cost practical mattered in your answers.',
+      credential_light: 'You leaned toward paths with lighter training barriers.',
+      credential_heavy: 'You left room for a longer build if the long-term fit is right.',
+      structured_schedule: 'A steadier routine or clearer hours showed up as important.',
+      flexible_schedule: 'Flexibility around time and structure mattered in your answers.',
+      remote_possible: 'Location flexibility matters enough to shape the recommendation.',
+      high_people: 'You sounded open to regular human interaction as part of the work.',
+      low_people: 'You leaned toward lower-social or more solo-friendly work.',
+      high_physical: 'You are open to more active, physically engaged work.',
+      low_physical: 'A lower-strain workday seems like a better fit for you.',
+      service_mission: 'Meaning, service, or helping people mattered in your answers.',
+      creative_expression: 'You left space for creativity and original output.',
+      technical_depth: 'You sounded comfortable with systems, tools, and deeper problem-solving.',
+      sales_orientation: 'You are open to persuasion, growth targets, or commission-style upside.',
+      independent_work: 'More ownership and independence fits how you want to work.',
+      team_based: 'Some level of team structure or coordination looks like a fit.',
+      high_stability: 'You leaned toward steadier paths with a clearer floor.',
+      high_upside: 'You left room for growth, upside, or a bigger long-term ceiling.',
+      caregiver_friendly: 'Life constraints and flexibility were important in your answers.',
+      field_work: 'You sounded more open to movement or real-world field work.',
+      desk_work: 'A desk or digital environment looks more sustainable for you.'
+    };
+
+    const CAREER_QUESTION_CONFIG = {
+      c1: {
+        weight: 'high',
+        choices: {
+          pressure_now: { prefer: ['fast_entry', 'low_cost', 'credential_light', 'high_stability'], avoid: ['credential_heavy', 'high_upside'] },
+          pressure_soon: { prefer: ['fast_entry', 'credential_light', 'high_stability'], avoid: ['credential_heavy'] },
+          pressure_stable: { prefer: ['high_stability', 'caregiver_friendly'] },
+          pressure_explore: { prefer: ['high_upside', 'credential_heavy', 'independent_work'] }
+        }
+      },
+      c2: {
+        weight: 'medium',
+        choices: {
+          income_floor: { prefer: ['high_stability', 'structured_schedule', 'low_cost'], avoid: ['high_upside'] },
+          income_balanced: { prefer: ['high_stability', 'high_upside', 'team_based'] },
+          income_upside: { prefer: ['high_upside', 'independent_work', 'sales_orientation'], avoid: ['high_stability'] },
+          income_open: { prefer: ['caregiver_friendly', 'low_physical'] }
+        }
+      },
+      c3: {
+        weight: 'high',
+        choices: {
+          train_none: { prefer: ['fast_entry', 'credential_light', 'low_cost'], avoid: ['credential_heavy'] },
+          train_short: { prefer: ['credential_light', 'fast_entry'] },
+          train_medium: { prefer: ['technical_depth', 'high_stability'] },
+          train_long: { prefer: ['credential_heavy', 'technical_depth', 'service_mission'] }
+        }
+      },
+      c4: {
+        weight: 'high',
+        choices: {
+          debt_none: { prefer: ['low_cost', 'credential_light'], avoid: ['credential_heavy'] },
+          debt_small: { prefer: ['low_cost', 'high_stability'] },
+          debt_moderate: { prefer: ['technical_depth', 'high_stability'] },
+          debt_open: { prefer: ['credential_heavy', 'technical_depth', 'service_mission'] }
+        }
+      },
+      c5: {
+        weight: 'high',
+        choices: {
+          budget_0_500: { prefer: ['low_cost', 'fast_entry'], avoid: ['credential_heavy'] },
+          budget_500_5k: { prefer: ['low_cost', 'credential_light'] },
+          budget_5k_20k: { prefer: ['independent_work', 'high_upside', 'field_work'] },
+          budget_open: { prefer: ['credential_heavy', 'high_upside', 'independent_work'] }
+        }
+      },
+      c6: {
+        weight: 'high',
+        choices: {
+          schedule_predictable: { prefer: ['structured_schedule', 'high_stability', 'caregiver_friendly'] },
+          schedule_some_flex: { prefer: ['flexible_schedule', 'caregiver_friendly', 'high_stability'] },
+          schedule_self_directed: { prefer: ['flexible_schedule', 'independent_work', 'remote_possible', 'caregiver_friendly'] },
+          schedule_open: { prefer: ['field_work', 'team_based', 'service_mission'] }
+        }
+      },
+      c7: {
+        weight: 'high',
+        choices: {
+          location_remote: { prefer: ['remote_possible', 'desk_work', 'low_physical', 'caregiver_friendly'], avoid: ['field_work'] },
+          location_hybrid: { prefer: ['remote_possible', 'desk_work', 'team_based'] },
+          location_onsite: { prefer: ['structured_schedule', 'team_based', 'high_people'] },
+          location_field: { prefer: ['field_work', 'high_physical', 'team_based'], avoid: ['remote_possible'] }
+        }
+      },
+      c8: {
+        weight: 'high',
+        choices: {
+          physical_low: { prefer: ['low_physical', 'desk_work', 'remote_possible', 'caregiver_friendly'], avoid: ['high_physical'] },
+          physical_some: { prefer: ['low_physical', 'team_based'] },
+          physical_active: { prefer: ['high_physical', 'field_work'] },
+          physical_high: { prefer: ['high_physical', 'field_work', 'service_mission'] }
+        }
+      },
+      c9: {
+        weight: 'medium',
+        choices: {
+          people_low: { prefer: ['low_people', 'independent_work', 'desk_work'], avoid: ['high_people'] },
+          people_some: { prefer: ['team_based', 'desk_work'] },
+          people_high: { prefer: ['high_people', 'team_based', 'service_mission'] },
+          people_all_day: { prefer: ['high_people', 'sales_orientation', 'service_mission'], avoid: ['low_people'] }
+        }
+      },
+      c10: {
+        weight: 'medium',
+        choices: {
+          clients_minimal: { prefer: ['low_people', 'technical_depth', 'desk_work'], avoid: ['high_people', 'sales_orientation'] },
+          clients_some: { prefer: ['team_based', 'desk_work'] },
+          clients_regular: { prefer: ['high_people', 'team_based'] },
+          clients_heavy: { prefer: ['high_people', 'sales_orientation', 'service_mission'] }
+        }
+      },
+      c11: {
+        weight: 'medium',
+        choices: {
+          sales_no: { prefer: ['service_mission', 'technical_depth'], avoid: ['sales_orientation'] },
+          sales_light: { prefer: ['team_based', 'high_people'] },
+          sales_open: { prefer: ['sales_orientation', 'high_upside', 'high_people'] },
+          sales_enjoy: { prefer: ['sales_orientation', 'high_upside', 'independent_work', 'high_people'] }
+        }
+      },
+      c12: {
+        weight: 'medium',
+        choices: {
+          work_team: { prefer: ['team_based', 'high_people'] },
+          work_blend: { prefer: ['team_based', 'independent_work'] },
+          work_independent: { prefer: ['independent_work', 'desk_work'] },
+          work_solo: { prefer: ['independent_work', 'low_people', 'remote_possible'] }
+        }
+      },
+      c13: {
+        weight: 'medium',
+        choices: {
+          routine_yes: { prefer: ['structured_schedule', 'high_stability', 'desk_work'] },
+          routine_mix: { prefer: ['team_based', 'high_stability'] },
+          routine_variety: { prefer: ['flexible_schedule', 'field_work'] },
+          routine_change: { prefer: ['field_work', 'high_people', 'high_upside'] }
+        }
+      },
+      c14: {
+        weight: 'medium',
+        choices: {
+          impact_core: { prefer: ['service_mission', 'high_people', 'high_stability'] },
+          impact_matters: { prefer: ['service_mission', 'team_based'] },
+          impact_neutral: { prefer: ['high_stability', 'caregiver_friendly'] },
+          impact_not_focus: { prefer: ['high_upside', 'independent_work', 'sales_orientation'] }
+        }
+      },
+      c15: {
+        weight: 'low',
+        choices: {
+          travel_none: { prefer: ['caregiver_friendly', 'structured_schedule', 'desk_work'], avoid: ['field_work'] },
+          travel_local: { prefer: ['field_work', 'team_based'] },
+          travel_occasional: { prefer: ['field_work', 'flexible_schedule'] },
+          travel_open: { prefer: ['field_work', 'independent_work', 'high_upside'] }
+        }
+      },
+      c16: {
+        weight: 'low',
+        choices: {
+          stress_low: { prefer: ['structured_schedule', 'high_stability', 'low_physical'], avoid: ['high_upside'] },
+          stress_moderate: { prefer: ['high_stability', 'team_based'] },
+          stress_dynamic: { prefer: ['flexible_schedule', 'high_upside', 'high_people'] },
+          stress_intense: { prefer: ['service_mission', 'field_work', 'high_upside'] }
+        }
+      },
+      c17: {
+        weight: 'medium',
+        choices: {
+          task_support: { prefer: ['desk_work', 'team_based', 'high_stability'] },
+          task_help: { prefer: ['high_people', 'service_mission', 'team_based'] },
+          task_systems: { prefer: ['technical_depth', 'desk_work', 'independent_work'] },
+          task_hands: { prefer: ['high_physical', 'field_work', 'fast_entry'] }
+        }
+      },
+      c18: {
+        weight: 'medium',
+        choices: {
+          env_desk: { prefer: ['desk_work', 'structured_schedule', 'low_physical'] },
+          env_mix: { prefer: ['team_based', 'field_work', 'high_stability'] },
+          env_field: { prefer: ['field_work', 'high_physical', 'service_mission'] },
+          env_digital: { prefer: ['remote_possible', 'desk_work', 'technical_depth', 'creative_expression'] }
+        }
+      },
+      c19: {
+        weight: 'medium',
+        choices: {
+          tech_low: { prefer: ['high_people', 'service_mission', 'field_work'], avoid: ['technical_depth'] },
+          tech_working: { prefer: ['desk_work', 'team_based'] },
+          tech_good: { prefer: ['technical_depth', 'desk_work', 'remote_possible'] },
+          tech_deep: { prefer: ['technical_depth', 'high_upside', 'remote_possible', 'independent_work'] }
+        }
+      },
+      c20: {
+        weight: 'medium',
+        choices: {
+          lead_contributor: { prefer: ['independent_work', 'technical_depth'], avoid: ['high_people'] },
+          lead_maybe: { prefer: ['team_based', 'high_stability'] },
+          lead_yes: { prefer: ['team_based', 'high_people', 'high_upside'] },
+          lead_build: { prefer: ['independent_work', 'high_upside', 'sales_orientation', 'flexible_schedule'] }
+        }
+      },
+      c21: {
+        weight: 'high',
+        choices: {
+          care_high: { prefer: ['caregiver_friendly', 'flexible_schedule', 'remote_possible', 'low_physical'], avoid: ['high_physical'] },
+          care_some: { prefer: ['caregiver_friendly', 'flexible_schedule', 'high_stability'] },
+          care_low: { prefer: ['structured_schedule', 'team_based'] },
+          care_open: { prefer: ['field_work', 'high_physical', 'high_upside'] }
+        }
+      },
+      c22: {
+        weight: 'high',
+        choices: {
+          energy_sustainable: { prefer: ['low_physical', 'caregiver_friendly', 'structured_schedule'], avoid: ['high_physical'] },
+          energy_variable: { prefer: ['flexible_schedule', 'caregiver_friendly', 'remote_possible'] },
+          energy_steady: { prefer: ['team_based', 'high_stability', 'structured_schedule'] },
+          energy_active: { prefer: ['high_physical', 'field_work'] }
+        }
+      },
+      c23: {
+        weight: 'medium',
+        choices: {
+          tradeoff_stability: { prefer: ['high_stability', 'structured_schedule'], avoid: ['high_upside'] },
+          tradeoff_balanced: { prefer: ['high_stability', 'high_upside', 'team_based'] },
+          tradeoff_upside: { prefer: ['high_upside', 'sales_orientation', 'technical_depth'] },
+          tradeoff_ownership: { prefer: ['independent_work', 'high_upside', 'flexible_schedule'], avoid: ['structured_schedule'] }
+        }
+      },
+      c24: {
+        weight: 'high',
+        choices: {
+          paycheck_immediate: { prefer: ['fast_entry', 'low_cost', 'credential_light'], avoid: ['credential_heavy'] },
+          paycheck_months: { prefer: ['fast_entry', 'credential_light', 'high_stability'] },
+          paycheck_year: { prefer: ['credential_heavy', 'technical_depth', 'high_stability'] },
+          paycheck_long: { prefer: ['credential_heavy', 'high_upside', 'service_mission'] }
+        }
+      },
+      c25: {
+        weight: 'medium',
+        choices: {
+          patience_low: { prefer: ['fast_entry', 'high_stability'], avoid: ['credential_heavy'] },
+          patience_some: { prefer: ['high_stability', 'technical_depth'] },
+          patience_high: { prefer: ['credential_heavy', 'technical_depth', 'high_stability'] },
+          patience_very: { prefer: ['credential_heavy', 'high_upside', 'service_mission', 'independent_work'] }
+        }
+      }
+    };
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function uniqueStrings(values) {
+      return Array.from(new Set((values || []).filter(Boolean)));
+    }
+
+    function buildCareerResultPath(family) {
+      return {
+        familyKey: family.familyKey,
+        name: family.name,
+        category: family.category,
+        description: family.description,
+        incomeRange: Array.isArray(family.incomeRange) ? family.incomeRange.slice() : family.incomeRange,
+        startupCost: Array.isArray(family.startupCost) ? family.startupCost.slice() : family.startupCost,
+        timeToProfit: family.timeToProfit,
+        riskLevel: family.riskLevel,
+        lifestyle: family.lifestyle,
+        physicalDemand: family.physicalDemand,
+        educationRequired: family.educationRequired,
+        detailed: family.detailed || {},
+        exampleRoles: Array.isArray(family.exampleRoles) ? family.exampleRoles.slice(0, 5) : []
+      };
+    }
+
+    function buildCareerFitReasons(family, orderedTags) {
+      const template = family.fitReasonsTemplate || {};
+      const candidateTags = uniqueStrings([
+        ...(orderedTags || []),
+        ...((family.fitTags || []).slice(0, 4))
+      ]);
+
+      return candidateTags
+        .map((tag) => template[tag] || CAREER_TAG_REASON_DEFAULTS[tag])
+        .filter(Boolean)
+        .slice(0, 4);
+    }
+
+    function scoreCareerFamilies(answers) {
+      const families = Object.values(window.careerFamilies || {});
       const scores = [];
-      
-      // Iterate through all career paths
-      for (const [key, path] of Object.entries(window.careerPaths)) {
+
+      for (const family of families) {
+        const fitTagSet = new Set(family.fitTags || []);
+        const conflictTagSet = new Set(family.conflictTags || []);
+        const tagHits = {};
         let score = 0;
         let maxScore = 0;
+        let highWeightMatches = 0;
 
-        // Risk tolerance scoring
-        const risk = answers.c1;
-        maxScore += 10;
-        if (path.riskLevel === 'very low' && risk === 'risk_low') score += 10;
-        else if (path.riskLevel === 'low' && (risk === 'risk_low' || risk === 'risk_medium')) score += 8;
-        else if (path.riskLevel === 'medium' && (risk === 'risk_medium' || risk === 'risk_high')) score += 8;
-        else if (path.riskLevel === 'high' && (risk === 'risk_high' || risk === 'risk_very_high')) score += 8;
-        else if (path.riskLevel === 'very high' && risk === 'risk_very_high') score += 10;
-        else score += 3;
+        for (const [questionName, config] of Object.entries(CAREER_QUESTION_CONFIG)) {
+          const answerValue = answers[questionName];
+          const choice = config.choices[answerValue];
+          if (!choice) continue;
 
-        // Income goals scoring
-        const income = answers.c2;
-        const pathIncome = path.incomeRange;
-        const avgIncome = (pathIncome[0] + pathIncome[1]) / 2;
-        maxScore += 10;
-        if (income === 'income_40_70' && avgIncome <= 70000) score += 10;
-        else if (income === 'income_70_120' && avgIncome >= 60000 && avgIncome <= 150000) score += 10;
-        else if (income === 'income_120_250' && avgIncome >= 100000 && avgIncome <= 300000) score += 10;
-        else if (income === 'income_250_plus' && avgIncome >= 200000) score += 10;
-        else score += 4;
+          const weight = CAREER_WEIGHT_VALUES[config.weight] || 0;
+          const prefer = choice.prefer || [];
+          const avoid = choice.avoid || [];
+          const totalSignals = prefer.length + avoid.length;
+          const matchShare = prefer.length ? (weight * 0.65) / prefer.length : 0;
+          const penaltyShare = totalSignals ? (weight * 0.7) / totalSignals : 0;
+          let questionScore = weight * 0.35;
+          let matchedThisQuestion = 0;
 
-        // Education willingness scoring
-        const edu = answers.c3;
-        maxScore += 10;
-        if (path.educationRequired === 'none' && edu === 'edu_none') score += 10;
-        else if (path.educationRequired.includes('month') && (edu === 'edu_short' || edu === 'edu_none')) score += 9;
-        else if (path.educationRequired.includes('degree') && (edu === 'edu_degree' || edu === 'edu_long')) score += 9;
-        else if (path.educationRequired.includes('school') && edu === 'edu_long') score += 10;
-        else score += 4;
+          maxScore += weight;
 
-        // Startup capital scoring
-        const capital = answers.c4;
-        const pathCapital = path.startupCost;
-        const maxCapital = Array.isArray(pathCapital) ? pathCapital[1] : pathCapital;
-        maxScore += 10;
-        if (capital === 'capital_0_1k' && maxCapital <= 1000) score += 10;
-        else if (capital === 'capital_1_10k' && maxCapital <= 10000) score += 10;
-        else if (capital === 'capital_10_50k' && maxCapital <= 50000) score += 10;
-        else if (capital === 'capital_50k_plus' && maxCapital >= 50000) score += 10;
-        else if (capital === 'capital_0_1k' && maxCapital <= 5000) score += 6;
-        else score += 3;
+          for (const tag of prefer) {
+            if (fitTagSet.has(tag)) {
+              questionScore += matchShare;
+              matchedThisQuestion += 1;
+              tagHits[tag] = (tagHits[tag] || 0) + weight;
+            } else if (conflictTagSet.has(tag)) {
+              questionScore -= penaltyShare;
+            }
+          }
 
-        // Camera comfort (for content creation paths)
-        const camera = answers.c5;
-        const isContentPath = path.category === 'Content Creation' || path.category === 'Digital Marketing';
-        maxScore += 8;
-        if (isContentPath && camera === 'camera_love') score += 8;
-        else if (isContentPath && camera === 'camera_okay') score += 5;
-        else if (!isContentPath && (camera === 'camera_no' || camera === 'camera_never')) score += 8;
-        else score += 4;
+          for (const tag of avoid) {
+            if (fitTagSet.has(tag)) {
+              questionScore -= penaltyShare;
+            }
+          }
 
-        // Sales skills
-        const sales = answers.c6;
-        const needsSales = path.category === 'Sales' || path.skillsRequired?.includes('sales') || 
-                          path.skillsRequired?.includes('client management') || path.category === 'Business';
-        maxScore += 8;
-        if (needsSales && (sales === 'sales_high' || sales === 'sales_medium')) score += 8;
-        else if (!needsSales && (sales === 'sales_low' || sales === 'sales_none')) score += 8;
-        else score += 4;
+          if (config.weight === 'high') {
+            highWeightMatches += matchedThisQuestion;
+          }
 
-        // Technical aptitude
-        const tech = answers.c7;
-        const isTechPath = path.category === 'Technology' || path.category === 'Tech/Design';
-        maxScore += 8;
-        if (isTechPath && (tech === 'tech_high' || tech === 'tech_medium')) score += 8;
-        else if (!isTechPath && (tech === 'tech_low' || tech === 'tech_none')) score += 8;
-        else score += 4;
+          score += clamp(questionScore, 0, weight);
+        }
 
-        // Creativity
-        const creative = answers.c8;
-        const isCreativePath = path.category === 'Creative' || path.category === 'Creative/Tech' || 
-                              path.category === 'Content Creation' || path.category === 'Creative/Personal Services';
-        maxScore += 8;
-        if (isCreativePath && (creative === 'creative_high' || creative === 'creative_medium')) score += 8;
-        else if (!isCreativePath && (creative === 'creative_low' || creative === 'creative_none')) score += 8;
-        else score += 4;
-
-        // People vs solo
-        const people = answers.c9;
-        const isPeoplePath = path.category === 'Personal Services' || path.category === 'Health & Wellness' ||
-                            path.category === 'Healthcare' || path.category === 'Sales' ||
-                            path.category === 'Education' || path.category === 'Public Service';
-        maxScore += 8;
-        if (isPeoplePath && (people === 'people_love' || people === 'people_medium')) score += 8;
-        else if (!isPeoplePath && (people === 'people_low' || people === 'people_none')) score += 8;
-        else score += 4;
-
-        // Physical capability
-        const physical = answers.c10;
-        const physDemand = path.physicalDemand;
-        maxScore += 8;
-        if (physDemand === 'very high' && physical === 'physical_high') score += 8;
-        else if (physDemand === 'high' && (physical === 'physical_high' || physical === 'physical_medium')) score += 8;
-        else if (physDemand === 'medium' && physical !== 'physical_none') score += 8;
-        else if ((physDemand === 'low' || physDemand === 'very low') && (physical === 'physical_low' || physical === 'physical_none')) score += 8;
-        else score += 4;
-
-        // Q11: Work Schedule
-        const schedule = answers.c11;
-        const isRemoteFriendly = path.category === 'Content Creation' || path.category === 'Online Business' || 
-                                path.category === 'Technology' || path.category === 'Creative' || path.category === 'Digital Marketing';
-        const isStructured = path.category === 'Healthcare' || path.category === 'Professional Services' || path.category === 'Education';
-        const isIntense = path.category === 'Business' || path.category === 'Finance/Trading' || (path.incomeRange[1] > 200000);
-        const isUnique = path.category === 'Public Service' || path.category === 'Transportation';
-        maxScore += 6;
-        if (schedule === 'schedule_flexible' && isRemoteFriendly) score += 6;
-        else if (schedule === 'schedule_structured' && isStructured) score += 6;
-        else if (schedule === 'schedule_intense' && isIntense) score += 6;
-        else if (schedule === 'schedule_unique' && isUnique) score += 6;
-        else score += 3;
-
-        // Q12: Time to First Dollar
-        const timeNeeded = answers.c12;
-        const timeToProfit = path.timeToProfit;
-        maxScore += 7;
-        if (timeNeeded === 'time_fast' && (timeToProfit.includes('1-3') || timeToProfit.includes('immediate'))) score += 7;
-        else if (timeNeeded === 'time_medium' && (timeToProfit.includes('6') || timeToProfit.includes('12'))) score += 7;
-        else if (timeNeeded === 'time_long' && (timeToProfit.includes('1-3 year') || timeToProfit.includes('2-4'))) score += 7;
-        else if (timeNeeded === 'time_very_long' && (timeToProfit.includes('5+') || timeToProfit.includes('4-6'))) score += 7;
-        else score += 3;
-
-        // Q13: College Debt Tolerance
-        const debtTolerance = answers.c13;
-        const requiresDegree = path.educationRequired.includes('degree') || path.educationRequired.includes('school');
-        maxScore += 6;
-        if ((debtTolerance === 'debt_existing' || debtTolerance === 'debt_okay') && requiresDegree) score += 6;
-        else if (debtTolerance === 'debt_some' && !path.educationRequired.includes('medical') && !path.educationRequired.includes('law')) score += 6;
-        else if (debtTolerance === 'debt_none' && !requiresDegree) score += 6;
-        else score += 2;
-
-        // Q14: Client Facing
-        const clientPref = answers.c14;
-        const isClientFacing = path.category === 'Personal Services' || path.category === 'Business' || 
-                              path.category === 'Professional Services' || path.skillsRequired?.includes('client management');
-        maxScore += 7;
-        if (clientPref === 'clients_love' && isClientFacing) score += 7;
-        else if (clientPref === 'clients_okay' && (isClientFacing || !isClientFacing)) score += 5;
-        else if (clientPref === 'clients_minimal' && !isClientFacing) score += 7;
-        else if (clientPref === 'clients_none' && (path.category === 'Technology' || path.category === 'Content Creation')) score += 7;
-        else score += 3;
-
-        // Q15: Leadership
-        const leaderPref = answers.c15;
-        const hasLeadershipPath = path.category === 'Business' || path.category === 'Construction/Trade' ||
-                                 path.name.includes('Manager') || path.name.includes('Owner');
-        maxScore += 6;
-        if (leaderPref === 'leader_yes' && hasLeadershipPath) score += 6;
-        else if (leaderPref === 'leader_maybe') score += 5;
-        else if ((leaderPref === 'leader_no' || leaderPref === 'leader_never') && !hasLeadershipPath) score += 6;
-        else score += 3;
-
-        // Q16: Variety
-        const varietyPref = answers.c16;
-        const hasVariety = path.category === 'Content Creation' || path.category === 'Creative' || 
-                          path.category === 'Business' || path.category === 'Public Service';
-        const isRepetitive = path.category === 'Skilled Trade' || path.category === 'Transportation';
-        maxScore += 6;
-        if (varietyPref === 'variety_high' && hasVariety) score += 6;
-        else if (varietyPref === 'variety_medium') score += 5;
-        else if ((varietyPref === 'variety_low' || varietyPref === 'variety_none') && isRepetitive) score += 6;
-        else score += 3;
-
-        // Q17: Making Impact
-        const impactPref = answers.c17;
-        const hasImpact = path.category === 'Healthcare' || path.category === 'Education' || 
-                         path.category === 'Public Service' || path.category === 'Health & Wellness';
-        maxScore += 7;
-        if (impactPref === 'impact_critical' && hasImpact) score += 7;
-        else if (impactPref === 'impact_important' && hasImpact) score += 5;
-        else if ((impactPref === 'impact_some' || impactPref === 'impact_none') && !hasImpact) score += 7;
-        else score += 3;
-
-        // Q18: Travel
-        const travelPref = answers.c18;
-        const requiresTravel = path.category === 'Transportation' || path.category === 'Sales' || path.name === 'Pilot';
-        const canTravel = path.lifestyle === 'location independent' || path.lifestyle === 'flexible location';
-        maxScore += 6;
-        if (travelPref === 'travel_love' && (requiresTravel || canTravel)) score += 6;
-        else if (travelPref === 'travel_some' && !requiresTravel) score += 5;
-        else if ((travelPref === 'travel_minimal' || travelPref === 'travel_none') && !requiresTravel) score += 6;
-        else score += 3;
-
-        // Q19: Job Security vs Upside
-        const securityPref = answers.c19;
-        const hasSecurity = path.category === 'Healthcare' || path.category === 'Professional Services' || 
-                          path.category === 'Public Service' || path.category === 'Skilled Trade';
-        const hasUpside = path.category === 'Online Business' || path.category === 'Content Creation' || 
-                         path.category === 'Finance/Trading' || path.category === 'Business';
-        maxScore += 8;
-        if (securityPref === 'security_high' && hasSecurity) score += 8;
-        else if (securityPref === 'security_medium' && hasSecurity) score += 6;
-        else if (securityPref === 'security_balanced') score += 6;
-        else if (securityPref === 'security_low' && hasUpside) score += 8;
-        else score += 3;
-
-        // Q20: Career Path Type
-        const pathType = answers.c20;
-        maxScore += 9;
-        if (pathType === 'path_entrepreneur' && (path.category === 'Online Business' || path.category === 'Business' || path.category === 'Content Creation')) score += 9;
-        else if (pathType === 'path_corporate' && (path.category === 'Technology' || path.category === 'Professional Services' || path.category === 'Healthcare')) score += 9;
-        else if (pathType === 'path_trade' && path.category === 'Skilled Trade') score += 9;
-        else if (pathType === 'path_creative' && (path.category === 'Creative' || path.category === 'Content Creation')) score += 9;
-        else score += 4;
-
-        // Q21: Self Discipline
-        const discipline = answers.c21;
-        const needsDiscipline = path.category === 'Content Creation' || path.category === 'Online Business' || 
-                               path.category === 'Finance/Trading' || path.lifestyle === 'location independent';
-        maxScore += 7;
-        if ((discipline === 'discipline_high' || discipline === 'discipline_medium') && needsDiscipline) score += 7;
-        else if ((discipline === 'discipline_low' || discipline === 'discipline_none') && !needsDiscipline) score += 7;
-        else score += 3;
-
-        // Q22: Chaos Tolerance
-        const chaosTolerance = answers.c22;
-        const hasChaos = path.category === 'Public Service' || path.category === 'Business' || 
-                        path.category === 'Healthcare' || path.riskLevel === 'high' || path.riskLevel === 'very high';
-        maxScore += 6;
-        if ((chaosTolerance === 'chaos_thrive' || chaosTolerance === 'chaos_okay') && hasChaos) score += 6;
-        else if ((chaosTolerance === 'chaos_no' || chaosTolerance === 'chaos_hate') && !hasChaos) score += 6;
-        else score += 3;
-
-        // Q23: Prestige
-        const prestigePref = answers.c23;
-        const hasPrestige = path.category === 'Healthcare' || path.category === 'Professional Services' || 
-                           path.name.includes('Doctor') || path.name.includes('Lawyer') || path.name.includes('Pilot');
-        maxScore += 6;
-        if (prestigePref === 'prestige_high' && hasPrestige) score += 6;
-        else if (prestigePref === 'prestige_medium' && hasPrestige) score += 4;
-        else if ((prestigePref === 'prestige_low' || prestigePref === 'prestige_none') && !hasPrestige) score += 6;
-        else score += 3;
-
-        // Q24: Hands vs Brain
-        const workType = answers.c24;
-        const isHandsWork = path.category === 'Skilled Trade' || path.category === 'Construction/Trade' || 
-                           path.physicalDemand === 'high' || path.physicalDemand === 'very high';
-        const isBrainWork = path.category === 'Technology' || path.category === 'Professional Services' || 
-                           path.category === 'Finance/Trading';
-        maxScore += 7;
-        if (workType === 'work_hands' && isHandsWork) score += 7;
-        else if (workType === 'work_both' && !isBrainWork && !isHandsWork) score += 7;
-        else if (workType === 'work_brain' && isBrainWork) score += 7;
-        else if (workType === 'work_desk' && (path.category === 'Technology' || path.category === 'Online Business')) score += 7;
-        else score += 3;
-
-        // Q25: Patience for Slow Growth
-        const patience = answers.c25;
-        const isSlow = path.timeToProfit.includes('2-4') || path.timeToProfit.includes('4-6') || path.timeToProfit.includes('5+');
-        const isFast = path.timeToProfit.includes('immediate') || path.timeToProfit.includes('1-3 month');
-        maxScore += 7;
-        if ((patience === 'patience_high' || patience === 'patience_medium') && isSlow) score += 7;
-        else if ((patience === 'patience_low' || patience === 'patience_none') && isFast) score += 7;
-        else score += 4;
-
-        // Calculate percentage
-        const percentage = Math.round((score / maxScore) * 100);
+        const fitTags = Object.entries(tagHits)
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(([tag]) => tag);
 
         scores.push({
-          key: key,
-          path: path,
-          score: score,
-          maxScore: maxScore,
-          percentage: percentage
+          key: family.familyKey,
+          familyKey: family.familyKey,
+          path: buildCareerResultPath(family),
+          score,
+          maxScore,
+          percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0,
+          highWeightMatches,
+          exampleRoles: Array.isArray(family.exampleRoles) ? family.exampleRoles.slice(0, 5) : [],
+          fitReasons: buildCareerFitReasons(family, fitTags),
+          fitTags
         });
       }
 
-      // Sort by score (descending)
-      scores.sort((a, b) => b.percentage - a.percentage);
+      scores.sort((a, b) =>
+        b.percentage - a.percentage ||
+        b.highWeightMatches - a.highWeightMatches ||
+        b.fitTags.length - a.fitTags.length ||
+        a.path.name.localeCompare(b.path.name)
+      );
+
       return scores;
     }
 
-    function scoreLifePaths(answers) {
+    const HOBBY_WEIGHT_VALUES = {
+      high: 12,
+      medium: 8,
+      low: 5
+    };
+
+    const HOBBY_TAG_REASON_DEFAULTS = {
+      low_cost: 'You wanted something practical to start without a large upfront spend.',
+      moderate_cost: 'You left room for a modest setup if the fit is strong.',
+      gear_heavy: 'You are open to hobbies that may need gear, travel, or setup.',
+      low_time: 'Your answers favored hobbies that can work in small pockets of time.',
+      steady_routine: 'A steady rhythm or repeatable practice seems helpful for you.',
+      flexible_drop_in: 'Flexibility mattered, so this can work without a rigid schedule.',
+      solo_recharge: 'You seemed to need time that restores you without social pressure.',
+      small_group: 'A smaller circle or structured group looks more comfortable than a huge scene.',
+      community_social: 'Connection and belonging showed up as important.',
+      low_energy: 'You need options that still work when energy is limited.',
+      calming: 'A calmer reset seems like a strong fit.',
+      energizing: 'You sounded ready for something lively or activating.',
+      high_physical: 'You are open to movement, training, or physical challenge.',
+      low_physical: 'Lower physical strain looks more sustainable for you.',
+      indoor_friendly: 'Indoor or controlled settings fit your current life better.',
+      outdoor_nature: 'Fresh air, nature, or outdoor time mattered in your answers.',
+      screen_free: 'You wanted some distance from screens.',
+      screen_based: 'You are open to digital tools, online communities, or screen-based creation.',
+      creative_expression: 'Creative expression was a meaningful signal in your answers.',
+      hands_on_making: 'Making, building, cooking, crafting, or tangible output seems satisfying.',
+      learning_growth: 'You wanted curiosity, growth, or a skill you can build.',
+      performance_sharing: 'Sharing, performing, or being seen could add energy for you.',
+      competition_play: 'Play, games, goals, or friendly competition may keep you engaged.',
+      service_connection: 'Helping, mentoring, or contributing to people mattered.',
+      meaning_reflection: 'Depth, reflection, or personal meaning showed up as important.',
+      exploration_adventure: 'Novelty, discovery, or a wider sense of life stood out.',
+      home_based: 'Home-friendly hobbies fit your responsibilities or energy better.',
+      family_friendly: 'You wanted something that can include family or close people.',
+      beginner_friendly: 'You leaned toward an easier start with less pressure.',
+      mastery_path: 'You are open to a hobby that can deepen over time.'
+    };
+
+    const HOBBY_QUESTION_CONFIG = {
+      l1: {
+        weight: 'medium',
+        choices: {
+          need_restore: { prefer: ['calming', 'low_energy', 'meaning_reflection', 'low_physical'] },
+          need_create: { prefer: ['creative_expression', 'hands_on_making', 'home_based'] },
+          need_connect: { prefer: ['community_social', 'small_group', 'service_connection'] },
+          need_energy: { prefer: ['energizing', 'high_physical', 'exploration_adventure', 'competition_play'] }
+        }
+      },
+      l2: {
+        weight: 'high',
+        choices: {
+          time_tiny: { prefer: ['low_time', 'flexible_drop_in', 'home_based', 'beginner_friendly'], avoid: ['gear_heavy', 'steady_routine'] },
+          time_low: { prefer: ['low_time', 'flexible_drop_in', 'beginner_friendly'] },
+          time_medium: { prefer: ['steady_routine', 'learning_growth', 'small_group'] },
+          time_deep: { prefer: ['mastery_path', 'community_social', 'gear_heavy'] }
+        }
+      },
+      l3: {
+        weight: 'high',
+        choices: {
+          energy_low: { prefer: ['low_energy', 'calming', 'low_physical', 'home_based'], avoid: ['high_physical', 'performance_sharing'] },
+          energy_variable: { prefer: ['flexible_drop_in', 'low_time', 'home_based', 'beginner_friendly'] },
+          energy_balanced: { prefer: ['learning_growth', 'small_group', 'steady_routine'] },
+          energy_high: { prefer: ['energizing', 'high_physical', 'competition_play', 'exploration_adventure'], avoid: ['low_energy'] }
+        }
+      },
+      l4: {
+        weight: 'high',
+        choices: {
+          budget_free: { prefer: ['low_cost', 'low_time', 'beginner_friendly'], avoid: ['gear_heavy'] },
+          budget_light: { prefer: ['low_cost', 'moderate_cost', 'beginner_friendly'] },
+          budget_moderate: { prefer: ['moderate_cost', 'learning_growth', 'mastery_path'] },
+          budget_open: { prefer: ['gear_heavy', 'mastery_path', 'exploration_adventure'] }
+        }
+      },
+      l5: {
+        weight: 'high',
+        choices: {
+          physical_low: { prefer: ['low_physical', 'low_energy', 'indoor_friendly', 'home_based'], avoid: ['high_physical'] },
+          physical_gentle: { prefer: ['low_physical', 'calming', 'screen_free'] },
+          physical_moderate: { prefer: ['energizing', 'outdoor_nature', 'small_group'] },
+          physical_high: { prefer: ['high_physical', 'energizing', 'competition_play', 'outdoor_nature'], avoid: ['low_energy'] }
+        }
+      },
+      l6: {
+        weight: 'high',
+        choices: {
+          social_solo: { prefer: ['solo_recharge', 'home_based', 'low_energy'], avoid: ['community_social'] },
+          social_small: { prefer: ['small_group', 'steady_routine'] },
+          social_community: { prefer: ['community_social', 'service_connection', 'steady_routine'], avoid: ['solo_recharge'] },
+          social_flexible: { prefer: ['flexible_drop_in', 'small_group'] }
+        }
+      },
+      l7: {
+        weight: 'high',
+        choices: {
+          screen_free: { prefer: ['screen_free', 'outdoor_nature', 'hands_on_making'], avoid: ['screen_based'] },
+          screen_light: { prefer: ['screen_free', 'indoor_friendly', 'creative_expression'] },
+          screen_ok: { prefer: ['screen_based', 'learning_growth', 'indoor_friendly'] },
+          screen_prefer: { prefer: ['screen_based', 'creative_expression', 'learning_growth', 'home_based'], avoid: ['screen_free'] }
+        }
+      },
+      l8: {
+        weight: 'high',
+        choices: {
+          place_home: { prefer: ['home_based', 'indoor_friendly', 'low_time', 'family_friendly'], avoid: ['outdoor_nature'] },
+          place_indoor: { prefer: ['indoor_friendly', 'steady_routine', 'small_group'] },
+          place_outdoor: { prefer: ['outdoor_nature', 'screen_free', 'exploration_adventure', 'high_physical'] },
+          place_mixed: { prefer: ['flexible_drop_in', 'small_group', 'exploration_adventure'] }
+        }
+      },
+      l9: {
+        weight: 'medium',
+        choices: {
+          creative_visual: { prefer: ['creative_expression', 'hands_on_making', 'indoor_friendly'] },
+          creative_words_sound: { prefer: ['creative_expression', 'performance_sharing', 'meaning_reflection'] },
+          creative_practical: { prefer: ['hands_on_making', 'home_based', 'family_friendly'] },
+          creative_not_focus: { prefer: ['competition_play', 'learning_growth', 'outdoor_nature'] }
+        }
+      },
+      l10: {
+        weight: 'medium',
+        choices: {
+          make_yes: { prefer: ['hands_on_making', 'creative_expression', 'home_based'] },
+          make_maybe: { prefer: ['hands_on_making', 'calming', 'beginner_friendly'] },
+          make_digital: { prefer: ['screen_based', 'creative_expression', 'learning_growth'] },
+          make_no: { prefer: ['exploration_adventure', 'community_social', 'meaning_reflection'] }
+        }
+      },
+      l11: {
+        weight: 'medium',
+        choices: {
+          structure_routine: { prefer: ['steady_routine', 'mastery_path', 'community_social'] },
+          structure_weekly: { prefer: ['steady_routine', 'small_group'] },
+          structure_dropin: { prefer: ['flexible_drop_in', 'low_time', 'beginner_friendly'] },
+          structure_spontaneous: { prefer: ['flexible_drop_in', 'exploration_adventure'] }
+        }
+      },
+      l12: {
+        weight: 'medium',
+        choices: {
+          learn_easy: { prefer: ['beginner_friendly', 'low_time', 'low_cost'] },
+          learn_some: { prefer: ['learning_growth', 'beginner_friendly'] },
+          learn_mastery: { prefer: ['mastery_path', 'learning_growth', 'steady_routine'] },
+          learn_many: { prefer: ['exploration_adventure', 'flexible_drop_in', 'creative_expression'] }
+        }
+      },
+      l13: {
+        weight: 'medium',
+        choices: {
+          stress_calm: { prefer: ['calming', 'low_energy', 'meaning_reflection'] },
+          stress_move: { prefer: ['energizing', 'high_physical', 'screen_free'] },
+          stress_create: { prefer: ['creative_expression', 'hands_on_making', 'solo_recharge'] },
+          stress_people_play: { prefer: ['community_social', 'competition_play', 'small_group'] }
+        }
+      },
+      l14: {
+        weight: 'medium',
+        choices: {
+          meaning_core: { prefer: ['meaning_reflection', 'service_connection', 'calming'] },
+          meaning_some: { prefer: ['meaning_reflection', 'learning_growth'] },
+          meaning_light: { prefer: ['beginner_friendly', 'competition_play', 'creative_expression'] },
+          meaning_not_focus: { prefer: ['competition_play', 'exploration_adventure', 'energizing'] }
+        }
+      },
+      l15: {
+        weight: 'medium',
+        choices: {
+          family_high: { prefer: ['family_friendly', 'home_based', 'flexible_drop_in', 'low_time'] },
+          family_include: { prefer: ['family_friendly', 'small_group', 'service_connection'] },
+          family_some: { prefer: ['flexible_drop_in', 'home_based'] },
+          family_low: { prefer: ['mastery_path', 'exploration_adventure', 'community_social'] }
+        }
+      },
+      l16: {
+        weight: 'medium',
+        choices: {
+          service_yes: { prefer: ['service_connection', 'community_social', 'meaning_reflection'] },
+          service_some: { prefer: ['service_connection', 'small_group'] },
+          service_personal: { prefer: ['solo_recharge', 'calming', 'creative_expression'] },
+          service_no: { prefer: ['competition_play', 'exploration_adventure', 'home_based'] }
+        }
+      },
+      l17: {
+        weight: 'low',
+        choices: {
+          share_love: { prefer: ['performance_sharing', 'community_social', 'energizing'] },
+          share_maybe: { prefer: ['performance_sharing', 'small_group', 'creative_expression'] },
+          share_private: { prefer: ['solo_recharge', 'creative_expression', 'home_based'] },
+          share_no: { prefer: ['solo_recharge', 'low_energy'], avoid: ['performance_sharing'] }
+        }
+      },
+      l18: {
+        weight: 'low',
+        choices: {
+          play_compete: { prefer: ['competition_play', 'energizing', 'small_group'] },
+          play_casual: { prefer: ['competition_play', 'beginner_friendly'] },
+          play_neutral: { prefer: ['learning_growth', 'creative_expression'] },
+          play_avoid: { prefer: ['calming', 'meaning_reflection'], avoid: ['competition_play'] }
+        }
+      },
+      l19: {
+        weight: 'low',
+        choices: {
+          novelty_high: { prefer: ['exploration_adventure', 'outdoor_nature', 'flexible_drop_in'] },
+          novelty_some: { prefer: ['exploration_adventure', 'small_group'] },
+          novelty_low: { prefer: ['steady_routine', 'home_based'] },
+          novelty_calm: { prefer: ['calming', 'low_energy', 'solo_recharge'] }
+        }
+      },
+      l20: {
+        weight: 'low',
+        choices: {
+          depth_mastery: { prefer: ['mastery_path', 'learning_growth', 'steady_routine'] },
+          depth_two: { prefer: ['mastery_path', 'flexible_drop_in'] },
+          depth_sampler: { prefer: ['exploration_adventure', 'beginner_friendly', 'flexible_drop_in'] },
+          depth_light: { prefer: ['low_time', 'beginner_friendly', 'calming'] }
+        }
+      },
+      l21: {
+        weight: 'medium',
+        choices: {
+          keep_progress: { prefer: ['mastery_path', 'learning_growth', 'steady_routine'] },
+          keep_people: { prefer: ['community_social', 'small_group', 'service_connection'] },
+          keep_peace: { prefer: ['calming', 'low_energy', 'meaning_reflection'] },
+          keep_fun: { prefer: ['competition_play', 'exploration_adventure', 'energizing'] }
+        }
+      },
+      l22: {
+        weight: 'high',
+        choices: {
+          access_easy: { prefer: ['low_time', 'low_cost', 'low_physical', 'home_based', 'beginner_friendly'], avoid: ['gear_heavy', 'high_physical'] },
+          access_home: { prefer: ['home_based', 'indoor_friendly', 'family_friendly'] },
+          access_local: { prefer: ['small_group', 'community_social', 'outdoor_nature'] },
+          access_gear: { prefer: ['gear_heavy', 'mastery_path', 'exploration_adventure'] }
+        }
+      },
+      l23: {
+        weight: 'medium',
+        choices: {
+          people_none: { prefer: ['solo_recharge', 'home_based', 'low_energy'], avoid: ['community_social'] },
+          people_close: { prefer: ['small_group', 'family_friendly', 'home_based'] },
+          people_group: { prefer: ['community_social', 'steady_routine', 'competition_play'] },
+          people_online: { prefer: ['screen_based', 'community_social', 'learning_growth'] }
+        }
+      },
+      l24: {
+        weight: 'low',
+        choices: {
+          travel_none: { prefer: ['home_based', 'indoor_friendly', 'low_time'], avoid: ['outdoor_nature'] },
+          travel_local: { prefer: ['small_group', 'outdoor_nature', 'community_social'] },
+          travel_occasional: { prefer: ['exploration_adventure', 'outdoor_nature'] },
+          travel_adventure: { prefer: ['exploration_adventure', 'outdoor_nature', 'gear_heavy'] }
+        }
+      },
+      l25: {
+        weight: 'medium',
+        choices: {
+          win_restored: { prefer: ['calming', 'low_energy', 'meaning_reflection'] },
+          win_created: { prefer: ['creative_expression', 'hands_on_making', 'screen_based'] },
+          win_connected: { prefer: ['community_social', 'service_connection', 'family_friendly'] },
+          win_alive: { prefer: ['energizing', 'exploration_adventure', 'competition_play'] }
+        }
+      }
+    };
+
+    function buildHobbyResultPath(family) {
+      return {
+        familyKey: family.familyKey,
+        name: family.name,
+        category: family.category,
+        description: family.description,
+        timeCommitment: family.timeCommitment,
+        startupCost: Array.isArray(family.startupCost) ? family.startupCost.slice() : family.startupCost,
+        timeToEnjoyment: family.timeToEnjoyment,
+        timeToSkill: family.timeToEnjoyment,
+        energyType: family.energyType,
+        socialLevel: family.socialLevel,
+        physicalDemand: family.physicalDemand,
+        lifestyle: family.lifestyle,
+        fulfillmentLevel: 'high',
+        detailed: family.detailed || {},
+        exampleHobbies: Array.isArray(family.exampleHobbies) ? family.exampleHobbies.slice(0, 6) : []
+      };
+    }
+
+    function buildHobbyFitReasons(family, orderedTags) {
+      const template = family.fitReasonsTemplate || {};
+      const candidateTags = uniqueStrings([
+        ...(orderedTags || []),
+        ...((family.fitTags || []).slice(0, 4))
+      ]);
+
+      return candidateTags
+        .map((tag) => template[tag] || HOBBY_TAG_REASON_DEFAULTS[tag])
+        .filter(Boolean)
+        .slice(0, 4);
+    }
+
+    function calculateHobbyFamilyScores(answers) {
+      const families = Object.values(window.hobbyFamilies || {});
+      const scores = [];
+
+      for (const family of families) {
+        const fitTagSet = new Set(family.fitTags || []);
+        const conflictTagSet = new Set(family.conflictTags || []);
+        const tagHits = {};
+        let score = 0;
+        let maxScore = 0;
+        let highWeightMatches = 0;
+
+        for (const [questionName, config] of Object.entries(HOBBY_QUESTION_CONFIG)) {
+          const answerValue = answers[questionName];
+          const choice = config.choices[answerValue];
+          if (!choice) continue;
+
+          const weight = HOBBY_WEIGHT_VALUES[config.weight] || 0;
+          const prefer = choice.prefer || [];
+          const avoid = choice.avoid || [];
+          const totalSignals = prefer.length + avoid.length;
+          const matchShare = prefer.length ? (weight * 0.65) / prefer.length : 0;
+          const penaltyShare = totalSignals ? (weight * 0.7) / totalSignals : 0;
+          let questionScore = weight * 0.35;
+          let matchedThisQuestion = 0;
+
+          maxScore += weight;
+
+          for (const tag of prefer) {
+            if (fitTagSet.has(tag)) {
+              questionScore += matchShare;
+              matchedThisQuestion += 1;
+              tagHits[tag] = (tagHits[tag] || 0) + weight;
+            } else if (conflictTagSet.has(tag)) {
+              questionScore -= penaltyShare;
+            }
+          }
+
+          for (const tag of avoid) {
+            if (fitTagSet.has(tag)) {
+              questionScore -= penaltyShare;
+            }
+          }
+
+          if (config.weight === 'high') {
+            highWeightMatches += matchedThisQuestion;
+          }
+
+          score += clamp(questionScore, 0, weight);
+        }
+
+        const fitTags = Object.entries(tagHits)
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .map(([tag]) => tag);
+
+        scores.push({
+          key: family.familyKey,
+          familyKey: family.familyKey,
+          path: buildHobbyResultPath(family),
+          score,
+          maxScore,
+          percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0,
+          highWeightMatches,
+          exampleHobbies: Array.isArray(family.exampleHobbies) ? family.exampleHobbies.slice(0, 6) : [],
+          fitReasons: buildHobbyFitReasons(family, fitTags),
+          fitTags
+        });
+      }
+
+      scores.sort((a, b) =>
+        b.percentage - a.percentage ||
+        b.highWeightMatches - a.highWeightMatches ||
+        b.fitTags.length - a.fitTags.length ||
+        a.path.name.localeCompare(b.path.name)
+      );
+
+      return scores;
+    }
+
+    function scoreHobbyFamilies(answers) {
+      return calculateHobbyFamilyScores(answers);
+    }
+
+    function scoreLegacyLifePathTitles(answers) {
       const scores = [];
       
       // Iterate through all life paths
@@ -2735,7 +3307,7 @@
       if (!careerResultsDiv || !lifeResultsDiv) return;
 
       careerResultsDiv.innerHTML = renderResultSection(latestResultGroups.career, true, 'Career Matches');
-      lifeResultsDiv.innerHTML = renderResultSection(latestResultGroups.life, false, 'Life Fulfillment Paths');
+      lifeResultsDiv.innerHTML = renderResultSection(latestResultGroups.life, false, 'Hobby + Personal Reset Matches');
     }
 
     function renderResultSection(results, isCareer, title) {
@@ -2791,6 +3363,90 @@
       `;
     }
 
+    function getCareerExampleRoles(result, limit = 5) {
+      return uniqueStrings(result?.exampleRoles || result?.path?.exampleRoles || []).slice(0, limit);
+    }
+
+    function getCareerFitReasons(result, limit = 4) {
+      return uniqueStrings(result?.fitReasons || []).slice(0, limit);
+    }
+
+    function createCareerSignalsHTML(result, rank) {
+      const roles = getCareerExampleRoles(result, rank === 1 ? 5 : 3);
+      const fitReasons = getCareerFitReasons(result, rank === 1 ? 4 : 2);
+      const rolesHtml = roles.length
+        ? `
+          <div class="career-insight-card">
+            <h4>Example Roles</h4>
+            <div class="career-role-list">
+              ${roles.map((role) => `<span class="career-role-chip">${escapeHtml(role)}</span>`).join('')}
+            </div>
+          </div>
+        `
+        : '';
+      const reasonsHtml = fitReasons.length
+        ? `
+          <div class="career-insight-card">
+            <h4>Why It Fits</h4>
+            <div class="career-fit-list">
+              ${fitReasons.map((reason) => `<div class="career-fit-item">${escapeHtml(reason)}</div>`).join('')}
+            </div>
+          </div>
+        `
+        : '';
+
+      if (!rolesHtml && !reasonsHtml) return '';
+
+      return `
+        <div class="career-insight-grid">
+          ${rolesHtml}
+          ${reasonsHtml}
+        </div>
+      `;
+    }
+
+    function getHobbyExampleHobbies(result, limit = 6) {
+      return uniqueStrings(result?.exampleHobbies || result?.path?.exampleHobbies || []).slice(0, limit);
+    }
+
+    function getHobbyFitReasons(result, limit = 4) {
+      return uniqueStrings(result?.fitReasons || []).slice(0, limit);
+    }
+
+    function createHobbySignalsHTML(result, rank) {
+      const hobbies = getHobbyExampleHobbies(result, rank === 1 ? 6 : 4);
+      const fitReasons = getHobbyFitReasons(result, rank === 1 ? 4 : 2);
+      const hobbiesHtml = hobbies.length
+        ? `
+          <div class="career-insight-card">
+            <h4>Example Hobbies</h4>
+            <div class="career-role-list">
+              ${hobbies.map((hobby) => `<span class="career-role-chip">${escapeHtml(hobby)}</span>`).join('')}
+            </div>
+          </div>
+        `
+        : '';
+      const reasonsHtml = fitReasons.length
+        ? `
+          <div class="career-insight-card">
+            <h4>Why It Fits</h4>
+            <div class="career-fit-list">
+              ${fitReasons.map((reason) => `<div class="career-fit-item">${escapeHtml(reason)}</div>`).join('')}
+            </div>
+          </div>
+        `
+        : '';
+
+      if (!hobbiesHtml && !reasonsHtml) return '';
+
+      return `
+        <div class="career-insight-grid">
+          ${hobbiesHtml}
+          ${reasonsHtml}
+        </div>
+      `;
+    }
+
     function createPathHTML(result, rank, isCareer) {
       const path = result.path;
       const metrics = isCareer
@@ -2802,14 +3458,15 @@
           ]
         : [
             ['Time', path.timeCommitment],
+            ['Enjoyment', path.timeToEnjoyment || path.timeToSkill],
             ['Startup', formatMoneyRange(path.startupCost)],
-            ['Social', path.socialLevel],
-            ['Fulfillment', path.fulfillmentLevel]
+            ['Energy', path.energyType || path.fulfillmentLevel]
           ];
       const stats = metrics.map(([label, value]) => createMetricHTML(label, value)).join('');
       const unlocked = Boolean(hasPaid);
       const cardRole = rank === 1 ? 'result-card-primary' : 'result-card-support';
       const details = path.detailed || {};
+      const resultSignalsHtml = isCareer ? createCareerSignalsHTML(result, rank) : createHobbySignalsHTML(result, rank);
       const detailHtml = unlocked
         ? `
           <div class="career-details-grid">
@@ -2847,6 +3504,7 @@
           </div>
           <div class="career-description">${escapeHtml(path.description)}</div>
           <div class="career-stats">${stats}</div>
+          ${resultSignalsHtml}
           ${detailHtml}
         </article>
       `;
@@ -2856,6 +3514,9 @@
       location.reload();
     }
 
+    memberSavedResultsBtn?.addEventListener('click', () => {
+      window.location.href = latestSavedRunId ? 'dashboard.html#latestResultsPanel' : 'dashboard.html';
+    });
     connectDiscordBtn?.addEventListener('click', startDiscordConnect);
     memberCheckoutBtn?.addEventListener('click', startMembershipCheckout);
     memberRefreshBtn?.addEventListener('click', () => refreshMembershipStatus('Refreshing account access...'));
