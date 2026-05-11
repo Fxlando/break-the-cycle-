@@ -36,27 +36,39 @@
 
   <!-- Header / Hero Section -->
   <header>
+    <nav class="site-header" aria-label="Home page">
+      <a class="site-logo-link" href="index.html" aria-label="Break The Cycle home">
+        <span class="site-logo-art" aria-hidden="true"></span>
+      </a>
+      <label class="language-control" for="languageSelect">
+        <span class="language-label" data-i18n="nav.language">Language</span>
+        <select id="languageSelect" class="language-select" name="language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+    </nav>
     <div class="hero-tagline">
       <div class="hero-tagline-group">
-        <span class="light-word">life gets</span>
-        <span class="dark-word">boring</span>
+        <span class="light-word" data-i18n="tagline.lifeGets">life gets</span>
+        <span class="dark-word" data-i18n="tagline.boring">boring</span>
       </div>
       <span class="dot-separator" aria-hidden="true">&middot;</span>
       <div class="hero-tagline-group">
-        <span class="dark-word">learn how to</span>
-        <span class="light-word">live it</span>
+        <span class="dark-word" data-i18n="tagline.learnHow">learn how to</span>
+        <span class="light-word" data-i18n="tagline.liveIt">live it</span>
       </div>
     </div>
     <div class="content container">
       <div class="hero-copy">
-        <p class="hero-kicker"><span>Feeling stuck?</span><span>Start here</span></p>
-        <h1 aria-label="Break The Cycle"><span aria-hidden="true">Break</span><span aria-hidden="true">The Cycle</span></h1>
-        <p class="tagline">Take the quiz, find your path, and turn your next move into something you can actually follow.</p>
-        <p class="hero-dashboard-hint">Already on the path? <a href="dashboard.html" class="hero-dashboard-link">Open your dashboard</a></p>
+        <p class="hero-kicker"><span data-i18n="hero.kickerOne">Feeling stuck?</span><span data-i18n="hero.kickerTwo">Start here</span></p>
+        <h1 aria-label="Break The Cycle"><span aria-hidden="true" data-i18n="hero.titleOne">Break</span><span aria-hidden="true" data-i18n="hero.titleTwo">The Cycle</span></h1>
+        <p class="tagline" data-i18n="hero.copy">Take the quiz, find your path, and turn your next move into something you can actually follow.</p>
+        <p class="hero-dashboard-hint"><span data-i18n="hero.dashboardPrompt">Already on the path?</span> <a href="dashboard.html" class="hero-dashboard-link" data-i18n="hero.dashboardLink">Open your dashboard</a></p>
       </div>
       <div class="hero-actions">
-        <a href="quiz.html" class="btn">Take the Quiz</a>
-        <button class="btn btn-secondary" id="watchVideoBtn" type="button" hidden>Watch Video</button>
+        <a href="quiz.html" class="btn" data-i18n="hero.quizButton">Take the Quiz</a>
+        <button class="btn btn-secondary" id="watchVideoBtn" type="button" hidden data-i18n="hero.videoButton">Watch Video</button>
       </div>
     </div>
     <div class="wave-divider"></div>
@@ -68,90 +80,104 @@
         <button type="button" id="closeVideoModal">Close</button>
       </div>
       <div class="iframe-wrap">
-        <iframe id="heroVideo" src="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
+        <iframe id="heroVideo" src="" hidden allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
           title="Watch video"></iframe>
+        <video id="localVideo" hidden controls playsinline></video>
+        <div id="videoFallback" class="video-fallback" hidden>
+          <strong data-i18n="videoFallback.title">Video coming soon</strong>
+          <p data-i18n="videoFallback.copy">Jordan, Alex, and Mya's clips can be added here once they are ready.</p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- How It Works Section -->
   <section class="container fade-in">
-    <h2>HOW IT WORKS</h2>
-    <p style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <h2 data-i18n="how.title">HOW IT WORKS</h2>
+    <p style="text-align: center; max-width: 700px; margin: 0 auto;" data-i18n="how.copy">
       No nonsense, just action. Get a clear signal on what to try next, then build a follow through plan around it.
     </p>
     <div class="steps">
       <div class="step">
         <div class="step-number">1</div>
-        <h3>Take The Quiz</h3>
-        <p>Answer simple questions to uncover your interests.</p>
+        <h3 data-i18n="how.stepOneTitle">Take The Quiz</h3>
+        <p data-i18n="how.stepOneCopy">Answer simple questions to uncover your interests.</p>
       </div>
       <div class="step">
         <div class="step-number">2</div>
-        <h3>See Your Traits</h3>
-        <p>Get a free teaser result based on your answers so you can see your potential path first.</p>
+        <h3 data-i18n="how.stepTwoTitle">See Your Traits</h3>
+        <p data-i18n="how.stepTwoCopy">Get a free teaser result based on your answers so you can see your potential path first.</p>
       </div>
       <div class="step">
         <div class="step-number">3</div>
-        <h3>Unlock Your Plan</h3>
-        <p>Join the membership to unlock the full roadmap, saved progress, and your next concrete moves.</p>
+        <h3 data-i18n="how.stepThreeTitle">Unlock Your Plan</h3>
+        <p data-i18n="how.stepThreeCopy">Join the membership to unlock the full roadmap, saved progress, and your next concrete moves.</p>
       </div>
       <div class="step">
         <div class="step-number">4</div>
-        <h3>Stay In Motion</h3>
-        <p>Use Discord accountability, community, and a personalized mentor that remembers your path to keep you moving and on track.</p>
+        <h3 data-i18n="how.stepFourTitle">Stay In Motion</h3>
+        <p data-i18n="how.stepFourCopy">Use Discord accountability, community, and a personalized mentor that remembers your path to keep you moving and on track.</p>
       </div>
     </div>
   </section>
 
   <!-- Testimonials Section -->
   <section class="container fade-in">
-    <h2>What Our People Are Saying</h2>
-    <p style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <h2 data-i18n="testimonials.title">What Our People Are Saying</h2>
+    <p style="text-align: center; max-width: 700px; margin: 0 auto;" data-i18n="testimonials.copy">
       feedback from people who've had experiences with us.
     </p>
     <div class="testimonials">
       <div class="testimonial">
         <p>"I took the quiz just to see if i could find a new hobby. Now I'm two months deep into all this photography stuff. Who knew I would like photography."</p>
-        <cite>&mdash; Jordan, 19</cite>
+        <div class="testimonial-footer">
+          <cite>&mdash; Jordan, 19</cite>
+          <button class="testimonial-video-btn" type="button" data-video-key="jordan" data-video-title="Jordan's story" data-i18n="testimonials.watchVideo">Watch Video</button>
+        </div>
       </div>
       <div class="testimonial">
         <p>"This is something that feels natural. Not regular bs to throw you by, this feels a lot more like connected."</p>
-        <cite>&mdash; Alex, 22</cite>
+        <div class="testimonial-footer">
+          <cite>&mdash; Alex, 22</cite>
+          <button class="testimonial-video-btn" type="button" data-video-key="alex" data-video-title="Alex's story" data-i18n="testimonials.watchVideo">Watch Video</button>
+        </div>
       </div>
       <div class="testimonial">
         <p>"I honestly was looking for new stuff to do cause i work fast food and things are just boring. now im a internet nerd coding whatever comes to my mind and making my own little apps lol."</p>
-        <cite>&mdash; Mya, 20</cite>
+        <div class="testimonial-footer">
+          <cite>&mdash; Mya, 20</cite>
+          <button class="testimonial-video-btn" type="button" data-video-key="mya" data-video-title="Mya's story" data-i18n="testimonials.watchVideo">Watch Video</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- FAQ Section -->
   <section class="container fade-in">
-    <h2>FAQ</h2>
-    <p style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <h2 data-i18n="faq.title">FAQ</h2>
+    <p style="text-align: center; max-width: 700px; margin: 0 auto;" data-i18n="faq.copy">
       You've got questions. We've got the answers.
     </p>
     <div class="faq">
       <div class="faq-item">
-        <h3>Is this free?</h3>
-        <p>The quiz starts free. You can get your first signal without paying, then decide whether you want the full roadmap, saved progress, Discord access, and accountability features.</p>
+        <h3 data-i18n="faq.oneTitle">Is this free?</h3>
+        <p data-i18n="faq.oneCopy">The quiz starts free. You can get your first signal without paying, then decide whether you want the full roadmap, saved progress, Discord access, and accountability features.</p>
       </div>
       <div class="faq-item">
-        <h3>What do I need to start?</h3>
-        <p>Just an internet connection for us and a mindset ready to build something different. That's it.</p>
+        <h3 data-i18n="faq.twoTitle">What do I need to start?</h3>
+        <p data-i18n="faq.twoCopy">Just an internet connection for us and a mindset ready to build something different. That's it.</p>
       </div>
       <div class="faq-item">
-        <h3>How long does the quiz take?</h3>
-        <p>There is no time limit you take as long as you need.</p>
+        <h3 data-i18n="faq.threeTitle">How long does the quiz take?</h3>
+        <p data-i18n="faq.threeCopy">There is no time limit you take as long as you need.</p>
       </div>
       <div class="faq-item">
-        <h3>Do I need experience?</h3>
-        <p>Not at all. This was built for everyone especially people starting from zero just like we did.</p>
+        <h3 data-i18n="faq.fourTitle">Do I need experience?</h3>
+        <p data-i18n="faq.fourCopy">Not at all. This was built for everyone especially people starting from zero just like we did.</p>
       </div>
       <div class="faq-item">
-        <h3>What happens after the quiz?</h3>
-        <p>You will see your strongest match first out. If you want the full roadmap and follow through system, you can join the membership and keep building from there.</p>
+        <h3 data-i18n="faq.fiveTitle">What happens after the quiz?</h3>
+        <p data-i18n="faq.fiveCopy">You will see your strongest match first out. If you want the full roadmap and follow through system, you can join the membership and keep building from there.</p>
       </div>
     </div>
   </section>
@@ -159,16 +185,16 @@
   <!-- Email Signup Section -->
   <section class="email-section">
     <div class="container">
-      <h2>Stay in the Loop</h2>
-      <p style="max-width: 600px; margin: 0 auto;">
+      <h2 data-i18n="email.title">Stay in the Loop</h2>
+      <p style="max-width: 600px; margin: 0 auto;" data-i18n="email.copy">
         Get updates, drops, and motivation straight to your inbox. No spam, just value.
       </p>
       <form id="subscribeForm" class="email-form">
-        <input type="email" name="email" placeholder="Enter your email" required>
-        <button type="submit">Subscribe</button>
+        <input type="email" name="email" placeholder="Enter your email" required data-i18n-placeholder="email.placeholder">
+        <button type="submit" data-i18n="email.button">Subscribe</button>
         <p id="subscribeMessage" style="color:#5b6f86; margin-top:8px;"></p>
       </form>
-      <a href="#" class="back-to-top">back to top</a>
+      <a href="#" class="back-to-top" data-i18n="email.backToTop">back to top</a>
     </div>
   </section>
 
@@ -178,9 +204,9 @@
       <div class="social-links">
         <a href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
         <a href="https://tiktok.com/" target="_blank" rel="noopener">TikTok</a>
-        <a href="mailto:breakthecyclework2025@gmail.com">Email Us</a>
+        <a href="mailto:breakthecyclework2025@gmail.com" data-i18n="footer.email">Email Us</a>
       </div>
-      <p>&copy; 2023 Break The Cycle. All rights reserved.</p>
+      <p data-i18n="footer.rights">&copy; 2023 Break The Cycle. All rights reserved.</p>
     </div>
   </footer>
 
@@ -201,6 +227,151 @@
 
     const subscribeForm = document.getElementById('subscribeForm');
     const subscribeMessage = document.getElementById('subscribeMessage');
+    const languageSelect = document.getElementById('languageSelect');
+
+    const translations = {
+      en: {
+        'nav.language': 'Language',
+        'tagline.lifeGets': 'life gets',
+        'tagline.boring': 'boring',
+        'tagline.learnHow': 'learn how to',
+        'tagline.liveIt': 'live it',
+        'hero.kickerOne': 'Feeling stuck?',
+        'hero.kickerTwo': 'Start here',
+        'hero.titleOne': 'Break',
+        'hero.titleTwo': 'The Cycle',
+        'hero.copy': 'Take the quiz, find your path, and turn your next move into something you can actually follow.',
+        'hero.dashboardPrompt': 'Already on the path?',
+        'hero.dashboardLink': 'Open your dashboard',
+        'hero.quizButton': 'Take the Quiz',
+        'hero.videoButton': 'Watch Video',
+        'how.title': 'HOW IT WORKS',
+        'how.copy': 'No nonsense, just action. Get a clear signal on what to try next, then build a follow through plan around it.',
+        'how.stepOneTitle': 'Take The Quiz',
+        'how.stepOneCopy': 'Answer simple questions to uncover your interests.',
+        'how.stepTwoTitle': 'See Your Traits',
+        'how.stepTwoCopy': 'Get a free teaser result based on your answers so you can see your potential path first.',
+        'how.stepThreeTitle': 'Unlock Your Plan',
+        'how.stepThreeCopy': 'Join the membership to unlock the full roadmap, saved progress, and your next concrete moves.',
+        'how.stepFourTitle': 'Stay In Motion',
+        'how.stepFourCopy': 'Use Discord accountability, community, and a personalized mentor that remembers your path to keep you moving and on track.',
+        'testimonials.title': 'What Our People Are Saying',
+        'testimonials.copy': "feedback from people who've had experiences with us.",
+        'testimonials.watchVideo': 'Watch Video',
+        'videoFallback.title': 'Video coming soon',
+        'videoFallback.copy': "Jordan, Alex, and Mya's clips can be added here once they are ready.",
+        'faq.title': 'FAQ',
+        'faq.copy': "You've got questions. We've got the answers.",
+        'faq.oneTitle': 'Is this free?',
+        'faq.oneCopy': 'The quiz starts free. You can get your first signal without paying, then decide whether you want the full roadmap, saved progress, Discord access, and accountability features.',
+        'faq.twoTitle': 'What do I need to start?',
+        'faq.twoCopy': "Just an internet connection for us and a mindset ready to build something different. That's it.",
+        'faq.threeTitle': 'How long does the quiz take?',
+        'faq.threeCopy': 'There is no time limit you take as long as you need.',
+        'faq.fourTitle': 'Do I need experience?',
+        'faq.fourCopy': 'Not at all. This was built for everyone especially people starting from zero just like we did.',
+        'faq.fiveTitle': 'What happens after the quiz?',
+        'faq.fiveCopy': 'You will see your strongest match first out. If you want the full roadmap and follow through system, you can join the membership and keep building from there.',
+        'email.title': 'Stay in the Loop',
+        'email.copy': 'Get updates, drops, and motivation straight to your inbox. No spam, just value.',
+        'email.placeholder': 'Enter your email',
+        'email.button': 'Subscribe',
+        'email.backToTop': 'back to top',
+        'footer.email': 'Email Us',
+        'footer.rights': 'Copyright 2023 Break The Cycle. All rights reserved.',
+        'subscribe.confirm': 'Check your inbox for a confirmation link.',
+        'subscribe.sent': 'Check your inbox. Your email was sent.',
+        'subscribe.already': 'You are already subscribed.',
+        'subscribe.error': 'Could not subscribe right now.',
+        'subscribe.local': 'Start the site with npm start, then open http://localhost:3000/index.html.',
+        'subscribe.server': 'Could not reach the server. Make sure the backend is running.'
+      },
+      es: {
+        'nav.language': 'Idioma',
+        'tagline.lifeGets': 'la vida se vuelve',
+        'tagline.boring': 'aburrida',
+        'tagline.learnHow': 'aprende a',
+        'tagline.liveIt': 'vivirla',
+        'hero.kickerOne': 'Te sientes estancado?',
+        'hero.kickerTwo': 'Empieza aqui',
+        'hero.titleOne': 'Rompe',
+        'hero.titleTwo': 'El Ciclo',
+        'hero.copy': 'Haz el quiz, encuentra tu camino y convierte tu siguiente paso en algo que puedas seguir de verdad.',
+        'hero.dashboardPrompt': 'Ya estas en el camino?',
+        'hero.dashboardLink': 'Abre tu dashboard',
+        'hero.quizButton': 'Haz el quiz',
+        'hero.videoButton': 'Ver video',
+        'how.title': 'COMO FUNCIONA',
+        'how.copy': 'Sin vueltas, solo accion. Obtén una señal clara sobre que probar despues y arma un plan para seguirlo.',
+        'how.stepOneTitle': 'Haz el quiz',
+        'how.stepOneCopy': 'Responde preguntas simples para descubrir tus intereses.',
+        'how.stepTwoTitle': 'Ve tus rasgos',
+        'how.stepTwoCopy': 'Obtén un resultado gratuito basado en tus respuestas para ver primero tu posible camino.',
+        'how.stepThreeTitle': 'Desbloquea tu plan',
+        'how.stepThreeCopy': 'Unete a la membresia para desbloquear el mapa completo, progreso guardado y tus siguientes pasos concretos.',
+        'how.stepFourTitle': 'Mantente en movimiento',
+        'how.stepFourCopy': 'Usa responsabilidad en Discord, comunidad y un mentor personalizado que recuerda tu camino para mantenerte avanzando.',
+        'testimonials.title': 'Lo que dice nuestra gente',
+        'testimonials.copy': 'Comentarios de personas que han tenido experiencias con nosotros.',
+        'testimonials.watchVideo': 'Ver video',
+        'videoFallback.title': 'Video proximamente',
+        'videoFallback.copy': 'Los videos de Jordan, Alex y Mya se pueden agregar aqui cuando esten listos.',
+        'faq.title': 'PREGUNTAS',
+        'faq.copy': 'Tienes preguntas. Tenemos respuestas.',
+        'faq.oneTitle': 'Es gratis?',
+        'faq.oneCopy': 'El quiz empieza gratis. Puedes obtener tu primera señal sin pagar y despues decidir si quieres el mapa completo, progreso guardado, Discord y funciones de responsabilidad.',
+        'faq.twoTitle': 'Que necesito para empezar?',
+        'faq.twoCopy': 'Solo una conexion a internet y una mentalidad lista para construir algo diferente. Eso es todo.',
+        'faq.threeTitle': 'Cuanto tarda el quiz?',
+        'faq.threeCopy': 'No hay limite de tiempo; tomate el tiempo que necesites.',
+        'faq.fourTitle': 'Necesito experiencia?',
+        'faq.fourCopy': 'Para nada. Esto fue creado para todos, especialmente para personas que empiezan desde cero como nosotros.',
+        'faq.fiveTitle': 'Que pasa despues del quiz?',
+        'faq.fiveCopy': 'Veras primero tu coincidencia mas fuerte. Si quieres el mapa completo y el sistema de seguimiento, puedes unirte a la membresia y seguir construyendo.',
+        'email.title': 'Mantente al tanto',
+        'email.copy': 'Recibe novedades, lanzamientos y motivacion directo en tu correo. Sin spam, solo valor.',
+        'email.placeholder': 'Ingresa tu correo',
+        'email.button': 'Suscribirse',
+        'email.backToTop': 'volver arriba',
+        'footer.email': 'Escribenos',
+        'footer.rights': 'Copyright 2023 Break The Cycle. Todos los derechos reservados.',
+        'subscribe.confirm': 'Revisa tu correo para confirmar la suscripcion.',
+        'subscribe.sent': 'Revisa tu correo. El email fue enviado.',
+        'subscribe.already': 'Ya estas suscrito.',
+        'subscribe.error': 'No se pudo suscribir ahora.',
+        'subscribe.local': 'Inicia el sitio con npm start, luego abre http://localhost:3000/index.html.',
+        'subscribe.server': 'No se pudo conectar con el servidor. Asegurate de que el backend este corriendo.'
+      }
+    };
+
+    function translate(key) {
+      const language = languageSelect?.value || document.documentElement.lang || 'en';
+      return translations[language]?.[key] || translations.en[key] || '';
+    }
+
+    function applyLanguage(language) {
+      const copy = translations[language] || translations.en;
+      document.documentElement.lang = language;
+      document.querySelectorAll('[data-i18n]').forEach((node) => {
+        const key = node.getAttribute('data-i18n');
+        if (copy[key]) node.textContent = copy[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+        const key = node.getAttribute('data-i18n-placeholder');
+        if (copy[key]) node.setAttribute('placeholder', copy[key]);
+      });
+    }
+
+    const savedLanguage = localStorage.getItem('btc_language') || 'en';
+    if (languageSelect) {
+      languageSelect.value = savedLanguage;
+      applyLanguage(savedLanguage);
+      languageSelect.addEventListener('change', (event) => {
+        const nextLanguage = event.target.value || 'en';
+        localStorage.setItem('btc_language', nextLanguage);
+        applyLanguage(nextLanguage);
+      });
+    }
 
     subscribeForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -219,24 +390,24 @@
         try {
           data = text ? JSON.parse(text) : {};
         } catch (_) {
-          subscribeMessage.textContent = res.ok ? 'Check your email to confirm.' : 'Could not subscribe right now.';
+          subscribeMessage.textContent = res.ok ? translate('subscribe.confirm') : translate('subscribe.error');
           return;
         }
         if (res.ok && data.status === 'pending') {
           e.target.reset();
-          subscribeMessage.textContent = 'Check your inbox for a confirmation link.';
+          subscribeMessage.textContent = translate('subscribe.confirm');
         } else if (res.ok && data.status === 'sent_without_tracking') {
           e.target.reset();
-          subscribeMessage.textContent = 'Check your inbox. Your email was sent.';
+          subscribeMessage.textContent = translate('subscribe.sent');
         } else if (data.status === 'already_confirmed') {
-          subscribeMessage.textContent = 'You are already subscribed.';
+          subscribeMessage.textContent = translate('subscribe.already');
         } else {
-          subscribeMessage.textContent = data.error || 'Could not subscribe right now.';
+          subscribeMessage.textContent = data.error || translate('subscribe.error');
         }
       } catch (err) {
         subscribeMessage.textContent = window.location.protocol === 'file:'
-          ? 'Start the site with npm start, then open http://localhost:3000/index.html.'
-          : 'Could not reach the server. Make sure the backend is running.';
+          ? translate('subscribe.local')
+          : translate('subscribe.server');
         console.error('subscribe error', err);
       } finally {
         if (submitButton) submitButton.disabled = false;
@@ -248,19 +419,70 @@
     const videoModal = document.getElementById('videoModal');
     const closeVideoModal = document.getElementById('closeVideoModal');
     const heroVideo = document.getElementById('heroVideo');
+    const localVideo = document.getElementById('localVideo');
+    const videoFallback = document.getElementById('videoFallback');
+    const testimonialVideoButtons = document.querySelectorAll('.testimonial-video-btn');
     const YT_URL = '';
+    const TESTIMONIAL_VIDEO_URLS = {
+      jordan: '',
+      alex: '',
+      mya: ''
+    };
 
     if (!YT_URL && watchVideoBtn) {
       watchVideoBtn.hidden = true;
     }
 
-    watchVideoBtn?.addEventListener('click', () => {
-      if (!videoModal || !YT_URL) return;
+    function resetVideoPlayers() {
+      if (heroVideo) {
+        heroVideo.src = '';
+        heroVideo.hidden = true;
+      }
+      if (localVideo) {
+        localVideo.pause();
+        localVideo.removeAttribute('src');
+        localVideo.load();
+        localVideo.hidden = true;
+      }
+      if (videoFallback) videoFallback.hidden = true;
+    }
+
+    function showVideoModal(videoUrl, title) {
+      if (!videoModal) return;
+      resetVideoPlayers();
       videoModal.classList.remove('closing');
       videoModal.classList.remove('hidden');
-      // small delay to allow CSS transition
       requestAnimationFrame(() => videoModal.classList.add('show'));
-      if (heroVideo) heroVideo.src = YT_URL;
+      const url = String(videoUrl || '').trim();
+      if (!url) {
+        if (videoFallback) videoFallback.hidden = false;
+        return;
+      }
+      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(url)) {
+        if (!localVideo) return;
+        localVideo.hidden = false;
+        localVideo.src = url;
+        localVideo.play().catch(() => {});
+        return;
+      }
+      if (heroVideo) {
+        heroVideo.hidden = false;
+        heroVideo.title = title || 'Watch video';
+        heroVideo.src = url;
+      }
+    }
+
+    watchVideoBtn?.addEventListener('click', () => {
+      if (!YT_URL) return;
+      showVideoModal(YT_URL, translate('hero.videoButton'));
+    });
+
+    testimonialVideoButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.videoKey || '';
+        const configuredUrl = TESTIMONIAL_VIDEO_URLS[key] || button.dataset.videoUrl || '';
+        showVideoModal(configuredUrl, button.dataset.videoTitle || button.textContent.trim());
+      });
     });
 
     function hideVideoModal() {
@@ -270,9 +492,9 @@
         videoModal.classList.remove('show', 'closing');
         videoModal.classList.add('hidden');
         videoModal.removeEventListener('animationend', finish);
+        resetVideoPlayers();
       };
       videoModal.addEventListener('animationend', finish);
-      if (heroVideo) heroVideo.src = '';
     }
 
     closeVideoModal?.addEventListener('click', hideVideoModal);
