@@ -424,7 +424,7 @@
     const testimonialVideoButtons = document.querySelectorAll('.testimonial-video-btn');
     const YT_URL = '';
     const TESTIMONIAL_VIDEO_URLS = {
-      jordan: '',
+      jordan: 'assets/videos/jordan-testimonial.mov',
       alex: '',
       mya: ''
     };
@@ -458,7 +458,7 @@
         if (videoFallback) videoFallback.hidden = false;
         return;
       }
-      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(url)) {
+      if (/\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url)) {
         if (!localVideo) return;
         localVideo.hidden = false;
         localVideo.src = url;
