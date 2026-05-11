@@ -1,9 +1,14 @@
-const CACHE_NAME = 'break-the-cycle-pwa-v1';
+const CACHE_NAME = 'break-the-cycle-pwa-v16';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/pwa.js',
   '/styles.css',
+  '/brand-logo.png',
+  '/brand-logo.svg',
+  '/brand-mark.png',
+  '/brand-mark.svg',
   '/BTC_logo_web.png',
+  '/BTC_banner_web.png',
   '/icons/apple-touch-icon.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

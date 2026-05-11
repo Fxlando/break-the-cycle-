@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="Break The Cycle brand gradient">
+  <defs>
+    <linearGradient id="brandGradient" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#16324a"/>
+      <stop offset="0.34" stop-color="#2367f2"/>
+      <stop offset="0.54" stop-color="#4b8cff"/>
+      <stop offset="0.74" stop-color="#8d67ff"/>
+      <stop offset="1" stop-color="#ff8452"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#brandGradient)"/>
+</svg>
