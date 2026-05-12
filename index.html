@@ -56,28 +56,29 @@
         </select>
       </label>
     </nav>
-    <div class="hero-tagline">
-      <div class="hero-tagline-group">
-        <span class="light-word" data-i18n="tagline.lifeGets">life gets</span>
-        <span class="dark-word" data-i18n="tagline.boring">boring</span>
-      </div>
-      <span class="dot-separator" aria-hidden="true">&middot;</span>
-      <div class="hero-tagline-group">
-        <span class="dark-word" data-i18n="tagline.learnHow">learn how to</span>
-        <span class="light-word" data-i18n="tagline.liveIt">live it</span>
-      </div>
-    </div>
     <div class="content container">
       <div class="hero-copy">
-        <p class="hero-kicker"><span data-i18n="hero.kickerOne">Feeling stuck?</span><span data-i18n="hero.kickerTwo">Start here</span></p>
+        <!-- Kept for later placement; hidden from the main page for now. -->
+        <p class="hero-kicker" hidden><span data-i18n="hero.kickerOne">Feeling stuck?</span><span data-i18n="hero.kickerTwo">Start here</span></p>
         <h1 aria-label="Break The Cycle"><span aria-hidden="true" data-i18n="hero.titleOne">Break</span><span aria-hidden="true" data-i18n="hero.titleTwo">The Cycle</span></h1>
+        <div class="hero-tagline">
+          <div class="hero-tagline-group">
+            <span class="light-word" data-i18n="tagline.lifeGets">life gets</span>
+            <span class="dark-word" data-i18n="tagline.boring">boring</span>
+          </div>
+          <span class="dot-separator" aria-hidden="true">&middot;</span>
+          <div class="hero-tagline-group">
+            <span class="dark-word" data-i18n="tagline.learnHow">learn how to</span>
+            <span class="light-word" data-i18n="tagline.liveIt">live it</span>
+          </div>
+        </div>
         <p class="tagline" data-i18n="hero.copy">Take the quiz, find your path, and turn your next move into something you can actually follow.</p>
-        <p class="hero-dashboard-hint"><span data-i18n="hero.dashboardPrompt">Already on the path?</span> <a href="dashboard.html" class="hero-dashboard-link" data-i18n="hero.dashboardLink">Open your dashboard</a></p>
       </div>
       <div class="hero-actions">
         <a href="quiz.html" class="btn" data-i18n="hero.quizButton">Take the Quiz</a>
         <button class="btn btn-secondary" id="watchVideoBtn" type="button" hidden data-i18n="hero.videoButton">Watch Video</button>
       </div>
+      <p class="hero-dashboard-hint"><span data-i18n="hero.dashboardPrompt">Already on the path?</span> <a href="dashboard.html" class="hero-dashboard-link" data-i18n="hero.dashboardLink">Open your dashboard</a></p>
     </div>
     <div class="wave-divider"></div>
   </header>
