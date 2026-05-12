@@ -1398,9 +1398,9 @@ header {
 
 header .content {
   z-index: 12;
-  min-height: clamp(500px, 64vh, 660px);
-  padding-top: clamp(42px, 6vh, 58px);
-  gap: 18px;
+  min-height: auto;
+  padding-top: 0;
+  gap: clamp(20px, 3vw, 28px);
 }
 
 header::after {
@@ -1661,7 +1661,7 @@ section.container {
 @media (max-width: 768px) {
   header {
     min-height: auto;
-    padding: 150px 16px 52px;
+    padding: 116px 16px 56px;
     margin-bottom: 28px;
   }
 
@@ -1673,7 +1673,7 @@ section.container {
 
   .hero-copy {
     width: 100%;
-    padding: 38px 0 22px;
+    padding: 30px 0 24px;
   }
 
   .hero-copy::before {
