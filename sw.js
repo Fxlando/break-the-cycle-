@@ -1,4 +1,4 @@
-const CACHE_NAME = 'break-the-cycle-pwa-v17';
+const CACHE_NAME = 'break-the-cycle-pwa-v18';
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/pwa.js',

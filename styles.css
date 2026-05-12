@@ -93,6 +93,7 @@ header {
   width: min(1120px, calc(100% - 32px));
   transform: translateX(-50%);
   pointer-events: auto;
+  direction: ltr;
 }
 
 .site-logo-link {
@@ -100,7 +101,7 @@ header {
   align-items: center;
   justify-content: center;
   width: 188px;
-  height: 64px;
+  height: 72px;
   overflow: hidden;
   border: 0;
   background: transparent;
@@ -117,8 +118,8 @@ header {
   display: block;
   width: 100%;
   height: 100%;
-  background: url('brand-logo.png') no-repeat center 47% / 194px 194px;
-  filter: drop-shadow(0 12px 22px rgba(39, 79, 119, 0.14));
+  background: url('brand-logo.png') no-repeat center 42% / 188px 188px;
+  filter: none;
 }
 
 .language-control {
@@ -157,7 +158,7 @@ header {
 }
 
 .language-select {
-  min-width: 74px;
+  min-width: 92px;
   appearance: none;
   -webkit-appearance: none;
   border: 0;
@@ -167,6 +168,7 @@ header {
   font: 800 0.9rem 'Inter Tight', 'Inter', sans-serif;
   outline: none;
   padding: 4px 0;
+  text-align: left;
 }
 
 .language-select:focus-visible {
@@ -961,13 +963,13 @@ footer p {
   }
 
   .site-logo-link {
-    width: 132px;
-    height: 50px;
+    width: 138px;
+    height: 58px;
   }
 
   .site-logo-art {
-    background-size: 152px 152px;
-    background-position: center 47%;
+    background-size: 144px 144px;
+    background-position: center 42%;
   }
 
   .language-control {
@@ -981,7 +983,7 @@ footer p {
   }
 
   .language-select {
-    min-width: 72px;
+    min-width: 88px;
     padding: 3px 0;
     font-size: 0.82rem;
   }
@@ -1547,7 +1549,7 @@ header .content::after {
 }
 
 .hero-tagline {
-  top: clamp(84px, 10vh, 108px);
+  top: clamp(98px, 11vh, 118px);
   left: 50%;
   width: fit-content;
   max-width: calc(100% - 28px);
@@ -1601,6 +1603,31 @@ header .content::after {
   color: rgba(23, 65, 95, 0.62) !important;
 }
 
+html:not([lang="en"]) .hero-copy h1 {
+  font-size: clamp(3.8rem, 8vw, 7.2rem);
+  letter-spacing: 0;
+  line-height: 0.95;
+}
+
+html[lang="ru"] .hero-copy h1,
+html[lang="fr"] .hero-copy h1,
+html[lang="pt"] .hero-copy h1,
+html[lang="es"] .hero-copy h1 {
+  font-size: clamp(3.5rem, 7.4vw, 6.8rem);
+}
+
+html:not([lang="en"]) .hero-tagline,
+html:not([lang="en"]) .hero-kicker {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html:not([lang="en"]) .hero-tagline span {
+  font-family: 'Inter Tight', 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+}
+
 .video-modal-content {
   width: min(920px, 94vw);
 }
@@ -1624,7 +1651,7 @@ section.container {
 @media (max-width: 768px) {
   header {
     min-height: auto;
-    padding: 136px 16px 52px;
+    padding: 150px 16px 52px;
     margin-bottom: 28px;
   }
 
@@ -1680,7 +1707,7 @@ section.container {
   }
 
   .hero-tagline {
-    top: 70px;
+    top: 82px;
     max-width: calc(100% - 18px);
     gap: 6px;
     padding: 0.46rem 0.62rem;
@@ -1694,6 +1721,19 @@ section.container {
 
   .hero-tagline .dot-separator {
     display: inline-flex;
+  }
+
+  html:not([lang="en"]) .hero-copy h1 {
+    font-size: clamp(3.15rem, 15vw, 4.85rem);
+    line-height: 0.95;
+    letter-spacing: 0;
+  }
+
+  html[lang="ru"] .hero-copy h1,
+  html[lang="fr"] .hero-copy h1,
+  html[lang="pt"] .hero-copy h1,
+  html[lang="es"] .hero-copy h1 {
+    font-size: clamp(2.9rem, 13.8vw, 4.1rem);
   }
 
   .hero-actions .btn {
