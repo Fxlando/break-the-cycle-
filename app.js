@@ -1433,9 +1433,17 @@ function buildApp() {
         console.error('magic-link email error', { code: err.code, message: err.message });
         return res.status(err.statusCode || 502).json({ error: err.message });
       }
-      if (err?.code === 'db_timeout') {
-        console.error('magic-link db timeout', { message: err.message });
-        return res.status(err.statusCode || 504).json({ error: err.message });
+      if (err?.code === 'db_timeout' || isPrismaOperationalError(err)) {
+        const isDbConfigError = err?.code !== 'db_timeout';
+        console.error(isDbConfigError ? 'magic-link db error' : 'magic-link db timeout', {
+          code: err?.code,
+          message: err?.message
+        });
+        return res.status(err.statusCode || (isDbConfigError ? 503 : 504)).json({
+          error: isDbConfigError
+            ? 'Account database is temporarily unavailable. Please check the database configuration.'
+            : err.message
+        });
       }
       console.error('magic-link error', err);
       res.status(500).json({ error: 'Unable to send magic link' });
