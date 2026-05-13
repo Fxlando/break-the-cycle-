@@ -302,12 +302,15 @@
 
     .step h3 {
       font-size: 1.3rem;
-      margin-bottom: 20px;
+      margin: 0 auto 20px;
+      max-width: 760px;
       color: var(--text-primary);
+      text-align: center;
       line-height: 1.5;
       font-weight: 700;
       letter-spacing: -0.01em;
       flex-shrink: 0;
+      text-wrap: balance;
     }
 
     .options { 
@@ -362,6 +365,23 @@
       line-height: 1.4;
       letter-spacing: -0.01em;
       text-wrap: pretty;
+    }
+
+    .profile-options .option label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 58px;
+      padding: 16px 48px;
+      text-align: center;
+    }
+
+    .profile-option-title {
+      display: block;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.15;
     }
 
     #mode_career + label,
@@ -992,11 +1012,13 @@
       .progress-container { padding: 10px; margin-bottom: 12px; }
       #quizForm { overflow: visible; }
       .step { flex: 0 0 auto; }
+      .step[data-step="profile"] { flex: 1 0 auto; gap: 16px; }
       .step[data-step="0"] { flex: 1 0 auto; gap: 16px; }
       .step h3 { font-size: 1.1rem; margin-bottom: 12px; line-height: 1.4; }
       .options { gap: 8px; margin-bottom: 14px; overflow: visible; padding-right: 0; }
       .step[data-step="0"] .options { gap: 10px; }
       .option label { padding: 12px 42px 12px 48px; font-size: 0.9rem; line-height: 1.3; min-height: 44px; display: flex; align-items: center; }
+      .profile-options .option label { display: flex; justify-content: center; padding: 14px 44px; }
       .btn { padding: 14px; font-size: 0.95rem; min-height: 48px; }
       .results { padding-right: 0; max-height: none; overflow: visible; }
       .career-path,
@@ -1009,6 +1031,7 @@
     
     @media (max-width: 375px) {
       .container { padding: 12px 15px; }
+      .step[data-step="profile"] { gap: 16px; }
       .step[data-step="0"] { gap: 16px; }
       .header h1 { font-size: 1.3rem; }
       .step h3 { font-size: 1.05rem; margin-bottom: 10px; }
@@ -1195,8 +1218,8 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1 id="headerTitle">What Brings You Here?</h1>
-      <p id="headerSubtitle">Choose your path to get started</p>
+      <h1 id="headerTitle">First, a little context</h1>
+      <p id="headerSubtitle">Choose one to continue.</p>
     </div>
 
     <div class="progress-container" id="progressContainer" style="display: none;">
@@ -1207,8 +1230,19 @@
     </div>
 
     <form id="quizForm">
+      <!-- PROFILE CONTEXT -->
+      <div class="step active" data-step="profile">
+        <h3>Which option best describes you?</h3>
+        <div class="options profile-options">
+          <div class="option"><input type="radio" name="profile_gender" value="female" id="profile_female"><label for="profile_female"><span class="profile-option-title">Female</span></label></div>
+          <div class="option"><input type="radio" name="profile_gender" value="male" id="profile_male"><label for="profile_male"><span class="profile-option-title">Male</span></label></div>
+          <div class="option"><input type="radio" name="profile_gender" value="prefer_not" id="profile_prefer_not"><label for="profile_prefer_not"><span class="profile-option-title">Prefer not to say</span></label></div>
+        </div>
+        <button type="button" class="btn" onclick="continueToModeSelection()">Continue</button>
+      </div>
+
       <!-- MODE SELECTION (Question 0) -->
-      <div class="step active" data-step="0">
+      <div class="step" data-step="0">
         <h3>What brings you here today?</h3>
         <div class="options">
           <!--
@@ -1221,6 +1255,31 @@
           <div class="option"><input type="radio" name="mode" value="both" id="mode_both"><label for="mode_both"><span class="mode-option-title">Complete discovery</span><span class="mode-option-detail">Shape both your career path and personal direction.</span></label></div>
         </div>
         <button type="button" class="btn" onclick="startQuiz()">Let's Go!</button>
+      </div>
+
+      <!-- CAREER GUIDE QUESTIONS - Only shown if career or both mode -->
+      <div class="career-guide-questions">
+        <div class="step" data-step="1" data-track="career-guide">
+          <h3 id="careerGuideOneTitle">What would make a career path feel realistic and worth trying right now?</h3>
+          <div class="options">
+            <div class="option"><input type="radio" name="cg1" value="guide_low_strain" id="cg1a"><label for="cg1a">A steady setup with lower physical strain and clear expectations</label></div>
+            <div class="option"><input type="radio" name="cg1" value="guide_people_service" id="cg1b"><label for="cg1b">Work where helping, supporting, or guiding people is central</label></div>
+            <div class="option"><input type="radio" name="cg1" value="guide_digital_flex" id="cg1c"><label for="cg1c">A digital or flexible path I can build from anywhere</label></div>
+            <div class="option"><input type="radio" name="cg1" value="guide_hands_on_supported" id="cg1d"><label for="cg1d">Hands-on work if the training, pay, and environment are right</label></div>
+          </div>
+          <button type="button" class="btn" onclick="nextCareerGuideQuestion(1)">Next</button>
+        </div>
+
+        <div class="step" data-step="2" data-track="career-guide">
+          <h3>What should this next direction protect most?</h3>
+          <div class="options">
+            <div class="option"><input type="radio" name="cg2" value="priority_stability" id="cg2a"><label for="cg2a">Stable income and predictable structure</label></div>
+            <div class="option"><input type="radio" name="cg2" value="priority_flexibility" id="cg2b"><label for="cg2b">Flexibility around life, energy, or responsibilities</label></div>
+            <div class="option"><input type="radio" name="cg2" value="priority_growth" id="cg2c"><label for="cg2c">A path that can grow into stronger skills and higher upside</label></div>
+            <div class="option"><input type="radio" name="cg2" value="priority_fast_start" id="cg2d"><label for="cg2d">A practical starting point I can move on quickly</label></div>
+          </div>
+          <button type="button" class="btn" onclick="nextCareerGuideQuestion(2)">Next</button>
+        </div>
       </div>
 
       <!-- CAREER QUESTIONS (1-25) - Only shown if career or both mode -->
@@ -1497,7 +1556,7 @@
             <div class="option"><input type="radio" name="c25" value="patience_high" id="c25c"><label for="c25c">High - I can stay patient for a stronger long-term path</label></div>
             <div class="option"><input type="radio" name="c25" value="patience_very" id="c25d"><label for="c25d">Very high - I am willing to build slowly if the payoff is meaningful</label></div>
           </div>
-          <button type="submit" class="btn" onclick="submitQuiz(event)">See My Results</button>
+          <button type="button" class="btn" id="careerFinalBtn" onclick="finishCareerQuestions(event)">See My Results</button>
         </div>
       </div>
 
@@ -1827,9 +1886,11 @@
 
   <script>
     let quizMode = null; // 'career', 'life', or 'both'
+    let quizProfile = { gender: null };
     let currentStep = 0;
     let currentTrack = null; // Which track we're on
     const totalStepsPerTrack = 25;
+    const careerGuideSteps = 2;
 
     // Membership state management
     let currentUser = null;
@@ -1995,6 +2056,47 @@
       toggleHidden(resultsDashboardLink, false);
     }
 
+    function continueToModeSelection() {
+      const genderInput = document.querySelector('input[name="profile_gender"]:checked');
+      if (!genderInput) {
+        alert('Please choose an option to continue');
+        return;
+      }
+
+      quizProfile.gender = genderInput.value;
+      document.querySelector('[data-step="profile"]').classList.remove('active');
+      document.querySelector('[data-step="0"]').classList.add('active');
+
+      const headerTitle = document.getElementById('headerTitle');
+      const headerSubtitle = document.getElementById('headerSubtitle');
+      if (headerTitle) headerTitle.textContent = 'What Brings You Here?';
+      if (headerSubtitle) headerSubtitle.textContent = 'Choose your path to get started.';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateCareerGuideCopy() {
+      const guideTitle = document.getElementById('careerGuideOneTitle');
+      if (!guideTitle) return;
+
+      const titles = {
+        female: 'What would make a career path feel realistic, safe, and worth trying right now?',
+        male: 'What would make a career path feel solid, realistic, and worth trying right now?',
+        prefer_not: 'What would make a career path feel realistic and worth trying right now?'
+      };
+
+      guideTitle.textContent = titles[quizProfile.gender] || titles.prefer_not;
+    }
+
+    function validateRadioAnswer(questionName, message = 'Please select an answer') {
+      const answer = document.querySelector(`input[name="${questionName}"]:checked`);
+      if (!answer) {
+        alert(message);
+        return false;
+      }
+      return true;
+    }
+
     function startQuiz() {
       const modeInput = document.querySelector('input[name="mode"]:checked');
       if (!modeInput) {
@@ -2007,13 +2109,18 @@
       // Update header
       if (quizMode === 'career') {
         document.getElementById('headerTitle').textContent = 'Career Path Finder';
-        document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to find the kind of work that fits your life, energy, and goals.';
+        document.getElementById('headerSubtitle').textContent = 'Answer 27 questions to find the kind of work that fits your life, energy, and goals.';
       } else if (quizMode === 'life') {
         document.getElementById('headerTitle').textContent = 'Find Yourself';
         document.getElementById('headerSubtitle').textContent = 'Answer 25 questions to discover hobbies, interests, and a better personal reset.';
       } else {
         document.getElementById('headerTitle').textContent = 'Complete Discovery';
-        document.getElementById('headerSubtitle').textContent = 'Answer 50 questions total to explore both career direction and personal reset.';
+        document.getElementById('headerSubtitle').textContent = 'Answer 52 questions total to explore both career direction and personal reset.';
+      }
+
+      const careerFinalBtn = document.getElementById('careerFinalBtn');
+      if (careerFinalBtn) {
+        careerFinalBtn.textContent = quizMode === 'both' ? 'Continue to Personal Reset' : 'See My Results';
       }
 
       // Hide mode selection
@@ -2024,9 +2131,10 @@
       
       // Start with first question of appropriate track
       if (quizMode === 'career' || quizMode === 'both') {
-        currentTrack = 'career';
+        updateCareerGuideCopy();
+        currentTrack = 'career-guide';
         currentStep = 1;
-        showQuestion(1, 'career');
+        showQuestion(1, 'career-guide');
       } else {
         currentTrack = 'life';
         currentStep = 1;
@@ -2049,14 +2157,26 @@
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
+    function nextCareerGuideQuestion(step) {
+      if (!validateRadioAnswer(`cg${step}`)) return;
+
+      if (step < careerGuideSteps) {
+        currentTrack = 'career-guide';
+        currentStep = step + 1;
+        showQuestion(currentStep, 'career-guide');
+      } else {
+        currentTrack = 'career';
+        currentStep = 1;
+        showQuestion(1, 'career');
+      }
+
+      updateProgress();
+    }
+
     function nextQuestion(step) {
       // Validate current answer
       const questionName = currentTrack === 'career' ? `c${step}` : `l${step}`;
-      const answer = document.querySelector(`input[name="${questionName}"]:checked`);
-      if (!answer) {
-        alert('Please select an answer');
-        return;
-      }
+      if (!validateRadioAnswer(questionName)) return;
 
       currentStep = step + 1;
 
@@ -2078,14 +2198,42 @@
       updateProgress();
     }
 
+    function finishCareerQuestions(event) {
+      if (event) event.preventDefault();
+      if (!validateRadioAnswer('c25')) return;
+
+      if (quizMode === 'both') {
+        currentTrack = 'life';
+        currentStep = 1;
+        showQuestion(1, 'life');
+        updateProgress();
+        return;
+      }
+
+      submitQuiz(event);
+    }
+
+    function getTotalQuestionCount() {
+      if (quizMode === 'both') return totalStepsPerTrack * 2 + careerGuideSteps;
+      if (quizMode === 'career') return totalStepsPerTrack + careerGuideSteps;
+      return totalStepsPerTrack;
+    }
+
+    function getCurrentQuestionNumber() {
+      if (currentTrack === 'career-guide') return currentStep;
+      if (currentTrack === 'career') return currentStep + careerGuideSteps;
+      if (currentTrack === 'life' && quizMode === 'both') {
+        return careerGuideSteps + totalStepsPerTrack + currentStep;
+      }
+      return currentStep;
+    }
+
     function updateProgress() {
-      let totalQuestions = quizMode === 'both' ? 50 : 25;
-      let completedQuestions = currentTrack === 'career' ? currentStep : (25 + currentStep);
-      if (quizMode !== 'both') completedQuestions = currentStep;
+      const totalQuestions = getTotalQuestionCount();
+      const completedQuestions = getCurrentQuestionNumber();
 
       document.getElementById('totalQuestions').textContent = totalQuestions;
-      document.getElementById('currentQuestion').textContent = quizMode === 'both' ? 
-        (currentTrack === 'career' ? currentStep : (25 + currentStep)) : currentStep;
+      document.getElementById('currentQuestion').textContent = completedQuestions;
       
       const progress = (completedQuestions / totalQuestions) * 100;
       document.getElementById('progressFill').style.width = `${progress}%`;
@@ -2094,12 +2242,19 @@
     function submitQuiz(event) {
       if (event) event.preventDefault();
       if (resultsLoadingTimer) return;
+      if (currentTrack === 'life' && currentStep === totalStepsPerTrack && !validateRadioAnswer('l25')) return;
+      if (currentTrack === 'career' && currentStep === totalStepsPerTrack && !validateRadioAnswer('c25')) return;
 
       // Collect answers based on mode
       let careerAnswers = {};
       let lifeAnswers = {};
 
       if (quizMode === 'career' || quizMode === 'both') {
+        for (let i = 1; i <= careerGuideSteps; i++) {
+          const selected = document.querySelector(`input[name="cg${i}"]:checked`);
+          if (selected) careerAnswers[`cg${i}`] = selected.value;
+        }
+
         for (let i = 1; i <= 25; i++) {
           const selected = document.querySelector(`input[name="c${i}"]:checked`);
           if (selected) careerAnswers[`c${i}`] = selected.value;
@@ -2317,6 +2472,24 @@
     };
 
     const CAREER_QUESTION_CONFIG = {
+      cg1: {
+        weight: 'medium',
+        choices: {
+          guide_low_strain: { prefer: ['low_physical', 'desk_work', 'structured_schedule', 'caregiver_friendly', 'high_stability'], avoid: ['high_physical'] },
+          guide_people_service: { prefer: ['high_people', 'service_mission', 'team_based', 'high_stability'] },
+          guide_digital_flex: { prefer: ['remote_possible', 'desk_work', 'technical_depth', 'flexible_schedule', 'low_physical'], avoid: ['high_physical'] },
+          guide_hands_on_supported: { prefer: ['field_work', 'high_physical', 'credential_light', 'high_stability', 'team_based'] }
+        }
+      },
+      cg2: {
+        weight: 'medium',
+        choices: {
+          priority_stability: { prefer: ['high_stability', 'structured_schedule', 'low_cost'] },
+          priority_flexibility: { prefer: ['flexible_schedule', 'caregiver_friendly', 'remote_possible', 'low_physical'] },
+          priority_growth: { prefer: ['technical_depth', 'credential_heavy', 'high_upside', 'independent_work'] },
+          priority_fast_start: { prefer: ['fast_entry', 'low_cost', 'credential_light', 'high_stability'] }
+        }
+      },
       c1: {
         weight: 'high',
         choices: {
@@ -3485,7 +3658,7 @@
           <div class="locked-details">
             <strong>Full roadmap locked</strong>
             <p>Unlock membership to see why this fits you, what to do first, and how to turn this match into a real plan.</p>
-            <a class="locked-detail-link" href="#memberPrompt">Unlock the full breakdown</a>
+            <a class="locked-detail-link" href="dashboard.html">Unlock the full breakdown</a>
           </div>
         `;
 
