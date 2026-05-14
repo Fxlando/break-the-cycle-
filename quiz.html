@@ -462,10 +462,14 @@
     }
 
     .option input[type="radio"]:checked + label {
-      background: linear-gradient(135deg, rgba(35, 103, 242, 0.12), rgba(255, 132, 82, 0.08));
-      border-color: var(--primary);
+      background:
+        linear-gradient(135deg, rgba(35, 103, 242, 0.22) 0%, rgba(35, 103, 242, 0.14) 44%, rgba(255, 132, 82, 0.2) 100%),
+        rgba(247, 242, 232, 0.72);
+      border-color: rgba(35, 103, 242, 0.74);
       color: var(--text-primary);
-      box-shadow: 0 4px 20px rgba(35, 103, 242, 0.15);
+      box-shadow:
+        0 8px 24px rgba(35, 103, 242, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.58);
     }
 
     .option input[type="radio"]:checked + label .mode-option-detail {
@@ -498,8 +502,10 @@
       }
 
       .option input[type="radio"]:checked + label:hover {
-        border-color: var(--primary);
-        background: linear-gradient(135deg, rgba(35, 103, 242, 0.14), rgba(255, 132, 82, 0.1));
+        border-color: rgba(35, 103, 242, 0.82);
+        background:
+          linear-gradient(135deg, rgba(35, 103, 242, 0.24) 0%, rgba(35, 103, 242, 0.16) 44%, rgba(255, 132, 82, 0.22) 100%),
+          rgba(247, 242, 232, 0.72);
       }
     }
 
@@ -510,8 +516,10 @@
       }
 
       .option input[type="radio"]:checked + label:hover {
-        border-color: var(--primary);
-        background: linear-gradient(135deg, rgba(35, 103, 242, 0.12), rgba(255, 132, 82, 0.08));
+        border-color: rgba(35, 103, 242, 0.74);
+        background:
+          linear-gradient(135deg, rgba(35, 103, 242, 0.22) 0%, rgba(35, 103, 242, 0.14) 44%, rgba(255, 132, 82, 0.2) 100%),
+          rgba(247, 242, 232, 0.72);
       }
     }
 
